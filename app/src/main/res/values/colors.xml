@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_color">#141414</color>
+    <color name="secondary_color">#ffffff</color>
+
+    <color name="black_overlay">#ffffff</color>
+    <color name="setting_overlay">#aaffffff</color>
+    <color name="setting_menu_overlay">#55ffffff</color>
+
+    <color name="test">#3F51B5</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray">#808080</color>
+    <color name="red">#FF0000</color>
+    <color name="gold">#FFD700</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="green">#008000</color>
+    <color name="blue">#0000FF</color>
+    <color name="purple">#800080</color>
+    <color name="pink">#FFC0CB</color>
+    <color name="orange">#FFA500</color>
+
+    <color name="full_transparent">#00000000</color>
+    <color name="half_transparent">#aa000000</color>
+
+    <color name="text_white">#FFFFFFFF</color>
+    <color name="text_pressed">#FF6D6D6D</color>
+    <color name="text_disabled">#FF666666</color>
+    <color name="text_selected">#FF696969</color>
+    <color name="text_black">#FF000000</color>
+    <color name="text_content">#FF353535</color>
+    <color name="text_warning">#FFFFEECC</color>
+    <color name="text_setting_text_view">#FF888888</color>
+    <color name="text_progress">#FFFF9900</color>
+    <color name="text_link">#FF90FF00</color>
+    <color name="text_yellow">#E7FE00</color>
+
+
+    <color name="background_primary_color">#141414</color>
+    <color name="overlay_gray_color">#1A1A1A</color>
+    <color name="divider_gray_color">#1f1f1f</color>
+    <color name="disconnected_status_color">#626262</color>
+    <color name="zoom_tag_color">#80333333</color>
+    <color name="versin_tag_color">#2c2c2c</color>
+
+    <color name="button_primary_color">#E7FE00</color>
+    <color name="button_red_color">#FF4800</color>
+    <color name="button_connect_color">#232323</color>
+
+    <color name="background_list">#FF2D2D2D</color>
+    <color name="background_line">#FF6D6D6D</color>
+    <color name="text_tupp_selected">#FFC5584F</color>
+    <color name="text_tupp">#FFFEFEFE</color>
+</resources>

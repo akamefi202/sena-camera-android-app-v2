@@ -1,0 +1,213 @@
+<resources>
+    <string name="app_name">Sena Camera</string>
+
+    <string name="action_setting">Setting</string>
+    <string name="action_menu">Menu</string>
+    <string name="action_media">Media</string>
+    <string name="action_preference">Preference</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_agree">Agree</string>
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete_all">Delete All</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_select">Select</string>
+    <string name="action_deselect">Deselect</string>
+    <string name="action_share">Share</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_preview">Preview</string>
+    <string name="action_device_list">Device List</string>
+    <string name="action_add_new_device">+ Add New Device</string>
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+
+    <string name="title_media">Media</string>
+    <string name="title_device">Device</string>
+    <string name="title_storage">Storage</string>
+    <string name="title_my_devices">My Devices</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_preference">Preference</string>
+    <string name="title_preview">Preview</string>
+    <string name="title_connect_device">Connect Device</string>
+    <string name="title_media_detail">Media Detail</string>
+
+    <string name="connected">Connected</string>
+    <string name="not_connected">Not Connected</string>
+    <string name="my_devices">My Devices</string>
+    <string name="add_new_device">Add New Device</string>
+    <string name="today">Today</string>
+    <string name="all">All</string>
+    <string name="stop_download">Stop Download</string>
+    <string name="saving">Saving…</string>
+
+    <string name="dialog_not_show_again">Don\'t show again</string>
+    <string name="dialog_set_up_device_before_connecting">Set up your device before connecting to the app. Any changes you make will be applied once connected.</string>
+    <string name="dialog_confirm_cancel_download">Canceling the download cannot be undone. Do you still want to proceed?</string>
+
+    <string name="prism2">Prism 2</string>
+    <string name="phantom_cam">Phantom Cam</string>
+    <string name="camera_50c">50C</string>
+
+    <string name="version_1_0">v1.0</string>
+    <string name="battery_status_59">59%</string>
+    <string name="camera_zoom_1_0">1.0x</string>
+    <string name="camera_zoom_1_5">1.5x</string>
+    <string name="camera_zoom_2_0">2.0x</string>
+    <string name="camera_zoom_2_5">2.5x</string>
+    <string name="camera_zoom_3_0">3.0x</string>
+    <string name="photo_mode_single">Single</string>
+    <string name="photo_mode_burst">Burst</string>
+    <string name="photo_mode_timelapse">Timelapse</string>
+    <string name="photo_mode_self_timer">Self-Timer</string>
+    <string name="video_mode_video">Video</string>
+    <string name="video_mode_slow_motion">Slow-Motion</string>
+
+    <!-- from old sena camera app -->
+    <string name="off">Off</string>
+    <string name="text_file_length_unlimited">Unlimited</string>
+    <string name="time_minutes"> MIN</string>
+    <string name="setting_camera_front">Front Camera</string>
+    <string name="setting_camera_back">Back Camera</string>
+    <string name="timeLapse_capture_mode">Timelapse capture mode</string>
+    <string name="timeLapse_video_mode">Timelapse video mode</string>
+    <string name="wb_auto">AUTO</string>
+    <string name="wb_daylight">Daylight</string>
+    <string name="wb_cloudy">Cloudy</string>
+    <string name="wb_fluorescent">Fluorescent</string>
+    <string name="wb_incandescent">Incandescent</string>
+    <string name="setting_time_lapse_interval">Timelapse Interval</string>
+    <string name="setting_time_lapse_interval_off">OFF</string>
+    <string name="setting_time_lapse_interval_2s">2 Sec</string>
+    <string name="setting_time_lapse_interval_5s">5 Sec</string>
+    <string name="setting_time_lapse_interval_10s">10 Sec</string>
+    <string name="setting_time_lapse_interval_20s">20 Sec</string>
+    <string name="setting_time_lapse_interval_30s">30 Sec</string>
+    <string name="setting_time_lapse_interval_1M">1 Min</string>
+    <string name="setting_time_lapse_interval_5M">5 Min</string>
+    <string name="setting_time_lapse_interval_10M">10 Min</string>
+    <string name="setting_time_lapse_interval_30M">30 Min</string>
+    <string name="setting_time_lapse_interval_1HR">60 Min</string>
+    <string name="setting_time_lapse_duration">Timelapse Duration</string>
+    <string name="setting_time_lapse_duration_2M">2 Min</string>
+    <string name="setting_time_lapse_duration_5M">5 Min</string>
+    <string name="setting_time_lapse_duration_10M">10 Min</string>
+    <string name="setting_time_lapse_duration_15M">15 Min</string>
+    <string name="setting_time_lapse_duration_20M">20 Min</string>
+    <string name="setting_time_lapse_duration_30M">30 Min</string>
+    <string name="setting_time_lapse_duration_60M">60 Min</string>
+    <string name="setting_time_lapse_duration_unlimit">Unlimited</string>
+    <string name="setting_on">ON</string>
+    <string name="setting_off">OFF</string>
+    <string name="burst_off">OFF</string>
+    <string name="burst_3">3 photos</string>
+    <string name="burst_5">5 photos</string>
+    <string name="burst_10">10 photos</string>
+    <string name="burst_7">7 photos</string>
+    <string name="burst_15">15 photos</string>
+    <string name="burst_30">30 photos</string>
+    <string name="burst_hs">Continuous</string>
+    <string name="frequency_50HZ">50HZ</string>
+    <string name="frequency_60HZ">60HZ</string>
+    <string name="dateStamp_off">OFF</string>
+    <string name="dateStamp_date">Date</string>
+    <string name="dateStamp_date_and_time">Date and time</string>
+    <string name="image_quality_high">High</string>
+    <string name="image_quality_middle">Middle</string>
+    <string name="image_quality_low">Low</string>
+    <string name="photo_video_metering_center">Center</string>
+    <string name="photo_video_metering_multi">Multi</string>
+    <string name="video_mode_normal">Normal</string>
+    <string name="video_mode_timelapse">Timelapse</string>
+    <string name="video_mode_loop">Loop</string>
+    <string name="video_fov_angle_super_wide">Super Wide</string>
+    <string name="video_fov_angle_wide">Wide</string>
+    <string name="video_fov_angle_medium">Medium</string>
+    <string name="video_fov_angle_narrow">Narrow</string>
+    <string name="general_device_sound_high">High</string>
+    <string name="general_device_sound_low">Low</string>
+    <string name="general_device_sound_off">Off</string>
+    <string name="general_language_english">English</string>
+    <string name="general_language_german">Deutsch</string>
+    <string name="general_language_french">Français</string>
+    <string name="general_language_italian">Italiano</string>
+    <string name="general_language_spanish">Español</string>
+    <string name="general_language_japanese">日本語</string>
+    <string name="general_language_chinese_simplified">简体中文</string>
+    <string name="general_language_chinese_traditional">繁体中文</string>
+    <string name="general_language_korean">한국어</string>
+    <string name="general_color_effect_normal">Normal</string>
+    <string name="general_color_effect_bw">BW</string>
+    <string name="general_color_effect_natural">Natural</string>
+    <string name="general_color_effect_negative">Negative</string>
+    <string name="general_color_effect_warm">Warm</string>
+    <string name="general_color_effect_brightness_contrast">Brightness Contrast</string>
+    <string name="general_date_format_yymmdd">YY/MM/DD</string>
+    <string name="general_date_format_mmddyy">MM/DD/YY</string>
+    <string name="general_date_format_ddmmyy">DD/MM/YY</string>
+    <string name="setting_yes">Yes</string>
+    <string name="setting_no">No</string>
+    <string name="setting_power_supply">Frequency</string>
+    <string name="setting_format">Format Camera</string>
+    <string name="setting_format_confirm">Format Camera</string>
+    <string name="setting_format_desc">Do you want to format SD, all your data will be lost?</string>
+    <string name="setting_formating">Formating...</string>
+    <string name="setting_formatted">Format completed</string>
+    <string name="setting_capture_delay">Capture Delay</string>
+    <string name="setting_image_size">Image Size</string>
+    <string name="setting_video_size">Video Size</string>
+    <string name="title_burst">Continuous Shooting</string>
+    <string name="setting_burst_interval">Continuous Shooting Interval</string>
+    <string name="setting_cap_timescape_interval">Timelapse Interval</string>
+    <string name="setting_cap_timescape_duration">Timelapse Duration</string>
+    <string name="setting_vid_timescape_interval">Video Timelapse Interval</string>
+    <string name="setting_vid_timescape_duration">Video Timelapse Duration</string>
+    <string name="setting_datestamp">Date Stamp</string>
+    <string name="setting_about">About</string>
+    <string name="setting_app_version">App Version</string>
+    <string name="setting_product_name">Product Name</string>
+    <string name="setting_firmware_version">FW Version</string>
+    <string name="title_awb">White Balance</string>
+    <string name="setting_auto_download">Auto download</string>
+    <string name="setting_auto_download_size_limit">Limit of Auto download Size </string>
+    <string name="setting_storage_location">Download file storage location</string>
+    <string name="setting_internal_storage">Internal storage</string>
+    <string name="setting_sd_card_storage">SD card</string>
+    <string name="setting_enable_wifi_hotspot">Enable Wifi Hotspot</string>
+    <string name="upside">Upside</string>
+    <string name="camera_wifi_configuration">Camera Wi-Fi configuration</string>
+    <string name="setting_title_screen_saver">Screen Saver</string>
+    <string name="setting_title_auto_power_off">Auto power off</string>
+    <string name="setting_title_power_on_auto_record">Power-on auto record</string>
+    <string name="setting_title_fast_motion_movie">Fast motion movie</string>
+    <string name="setting_title_wind_noise_reduction">Wind Noise Reduction</string>
+    <string name="setting_title_camera_switch">Camera Switch</string>
+    <string name="setting_title_exposure_compensation">Exposure Compensation</string>
+    <string name="setting_title_image_stabilization">Image Stabilization</string>
+    <string name="setting_title_video_file_length">Video File Length</string>
+    <string name="slowmotion">Slow-motion fuction</string>
+    <string name="setting_update_fw">Update FW</string>
+    <string name="title_timelapse_mode">Timelapse mode</string>
+    <string name="dialog_btn_reconnect">Reconnect</string>
+    <string name="dialog_btn_continue">Continue</string>
+    <string name="dialog_btn_exit">Exit</string>
+    <string name="message_reconnect">Network is abnormal, is reconnecting...</string>
+    <string name="text_reconnect_timeout">Reconnect timeout</string>
+    <string name="message_reconnect_timeout">Cannot connect to the camera Wi-Fi...</string>
+    <string name="dialog_card_lose">SD card is lost!</string>
+    <string name="dialog_timeout">Connection to camera failed, please ensure Wi-Fi connection is working.</string>
+    <string name="gallery_cancel" translatable="false">Cancel</string>
+    <string name="dialog_cancel_downloading_succeeded" translatable="false">"Succeeded to cancel downloading"</string>
+    <string name="dialog_cancel_downloading_failed" translatable="false">"Failed to cancel downloading"</string>
+    <string name="download_progress" translatable="false">Has done: $1$    Wait: $2$    Failed: $3$</string>
+    <string name="title_timeLapse_mode" translatable="false">Timelapse mode</string>
+    <string name="setting_updatefw_upgrade_file_not_exist" translatable="false">The upgrade file $1$ does not exist, please put the file to this path:$2$.</string>
+    <string name="app_exception" translatable="false">App meets exception!</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="download_manager" translatable="false">Download Manager</string>
+    <string name="download_complete_result" translatable="false">"Download completed, succeeded: $1$, failed: $2$"</string>
+    <string name="download_cancel_all_tips" translatable="false">Do you want to cancel all file downloads?</string>
+    <string name="intro_alt" translatable="false">Sena Camera Intro</string>
+    <string name="title_terms_of_use" translatable="false">Terms of Use</string>
+    <string name="title_privacy_policy">Privacy Policy</string>
+</resources>
