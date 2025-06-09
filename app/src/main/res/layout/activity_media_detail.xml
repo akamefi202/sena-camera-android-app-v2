@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/background_primary_color"
-    tools:context=".ui.activity.MediaDetailActivity">
+    tools:context=".ui.activity.MediaPhotoDetailActivity">
 
     <!-- media view -->
     <LinearLayout
@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/action_back"
-                android:background="@drawable/button_back" />
+                android:background="@drawable/selector_button_back" />
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -63,7 +63,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <!-- bottom buttons -->
+        <!-- bottom bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -83,9 +83,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:background="@drawable/button_download" />
+                    android:contentDescription="@string/action_save"
+                    android:background="@drawable/selector_button_download" />
                 <TextView
-                    android:textColor="@color/white"
+                    android:textColor="@color/selector_button_text_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/action_save" />
@@ -107,9 +108,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:background="@drawable/button_share" />
+                    android:contentDescription="@string/action_share"
+                    android:background="@drawable/selector_button_share" />
                 <TextView
-                    android:textColor="@color/white"
+                    android:textColor="@color/selector_button_text_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/action_share" />
@@ -131,14 +133,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:background="@drawable/button_delete_white" />
+                    android:contentDescription="@string/action_delete"
+                    android:background="@drawable/selector_button_delete_white" />
                 <TextView
-                    android:textColor="@color/white"
+                    android:textColor="@color/selector_button_text_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/action_delete" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
 </FrameLayout>

@@ -96,7 +96,7 @@ public class MyCamera {
 //        ICatchITransport transport = null;
         if (cameraType == CameraType.WIFI_CAMERA) {
             String localIP = WifiAPUtil.getLocalIPAddressFromWifiInfo(PanoramaApp.getContext());
-            AppLog.d(TAG,"getLocalIPAddressFromWifiInfo:" + localIP);
+            AppLog.d(TAG,"getLocalIPAddressFromWifiInfo: " + localIP);
             transport = new ICatchINETTransport(ipAddress,localIP);
         } else if (cameraType == CameraType.USB_CAMERA) {
             USBHost_Feature feature = new USBHost_Feature(PanoramaApp.getContext());

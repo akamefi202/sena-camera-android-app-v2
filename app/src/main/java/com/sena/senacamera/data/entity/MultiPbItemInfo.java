@@ -2,6 +2,7 @@ package com.sena.senacamera.data.entity;
 
 
 import com.icatchtek.reliant.customer.type.ICatchFile;
+import com.sena.senacamera.data.type.MediaType;
 
 
 public class MultiPbItemInfo {
@@ -10,12 +11,13 @@ public class MultiPbItemInfo {
 
     public int section;
     public boolean isItemChecked = false;
+    public boolean isItemDownloaded = false;
     private boolean isPanorama = false;
     public String fileSize;
     public String fileTime;
     public String fileDate;
     public String fileDuration;
-    public String fileType = "photo"; // "photo" or "video"
+    public String fileType = MediaType.PHOTO; // "photo" or "video"
 
 
     public MultiPbItemInfo(ICatchFile file) {

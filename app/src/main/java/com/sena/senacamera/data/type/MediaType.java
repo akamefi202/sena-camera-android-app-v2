@@ -1,15 +1,6 @@
 package com.sena.senacamera.data.type;
 
-public enum MediaType {
-    PHOTO,
-    VIDEO;
-
-    public static String getValue(MediaType type) {
-        if (type == PHOTO) {
-            return "photo";
-        } else {
-            // if the type is VIDEO
-            return "video";
-        }
-    }
+public class MediaType {
+    public static final String PHOTO = "photo";
+    public static final String VIDEO = "video";
 }

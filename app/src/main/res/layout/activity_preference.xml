@@ -8,14 +8,39 @@
     tools:context=".ui.activity.PreferenceActivity">
 
     <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center">
-        <TextView
-            android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <!-- top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_white"
-            android:text="@string/title_preference" />
+            android:orientation="horizontal"
+            android:gravity="start"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="40dp"
+                android:contentDescription="@string/action_back"
+                android:background="@drawable/selector_button_back" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_white"
+                android:text="@string/title_preference" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

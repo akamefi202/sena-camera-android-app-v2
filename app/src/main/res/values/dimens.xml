@@ -3,4 +3,8 @@
     <dimen name="title_size">20sp</dimen>
 
     <dimen name="font_size_small_heading">18sp</dimen>
+
+    <!-- from old sena camera app -->
+    <dimen name="first_title_size">16sp</dimen>
+    <dimen name="second_title_size">14sp</dimen>
 </resources>

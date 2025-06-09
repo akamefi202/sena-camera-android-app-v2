@@ -26,7 +26,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/action_device_list"
-                android:background="@drawable/button_device_list" />
+                android:background="@color/full_transparent"
+                android:src="@drawable/selector_button_device_list" />
 
             <View
                 android:layout_width="0dp"
@@ -38,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/action_setting"
-                android:background="@drawable/button_setting" />
+                android:background="@drawable/selector_button_setting" />
         </LinearLayout>
 
         <!-- middle section -->
@@ -155,7 +156,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:background="@drawable/button_media" />
+                    android:background="@drawable/selector_button_media" />
                 <TextView
                     android:textColor="@color/white"
                     android:layout_width="wrap_content"
@@ -179,7 +180,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:background="@drawable/button_preference" />
+                    android:background="@drawable/selector_button_preference" />
                 <TextView
                     android:textColor="@color/white"
                     android:layout_width="wrap_content"

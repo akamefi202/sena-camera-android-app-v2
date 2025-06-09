@@ -21,6 +21,7 @@
     <string name="action_add_new_device">+ Add New Device</string>
     <string name="action_back">Back</string>
     <string name="action_close">Close</string>
+    <string name="action_select_all">All</string>
 
     <string name="title_media">Media</string>
     <string name="title_device">Device</string>
@@ -62,6 +63,8 @@
     <string name="photo_mode_self_timer">Self-Timer</string>
     <string name="video_mode_video">Video</string>
     <string name="video_mode_slow_motion">Slow-Motion</string>
+    <string name="video_mode_timelapse">Timelapse</string>
+    <string name="video_mode_loop">Loop</string>
 
     <!-- from old sena camera app -->
     <string name="off">Off</string>
@@ -118,8 +121,6 @@
     <string name="photo_video_metering_center">Center</string>
     <string name="photo_video_metering_multi">Multi</string>
     <string name="video_mode_normal">Normal</string>
-    <string name="video_mode_timelapse">Timelapse</string>
-    <string name="video_mode_loop">Loop</string>
     <string name="video_fov_angle_super_wide">Super Wide</string>
     <string name="video_fov_angle_wide">Wide</string>
     <string name="video_fov_angle_medium">Medium</string>
@@ -196,18 +197,73 @@
     <string name="message_reconnect_timeout">Cannot connect to the camera Wi-Fi...</string>
     <string name="dialog_card_lose">SD card is lost!</string>
     <string name="dialog_timeout">Connection to camera failed, please ensure Wi-Fi connection is working.</string>
-    <string name="gallery_cancel" translatable="false">Cancel</string>
-    <string name="dialog_cancel_downloading_succeeded" translatable="false">"Succeeded to cancel downloading"</string>
-    <string name="dialog_cancel_downloading_failed" translatable="false">"Failed to cancel downloading"</string>
-    <string name="download_progress" translatable="false">Has done: $1$    Wait: $2$    Failed: $3$</string>
-    <string name="title_timeLapse_mode" translatable="false">Timelapse mode</string>
-    <string name="setting_updatefw_upgrade_file_not_exist" translatable="false">The upgrade file $1$ does not exist, please put the file to this path:$2$.</string>
-    <string name="app_exception" translatable="false">App meets exception!</string>
-    <string name="ok" translatable="false">OK</string>
-    <string name="download_manager" translatable="false">Download Manager</string>
-    <string name="download_complete_result" translatable="false">"Download completed, succeeded: $1$, failed: $2$"</string>
-    <string name="download_cancel_all_tips" translatable="false">Do you want to cancel all file downloads?</string>
-    <string name="intro_alt" translatable="false">Sena Camera Intro</string>
-    <string name="title_terms_of_use" translatable="false">Terms of Use</string>
+    <string name="gallery_cancel">Cancel</string>
+    <string name="dialog_cancel_downloading_succeeded">"Succeeded to cancel downloading"</string>
+    <string name="dialog_cancel_downloading_failed">"Failed to cancel downloading"</string>
+    <string name="download_progress">Has done: $1$    Wait: $2$    Failed: $3$</string>
+    <string name="title_timeLapse_mode">Timelapse mode</string>
+    <string name="setting_updatefw_upgrade_file_not_exist">The upgrade file $1$ does not exist, please put the file to this path:$2$.</string>
+    <string name="app_exception">App meets exception!</string>
+    <string name="ok">OK</string>
+    <string name="download_manager">Download Manager</string>
+    <string name="download_complete_result">"Download completed, succeeded: $1$, failed: $2$"</string>
+    <string name="download_cancel_all_tips">Do you want to cancel all file downloads?</string>
+    <string name="intro_alt">Sena Camera Intro</string>
+    <string name="title_terms_of_use">Terms of Use</string>
     <string name="title_privacy_policy">Privacy Policy</string>
+    <string name="stream_error_recording">Recording cannot switch</string>
+    <string name="stream_error_capturing">Capturing cannot switch</string>
+    <string name="action_processing">Processing...</string>
+    <string name="dialog_card_inserted">SD card inserted</string>
+    <string name="facebook_end_live">End facebook live</string>
+    <string name="facebook_start_live">Strat facebook live</string>
+    <string name="wait">Wait...</string>
+    <string name="dialog_card_full">SD card is full</string>
+    <string name="capture_start">Start capturing...</string>
+    <string name="capture_completed"> Capture completed...</string>
+    <string name="dialog_card_error">SD card error!</string>
+    <string name="dialog_card_not_exist">SD card is not inserted, cannot perform capture/recording.</string>
+    <string name="dialog_card_removed">SD card is removed</string>
+    <string name="dialog_sd_card_is_full">Warning: SD card full, cannot record or take pictures.</string>
+    <string name="text_operation_failed">Operation failed!</string>
+    <string name="open_preview_failed">Open preview failed!</string>
+    <string name="dialog_capturing">Capturing</string>
+    <string name="timelapse_not_allow">Operation failed,please check the interval(be not OFF)</string>
+    <string name="loading">Loading...</string>
+    <string name="title_warning">Warning</string>
+    <string name="low_battery">Low battery, please recharge the device.</string>
+    <string name="text_usb_permission_has_been_denied">USB permission has been denied, unable to connect camera.</string>
+    <string name="text_usb_device_disconnected">USB device has been disconnected</string>
+    <string name="text_usb_device_detected">USB device detected</string>
+    <string name="request_camera_permission_warn_info">Versions of Android 9.0 and above require camera permissions to invoke external UVC cameras. Don`t worry, we won`t call the phone`s camera.</string>
+    <string name="alert_no_camera_found">No camera found!</string>
+    <string name="dialog_timeout_2">Unable to connect the camera successfully!</string>
+    <string name="action_input_ip">Input IP</string>
+    <string name="text_usb_device_not_detected">USB device not detected</string>
+    <string name="text_please_connect_camera">Please connect camera $1$.</string>
+    <string name="text_camera_has_been_registered">Camera $1$ has been registered.</string>
+    <string name="help">Help</string>
+    <string name="message_loading" translatable="false">Loading...</string>
+    <string name="gallery_no_file_selected" translatable="false">No file selected</string>
+    <string name="gallery_delete_des" translatable="false">Confirm deleting $1$ files?</string>
+    <string name="gallery_delete" translatable="false">Delete</string>
+    <string name="dialog_deleting" translatable="false">Deleting...</string>
+    <string name="text_sd_card_memory_shortage" translatable="false">SD card memory shortage!</string>
+    <string name="message_download_failed" translatable="false">Download failed</string>
+    <string name="message_download_to" translatable="false">Downloaded to $1$</string>
+    <string name="dialog_delete_failed_single" translatable="false">Error while deleting</string>
+    <string name="gallery_download" translatable="false">Download</string>
+    <string name="gallery_download_with_vid_msg" translatable="false">"Total Files: $1$,Download Time: $2$ mins and $3$ seconds,Confirm download?"</string>
+    <string name="dialog_downloading_single" translatable="false">Downloading...</string>
+    <string name="image_delete_des" translatable="false">Confirm delete this picture?</string>
+    <string name="gallery_cannot_download_video" translatable="false">Cannot download video</string>
+    <string name="dialog_card_removed_and_back_photo_pb" translatable="false">SD已移除，将退出图片预览</string>
+    <string name="non_360_picture_not_support_switch" translatable="false">The current picture is not a 360 image and does not support switching.</string>
+    <string name="text_panorama" translatable="false">全景</string>
+    <string name="text_asteroid" translatable="false">小行星</string>
+    <string name="text_vr" translatable="false">VR</string>
+    <string name="video_format_not_support" translatable="false">Failed to play because of size is not supported!</string>
+    <string name="dialog_failed" translatable="false">Operation failed!</string>
+    <string name="dialog_card_removed_and_back" translatable="false">SD卡已移除，将退出视频播放。</string>
+    <string name="text_stabilization" translatable="false">Stabilization</string>
 </resources>

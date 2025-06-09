@@ -1,6 +1,7 @@
 package com.sena.senacamera.data.entity;
 
 import com.sena.senacamera.data.type.FileType;
+import com.sena.senacamera.data.type.MediaType;
 import com.sena.senacamera.utils.ConvertTools;
 
 import java.io.BufferedReader;
@@ -17,8 +18,9 @@ public class LocalPbItemInfo {
 
     public int section;
     public boolean isItemChecked = false;
+    public boolean isItemDownloaded = false;
     private boolean isPanorama = false;
-    public String fileType = "photo"; // "photo" or "video"
+    public String fileType = MediaType.PHOTO; // "photo" or "video"
     public String fileDuration;
 
     public LocalPbItemInfo(File file, int section) {

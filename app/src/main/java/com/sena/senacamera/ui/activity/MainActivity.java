@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.LinearLayout;
 
+import com.sena.senacamera.Presenter.LaunchPresenter;
 import com.sena.senacamera.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton deviceListButton, settingsButton;
     private LinearLayout mediaButton, preferenceButton;
     private Button previewButton, connectButton;
+    public LaunchPresenter presenter;
 
     private boolean cameraConnectionStatus = false;
 
@@ -74,8 +76,9 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        loadCameraInfo();
-
+        // akamefi202: set LaunchPresenter
+        presenter = new LaunchPresenter(MainActivity.this);
+        presenter.setViewSena();
     }
 
     private void showDeviceList() {
@@ -87,14 +90,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startCameraPreview() {
-        startActivity(new Intent(this, PreviewActivity.class));
+        this.presenter.launchCameraSena();
     }
 
     private void connectCamera() {
         startActivity(new Intent(this, ConnectDeviceActivity.class));
-    }
-
-    private void loadCameraInfo() {
     }
 
     public String getWifiSSID() {

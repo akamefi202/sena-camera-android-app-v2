@@ -23,8 +23,7 @@ public class GlobalInfo {
     private static GlobalInfo instance;
     private Activity activity;
     private SDKEvent sdkEvent;
-    private List<LocalPbItemInfo> localPhotoList;
-    private List<LocalPbItemInfo> localVideoList;
+    private List<LocalPbItemInfo> localMediaList;
     private WifiCheck wifiCheck;
     ScreenListener listener;
     private OnEventListener onEventListener;
@@ -52,16 +51,12 @@ public class GlobalInfo {
         return activity;
     }
 
-    public List<LocalPbItemInfo> getLocalPhotoList() {
-        return localPhotoList;
+    public List<LocalPbItemInfo> getLocalMediaList() {
+        return localMediaList;
     }
 
-    public void setLocalPhotoList(List<LocalPbItemInfo> localPhotoList) {
-        this.localPhotoList = localPhotoList;
-    }
-
-    public void setLocalVideoList(List<LocalPbItemInfo> localVideoList) {
-        this.localVideoList = localVideoList;
+    public void setLocalMediaList(List<LocalPbItemInfo> localMediaListParam) {
+        this.localMediaList = localMediaListParam;
     }
 
     public void startScreenListener() {

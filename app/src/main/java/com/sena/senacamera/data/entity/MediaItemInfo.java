@@ -5,7 +5,7 @@ import android.media.Image;
 import com.sena.senacamera.data.type.MediaType;
 
 public class MediaItemInfo {
-    public MediaType type = MediaType.PHOTO;
+    public String type = MediaType.PHOTO;
     public boolean isSelected = false;
     public boolean isSaved = false;
     public String date;
