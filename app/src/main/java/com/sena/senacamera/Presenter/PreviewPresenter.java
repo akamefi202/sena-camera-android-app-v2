@@ -43,6 +43,7 @@ import com.sena.senacamera.SdkApi.PanoramaPreviewPlayback;
 import com.sena.senacamera.data.AppInfo.AppInfo;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
 import com.sena.senacamera.data.Message.AppMessage;
+import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.data.Mode.LiveMode;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.data.Mode.TouchMode;
@@ -206,21 +207,20 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         if(!cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_BATTERY_LEVEL)){
             previewView.setBatteryStatusVisibility(View.GONE);
         } else {
-            previewView.setBatteryStatusVisibility(View.VISIBLE);
             int batteryLevel = cameraProperties.getBatteryElectric();
-            int resid = ThumbnailOperation.getBatteryLevelIcon(batteryLevel);
-            if (resid > 0) {
-                previewView.setBatteryIcon(resid);
-                if (batteryLevel < 20) {
-                    AppDialog.showLowBatteryWarning(activity);
-                }
+            previewView.setBatteryStatusVisibility(View.VISIBLE);
+            previewView.setBatteryIcon(batteryLevel);
+
+            if (batteryLevel < 20) {
+                AppDialog.showLowBatteryWarning(activity);
             }
         }
 
         if (!cameraProperties.isSDCardExist()) {
-            Log.d("dialog_card_lose", "1111111111");
             AppDialog.showDialogWarn(activity, R.string.dialog_card_lose);
         }
+        previewView.setSdCardIcon(cameraProperties.isSDCardExist());
+
         IntentFilter wifiSSFilter = new IntentFilter(WifiManager.RSSI_CHANGED_ACTION);
         wifiSSReceiver = new WifiSSReceiver();
         activity.registerReceiver(wifiSSReceiver, wifiSSFilter);
@@ -229,9 +229,11 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
 
     public void changeCameraMode(final int previewMode, final int ichVideoPreviewMode) {
         AppLog.i(TAG, "start changeCameraMode ichVideoPreviewMode=" + ichVideoPreviewMode);
-        AppLog.i(TAG, "start changeCameraMode previewMode=" + previewMode + "  hasInitSurface=" + hasInitSurface);
+        AppLog.i(TAG, "start changeCameraMode previewMode=" + previewMode + " hasInitSurface=" + hasInitSurface);
+
         curIcatchMode = ichVideoPreviewMode;
         MyProgressDialog.showProgressDialog(activity, R.string.action_processing);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -417,6 +419,24 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         AppLog.d(TAG, "end processing for responsing captureBtn clicking");
     }
 
+    public String getCurrentCameraMode() {
+        if (curAppStateMode == PreviewMode.APP_STATE_STILL_CAPTURE ||
+                curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_CAPTURE ||
+                curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
+                curAppStateMode == PreviewMode.APP_STATE_STILL_PREVIEW ||
+                curAppStateMode == PreviewMode.APP_STATE_STILL_MODE) {
+            return CameraMode.PHOTO;
+        } else if (curAppStateMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||
+                curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE ||
+                curAppStateMode == APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
+                curAppStateMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
+                curAppStateMode == PreviewMode.APP_STATE_VIDEO_MODE) {
+            return CameraMode.VIDEO;
+        }
+
+        return CameraMode.PHOTO;
+    }
+
     public void createUIByMode(int appStateMode) {
         AppLog.i(TAG, "start createUIByMode previewMode=" + appStateMode);
         if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_VIDEO)) {
@@ -441,11 +461,13 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                 appStateMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
                 appStateMode == PreviewMode.APP_STATE_STILL_PREVIEW) {
             previewView.setCaptureBtnBackgroundResource(R.drawable.shutter_photo);
+            previewView.updateUIByPhotoMode();
         } else if (appStateMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||
                 appStateMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE ||
                 appStateMode == APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
                 appStateMode == PreviewMode.APP_STATE_VIDEO_PREVIEW) {
             previewView.setCaptureBtnBackgroundResource(R.drawable.shutter_video);
+            previewView.updateUIByVideoMode();
         }
 
         if (BaseProperties.getCaptureDelay().needDisplayByMode(appStateMode)) {
@@ -504,13 +526,13 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         }
 
         if (BaseProperties.getTimeLapseMode().needDisplayByMode(appStateMode)) {
-            previewView.settimeLapseModeVisibility(View.VISIBLE);
+            previewView.setTimeLapseModeVisibility(View.VISIBLE);
             int iconId = BaseProperties.getTimeLapseMode().getCurrentIcon();
             if(iconId > 0){
-                previewView.settimeLapseModeIcon(iconId);
+                previewView.setTimeLapseModeIcon(iconId);
             }
         } else {
-            previewView.settimeLapseModeVisibility(View.GONE);
+            previewView.setTimeLapseModeVisibility(View.GONE);
         }
     }
 
@@ -525,7 +547,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                         MyToast.show(activity, R.string.dialog_card_removed);
                         if (BaseProperties.getImageSize().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainCaptureCount("0");
-                        }else if (BaseProperties.getVideoSize().needDisplayByMode(curAppStateMode)) {
+                        } else if (BaseProperties.getVideoSize().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainRecordingTimeText(ConvertTools.secondsToMinuteOrHours(0));
                         }
                         break;
@@ -540,9 +562,11 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                 }
             }
         });
+
         previewView.setMinZoomRate(1.0f);
         previewView.setMaxZoomRate(cameraProperties.getMaxZoomRatio() * 1.0f);
         previewView.updateZoomViewProgress(cameraProperties.getCurrentZoomRatio());
+
         int icatchMode = cameraAction.getCurrentCameraMode();
         if (cameraState.isMovieRecording()) {
             AppLog.i(TAG, "camera is recording...");
@@ -557,7 +581,6 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             curIcatchMode = ICatchCamPreviewMode.ICH_CAM_TIMELAPSE_VIDEO_PREVIEW_MODE;
             startVideoCaptureButtonChangeTimer();
             startRecordingLapseTimeTimer(cameraProperties.getVideoRecordingTime());
-
         } else if (cameraState.isTimeLapseStillOn()) {
             AppLog.i(TAG, "camera is TimeLapseStillOn...");
             curCamera.timeLapsePreviewMode = TimeLapseMode.TIME_LAPSE_MODE_STILL;
@@ -692,19 +715,22 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         AppLog.d(TAG, "changePreviewMode curAppStateMode=" + curAppStateMode);
         long timeInterval = System.currentTimeMillis() - lastCilckTime;
         AppLog.d(TAG, "repeat click: timeInterval=" + timeInterval);
+
         if (System.currentTimeMillis() - lastCilckTime < 2000) {
             AppLog.d(TAG, "repeat click: timeInterval < 2000");
             return;
         } else {
             lastCilckTime = System.currentTimeMillis();
         }
-        if(!checkModeSwitch(curAppStateMode)){
-            int resId  = getSwitchErrorResId(curAppStateMode);
-            if(resId >0 ){
+
+        if(!checkModeSwitch(curAppStateMode)) {
+            int resId = getSwitchErrorResId(curAppStateMode);
+            if(resId > 0) {
                 MyToast.show(activity, resId);
             }
             return;
         }
+
         modeSwitchBeep.start();
         if (previewMode == PreviewMode.APP_STATE_VIDEO_MODE) {
             if (curAppStateMode == PreviewMode.APP_STATE_STILL_PREVIEW ||
@@ -716,7 +742,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         } else if (previewMode == PreviewMode.APP_STATE_STILL_MODE) {
             if (curAppStateMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
                     curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
-                    curAppStateMode == APP_STATE_TIMELAPSE_VIDEO_PREVIEW) {
+                    curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_PREVIEW) {
                 stopPreview();
 //                cameraAction.changePreviewMode(ICatchCamPreviewMode.ICH_CAM_STILL_PREVIEW_MODE);
                 changeCameraMode(PreviewMode.APP_STATE_STILL_PREVIEW, ICatchCamPreviewMode.ICH_CAM_STILL_PREVIEW_MODE);
@@ -852,6 +878,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                 });
             }
         });
+
         zoomInOut.startZoomInOutThread(this);
         MyProgressDialog.showProgressDialog(activity, null);
     }
@@ -885,12 +912,9 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                     AppLog.i(TAG, "receive EVENT_BATTERY_ELETRIC_CHANGED power =" + msg.arg1);
                     //need to update battery eletric
                     int batteryLevel = msg.arg1;
-                    int resid = ThumbnailOperation.getBatteryLevelIcon(batteryLevel);
-                    if (resid > 0) {
-                        previewView.setBatteryIcon(resid);
-                        if (batteryLevel < 20) {
-                            AppDialog.showLowBatteryWarning(activity);
-                        }
+                    previewView.setBatteryIcon(batteryLevel);
+                    if (batteryLevel < 20) {
+                        AppDialog.showLowBatteryWarning(activity);
                     }
                     break;
                 case SDKEvent.EVENT_CONNECTION_FAILURE:
@@ -1432,7 +1456,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         panoramaPreviewPlayback.rotate(prev, curr);
     }
 
-    public void onSufaceViewTouchDown(MotionEvent event) {
+    public void onSurfaceViewTouchDown(MotionEvent event) {
         touchMode = TouchMode.DRAG;
         mPreviousY = event.getY();
         mPreviousX = event.getX();
@@ -1440,14 +1464,14 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         afterLenght = 0;
     }
 
-    public void onSufaceViewPointerDown(MotionEvent event) {
+    public void onSurfaceViewPointerDown(MotionEvent event) {
         if (event.getPointerCount() == 2) {
             touchMode = TouchMode.ZOOM;
             beforeLenght = getDistance(event);//
         }
     }
 
-    public void onSufaceViewTouchMove(MotionEvent event) {
+    public void onSurfaceViewTouchMove(MotionEvent event) {
         if (touchMode == TouchMode.DRAG) {
             rotateB(event, mPreviousX, mPreviousY);
             mPreviousY = event.getY();
@@ -1498,13 +1522,13 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         locate(1 / currentZoomRate);
     }
 
-    public void onSufaceViewTouchUp() {
+    public void onSurfaceViewTouchUp() {
         showZoomView();
         touchMode = TouchMode.NONE;
 
     }
 
-    public void onSufaceViewTouchPointerUp() {
+    public void onSurfaceViewTouchPointerUp() {
         touchMode = TouchMode.NONE;
     }
 
@@ -1575,12 +1599,12 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         if (AppInfo.enableRender) {
             iCatchSurfaceContext = new ICatchSurfaceContext(surfaceHolder.getSurface());
             ICatchStreamParam iCatchStreamParam = getStreamParam();
-            if(iCatchStreamParam!= null&& PanoramaTools.isPanorama(iCatchStreamParam.getWidth(),iCatchStreamParam.getHeight())){
+            if (iCatchStreamParam!= null&& PanoramaTools.isPanorama(iCatchStreamParam.getWidth(),iCatchStreamParam.getHeight())) {
                 panoramaPreviewPlayback.enableGLRender();
                 panoramaPreviewPlayback.init(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE);
                 panoramaPreviewPlayback.setSurface(ICatchGLSurfaceType.ICH_GL_SURFACE_TYPE_SPHERE, iCatchSurfaceContext);
                 previewView.setPanoramaTypeBtnVisibility(View.VISIBLE);
-            }else {
+            } else {
                 panoramaPreviewPlayback.enableCommonRender(iCatchSurfaceContext);
                 previewView.setPanoramaTypeBtnVisibility(View.GONE);
             }

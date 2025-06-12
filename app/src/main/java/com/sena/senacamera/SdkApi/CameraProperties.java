@@ -28,7 +28,7 @@ import java.util.List;
 
 public class CameraProperties {
     private final String tag = "CameraProperties";
-    private List<Integer> fuction;
+    private List<Integer> function;
     // private PreviewStream previewStream = new PreviewStream();
     private List<Integer> modeList;
     private ICatchCameraProperty cameraProperty;
@@ -546,10 +546,10 @@ public class CameraProperties {
 
     public List<Integer> getSupportFuction() {
         AppLog.i(tag, "begin getSupportFuction");
-        List<Integer> fuction = null;
+        List<Integer> function = null;
         // List<Integer> temp = null;
         try {
-            fuction = cameraProperty.getSupportedProperties();
+            function = cameraProperty.getSupportedProperties();
         } catch (IchSocketException e) {
             AppLog.e(tag, "IchSocketException");
             // TODO Auto-generated catch block
@@ -567,8 +567,8 @@ public class CameraProperties {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        AppLog.i(tag, "end getSupportFuction fuction=" + fuction);
-        return fuction;
+        AppLog.i(tag, "end getSupportFuction function=" + function);
+        return function;
     }
 
     /**
@@ -825,12 +825,12 @@ public class CameraProperties {
     }
 
     public boolean hasFuction(int fuc) {
-        AppLog.i(tag, "begin hasFuction query fuction = " + fuc);
-        if (fuction == null) {
-            fuction = getSupportFuction();
+        AppLog.i(tag, "begin hasFuction query function = " + fuc);
+        if (function == null) {
+            function = getSupportFuction();
         }
         Boolean retValue = false;
-        if (fuction.contains(fuc)) {
+        if (function.contains(fuc)) {
             retValue = true;
         }
         AppLog.i(tag, "end hasFuction retValue =" + retValue);

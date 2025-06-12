@@ -12,7 +12,7 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.sena.senacamera.MyCamera.CameraManager;
-import com.sena.senacamera.adapter.DownloadManagerAdapter;
+import com.sena.senacamera.ui.adapter.DownloadManagerAdapter;
 import com.sena.senacamera.data.AppInfo.AppInfo;
 import com.sena.senacamera.data.entity.DownloadInfo;
 import com.sena.senacamera.Log.AppLog;

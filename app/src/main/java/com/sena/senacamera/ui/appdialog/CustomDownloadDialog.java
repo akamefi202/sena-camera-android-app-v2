@@ -3,7 +3,7 @@ package com.sena.senacamera.ui.appdialog;
 import android.content.Context;
 import android.view.View;
 
-import com.sena.senacamera.adapter.DownloadManagerAdapter;
+import com.sena.senacamera.ui.adapter.DownloadManagerAdapter;
 
 public class CustomDownloadDialog {
     public void dismissDownloadDialog() {

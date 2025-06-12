@@ -10,16 +10,16 @@ import java.util.List;
  * @description
  */
 public class MultiPbFileResult {
-    private List<MultiPbItemInfo> fileList;
+    private List<RemoteMediaItemInfo> fileList;
     private int lastIndex;
     private ICatchFile lastFile;
     private boolean isMore;
 
-    public List<MultiPbItemInfo> getFileList() {
+    public List<RemoteMediaItemInfo> getFileList() {
         return fileList;
     }
 
-    public void setFileList(List<MultiPbItemInfo> fileList) {
+    public void setFileList(List<RemoteMediaItemInfo> fileList) {
         this.fileList = fileList;
     }
 

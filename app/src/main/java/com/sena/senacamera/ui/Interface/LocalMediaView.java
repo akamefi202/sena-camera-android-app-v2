@@ -3,8 +3,8 @@ package com.sena.senacamera.ui.Interface;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import com.sena.senacamera.adapter.LocalMultiPbWallGridAdapter;
-import com.sena.senacamera.adapter.LocalMultiPbWallListAdapter;
+import com.sena.senacamera.ui.adapter.LocalMultiPbWallGridAdapter;
+import com.sena.senacamera.ui.adapter.LocalMultiPbWallListAdapter;
 import com.sena.senacamera.data.Mode.OperationMode;
 
 

@@ -11,6 +11,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,7 +22,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.Presenter.PreviewPresenter;
 import com.sena.senacamera.R;
-import com.sena.senacamera.adapter.SettingListAdapter;
+import com.sena.senacamera.ui.adapter.SettingListAdapter;
 import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.ui.Interface.PreviewView;
@@ -31,11 +32,12 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
     private static final String TAG = PreviewActivity.class.getSimpleName();
     private ImageButton closeButton, settingButton, mediaButton, preferenceButton, cameraModeButton, shutterButton;
-    private CameraMode cameraMode;
     private SurfaceView mSurfaceView;
     private PreviewPresenter presenter;
     private LinearLayout cameraPhotoStatus, cameraVideoStatus, photoModeLayout, videoModeLayout, recordingTimeLayout, topBarLayout, cameraZoomLayout, cameraModeLayout, cameraStatusLayout;
-    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, photoModeSingleButton, photoModeBurstButton, photoModeTimelapseButton, photoModeSelfTimerButton, videoModeVideoButton, videoModeSlowMotionButton, videoModeTimelapseButton, videoModeLoopButton;
+    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, photoModeSingleButton, photoModeBurstButton, photoModeTimelapseButton, photoModeSelfTimerButton, videoModeVideoButton, videoModeSlowMotionButton, videoModeTimelapseButton, videoModeLoopButton, batteryPercentText;
+    private ImageView batteryStatusIcon, sdCardStatusIcon;
+    private float zoomRate = 1.0f, maxZoomRate = 3.0f, minZoomRate = 1.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +80,9 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         videoModeSlowMotionButton = findViewById(R.id.video_mode_slow_motion_button);
         videoModeTimelapseButton = findViewById(R.id.video_mode_timelapse_button);
         videoModeLoopButton = findViewById(R.id.video_mode_loop_button);
-
-        cameraMode = CameraMode.PHOTO;
+        batteryPercentText = findViewById(R.id.camera_battery_percent);
+        batteryStatusIcon = findViewById(R.id.camera_battery_status);
+        sdCardStatusIcon = findViewById(R.id.camera_sd_card_status);
 
         closeButton.setOnClickListener(this);
         settingButton.setOnClickListener(this);
@@ -127,23 +130,23 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
-                        presenter.onSufaceViewTouchDown(event);
+                        presenter.onSurfaceViewTouchDown(event);
                         break;
                     // 多点触摸
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        presenter.onSufaceViewPointerDown(event);
+                        presenter.onSurfaceViewPointerDown(event);
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        presenter.onSufaceViewTouchMove(event);
+                        presenter.onSurfaceViewTouchMove(event);
                         break;
                     case MotionEvent.ACTION_UP:
-                        presenter.onSufaceViewTouchUp();
+                        presenter.onSurfaceViewTouchUp();
                         break;
 
                     // 多点松开
                     case MotionEvent.ACTION_POINTER_UP:
-                        presenter.onSufaceViewTouchPointerUp();
+                        presenter.onSurfaceViewTouchPointerUp();
                         break;
                 }
                 return true;
@@ -152,34 +155,12 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void toggleCameraMode() {
-        if (cameraMode == CameraMode.PHOTO) {
+        if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
             // change to video mode
-            cameraMode = CameraMode.VIDEO;
-            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_video, (Resources.Theme) null));
-            shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_video, (Resources.Theme) null));
-
-            photoLimitText.setVisibility(View.GONE);
-            cameraPhotoStatus.setVisibility(View.GONE);
-            photoModeLayout.setVisibility(View.GONE);
-            videoLimitText.setVisibility(View.VISIBLE);
-            cameraVideoStatus.setVisibility(View.VISIBLE);
-            videoModeLayout.setVisibility(View.VISIBLE);
-
             presenter.changePreviewMode(PreviewMode.APP_STATE_VIDEO_MODE);
         } else {
             // cameraMode is CameraMode.VIDEO
             // change to photo mode
-            cameraMode = CameraMode.PHOTO;
-            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_photo, (Resources.Theme) null));
-            shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_photo, (Resources.Theme) null));
-
-            photoLimitText.setVisibility(View.VISIBLE);
-            cameraPhotoStatus.setVisibility(View.VISIBLE);
-            photoModeLayout.setVisibility(View.VISIBLE);
-            videoLimitText.setVisibility(View.GONE);
-            cameraVideoStatus.setVisibility(View.GONE);
-            videoModeLayout.setVisibility(View.GONE);
-
             presenter.changePreviewMode(PreviewMode.APP_STATE_STILL_MODE);
         }
     }
@@ -231,19 +212,26 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             if (id == R.id.camera_zoom_1_0_button) {
                 cameraZoomOneButton.setTextColor(getResources().getColor(R.color.black));
                 cameraZoomOneButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+                this.zoomRate = 1.0f;
             } else if (id == R.id.camera_zoom_1_5_button) {
                 cameraZoomOneHalfButton.setTextColor(getResources().getColor(R.color.black));
                 cameraZoomOneHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+                this.zoomRate = 1.5f;
             } else if (id == R.id.camera_zoom_2_0_button) {
                 cameraZoomTwoButton.setTextColor(getResources().getColor(R.color.black));
                 cameraZoomTwoButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+                this.zoomRate = 2.0f;
             } else if (id == R.id.camera_zoom_2_5_button) {
                 cameraZoomTwoHalfButton.setTextColor(getResources().getColor(R.color.black));
                 cameraZoomTwoHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+                this.zoomRate = 2.5f;
             } else if (id == R.id.camera_zoom_3_0_button) {
                 cameraZoomThreeButton.setTextColor(getResources().getColor(R.color.black));
                 cameraZoomThreeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+                this.zoomRate = 3.0f;
             }
+
+            this.presenter.zoomBySeekBar();
         } else if (id == R.id.photo_mode_single_button || id == R.id.photo_mode_burst_button || id == R.id.photo_mode_timelapse_button || id == R.id.photo_mode_self_timer_button) {
             // set style of photo mode buttons
             photoModeSingleButton.setTextColor(getResources().getColor(R.color.white));
@@ -288,6 +276,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     protected void onResume() {
         super.onResume();
         AppLog.d(TAG, "onResume");
+
         presenter.submitAppInfo();
         presenter.initPreview();
         presenter.initStatus();
@@ -325,7 +314,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         presenter.removeActivity();
         presenter.destroyPreview();
         presenter.delEvent();
-        presenter.disconnectCamera();
+        //presenter.disconnectCamera();
         presenter.delConnectFailureListener();
         presenter.unregisterWifiSSReceiver();
     }
@@ -333,6 +322,23 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setContentView(R.layout.activity_preview);
+            if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+                cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_photo, (Resources.Theme) null));
+            } else {
+                cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_video, (Resources.Theme) null));
+            }
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_preview);
+            if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+                cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_photo_landscape, (Resources.Theme) null));
+            } else {
+                cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_video_landscape, (Resources.Theme) null));
+            }
+        }
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -340,6 +346,40 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             }
         }, 200);
         AppLog.d(TAG, "onConfigurationChanged newConfig Orientation=" + newConfig.orientation);
+    }
+
+    @Override
+    public void updateUIByPhotoMode() {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_photo, (Resources.Theme) null));
+        } else {
+            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_photo_landscape, (Resources.Theme) null));
+        }
+        shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_photo, (Resources.Theme) null));
+
+        photoLimitText.setVisibility(View.VISIBLE);
+        cameraPhotoStatus.setVisibility(View.VISIBLE);
+        photoModeLayout.setVisibility(View.VISIBLE);
+        videoLimitText.setVisibility(View.GONE);
+        cameraVideoStatus.setVisibility(View.GONE);
+        videoModeLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void updateUIByVideoMode() {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_video, (Resources.Theme) null));
+        } else {
+            cameraModeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.camera_mode_toggle_video_landscape, (Resources.Theme) null));
+        }
+        shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_video, (Resources.Theme) null));
+
+        photoLimitText.setVisibility(View.GONE);
+        cameraPhotoStatus.setVisibility(View.GONE);
+        photoModeLayout.setVisibility(View.GONE);
+        videoLimitText.setVisibility(View.VISIBLE);
+        cameraVideoStatus.setVisibility(View.VISIBLE);
+        videoModeLayout.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -368,17 +408,42 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void setBatteryIcon(int drawableId) {
+    public void setBatteryIcon(int batteryLevel) {
+        if (batteryLevel > 100) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_charge_white);
+        } else if (batteryLevel == 100) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_100_white);
+        } else if (batteryLevel >= 80) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_80_white);
+        } else if (batteryLevel >= 60) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_60_white);
+        } else if (batteryLevel >= 40) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_40_white);
+        } else if (batteryLevel >= 20) {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_20_white);
+        } else {
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_10);
+        }
+
+        batteryPercentText.setText(batteryLevel + "%");
+    }
+
+    @Override
+    public void setSdCardIcon(boolean isExist) {
+        if (isExist) {
+            sdCardStatusIcon.setImageResource(R.drawable.status_sd_card);
+        } else {
+            sdCardStatusIcon.setImageResource(R.drawable.status_no_sd_card);
+        }
+    }
+
+    @Override
+    public void setTimeLapseModeVisibility(int visibility) {
 
     }
 
     @Override
-    public void settimeLapseModeVisibility(int visibility) {
-
-    }
-
-    @Override
-    public void settimeLapseModeIcon(int drawableId) {
+    public void setTimeLapseModeIcon(int drawableId) {
 
     }
 
@@ -503,22 +568,22 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void setMaxZoomRate(float maxZoomRate) {
-
+        this.maxZoomRate = maxZoomRate;
     }
 
     @Override
     public float getZoomViewProgress() {
-        return 0;
+        return this.zoomRate;
     }
 
     @Override
     public float getZoomViewMaxZoomRate() {
-        return 0;
+        return this.maxZoomRate;
     }
 
     @Override
     public void updateZoomViewProgress(float currentZoomRatio) {
-
+        this.zoomRate = currentZoomRatio;
     }
 
     @Override
@@ -608,7 +673,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void setMinZoomRate(float minZoomRate) {
-
+        this.minZoomRate = minZoomRate;
     }
 
     @Override

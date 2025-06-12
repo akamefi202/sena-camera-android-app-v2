@@ -11,13 +11,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-import com.sena.senacamera.adapter.CameraSlotAdapter;
+import com.sena.senacamera.ui.activity.MainActivity;
+import com.sena.senacamera.ui.adapter.CameraSlotAdapter;
 import com.sena.senacamera.Function.GlobalEvent;
 import com.sena.senacamera.Function.SDKEvent;
 import com.sena.senacamera.Function.USB.DeviceFilter;
@@ -192,6 +192,7 @@ public class LaunchPresenter extends BasePresenter {
 
     public synchronized void launchCameraSena() {
         AppLog.i(TAG, "launchCameraSena");
+
         String cameraName = null;
         cameraName = MWifiManager.getSsid(activity);
         final String finalWifiSsid = cameraName;
@@ -404,9 +405,9 @@ public class LaunchPresenter extends BasePresenter {
     }
 
     private void showOptionDialogSingle(CharSequence title, CharSequence[] items, int checkedItem, DialogInterface.OnClickListener listener, boolean
-            cancelable) {
+            cancellable) {
         AlertDialog optionDialog = new AlertDialog.Builder(activity).setTitle(title).setSingleChoiceItems(items, checkedItem, listener).create();
-        optionDialog.setCancelable(cancelable);
+        optionDialog.setCancelable(cancellable);
         optionDialog.show();
     }
 
@@ -498,6 +499,7 @@ public class LaunchPresenter extends BasePresenter {
             }
         }
     }
+
     void showHelpDialogWarn(final Context context,int messageID) {
         AppLog.i(TAG, "showHelpDialogWarn");
         AlertDialog dialog = null;
@@ -530,11 +532,13 @@ public class LaunchPresenter extends BasePresenter {
         MyCamera currentCamera = CameraManager.getInstance().getCurCamera();
         if(currentCamera != null && currentCamera.isConnected()){
             AppLog.i(TAG, "beginConnectCamera camera is connected.");
+            MyProgressDialog.closeProgressDialog();
             return;
         }
         currentCamera = CameraManager.getInstance().createCamera(CameraType.WIFI_CAMERA, wifiSsid, ip, position, CameraNetworkMode.AP);
         if (!currentCamera.connect(true)) {
             launchHandler.obtainMessage(AppMessage.MESSAGE_CAMERA_CONNECT_FAIL).sendToTarget();
+            MyProgressDialog.closeProgressDialog();
             return;
         }
         if (currentCamera.getCameraProperties().hasFuction(PropertyId.CAMERA_DATE)) {
@@ -552,6 +556,66 @@ public class LaunchPresenter extends BasePresenter {
 //                redirectToAnotherActivity(activity, PreviewActivity.class);
             }
         });
+    }
+
+    public synchronized void connectCameraSena() {
+        AppLog.i(TAG, "connectCameraSena");
+
+        String cameraName = null;
+        cameraName = MWifiManager.getSsid(activity);
+        final String finalWifiSsid = cameraName;
+
+        MyProgressDialog.showProgressDialog(activity, R.string.action_processing);
+
+        new Thread(new Runnable() {
+            public void run() {
+                Looper.prepare();
+
+                Handler handler = new Handler(Looper.myLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setCurrentCamera(0, getCameraIp(), finalWifiSsid);
+                    }
+                });
+
+                Looper.loop();
+            }
+        }).start();
+    }
+
+    private void setCurrentCamera(int position, String ip, String wifiSsid) {
+        AppLog.i(TAG, "setCurrentCamera position:" + position + " wifiSsid:" + wifiSsid);
+
+        MyCamera currentCamera = CameraManager.getInstance().getCurCamera();
+        if(currentCamera != null && currentCamera.isConnected()){
+            AppLog.i(TAG, "setCurrentCamera camera is connected.");
+            MyProgressDialog.closeProgressDialog();
+            return;
+        }
+        currentCamera = CameraManager.getInstance().createCamera(CameraType.WIFI_CAMERA, wifiSsid, ip, position, CameraNetworkMode.AP);
+        if (!currentCamera.connect(true)) {
+            launchHandler.obtainMessage(AppMessage.MESSAGE_CAMERA_CONNECT_FAIL).sendToTarget();
+            MyProgressDialog.closeProgressDialog();
+            return;
+        }
+        if (currentCamera.getCameraProperties().hasFuction(PropertyId.CAMERA_DATE)) {
+            currentCamera.getCameraProperties().setCameraDate();
+        }
+        if (currentCamera.getCameraProperties().hasFuction(PropertyId.CAMERA_DATE_TIMEZONE)) {
+            currentCamera.getCameraProperties().setCameraDateTimeZone();
+        }
+        CameraSlotSQLite.getInstance().update(new CameraSlot(position, true, wifiSsid, CameraType.WIFI_CAMERA, null, true));
+
+        // update camera status info ui of main screen
+        activity.runOnUiThread(new Runnable() {
+           @Override
+           public void run() {
+               ((MainActivity) activity).updateCameraStatusInfo();
+           }
+        });
+
+        MyProgressDialog.closeProgressDialog();
     }
 
     public void redirectToAnotherActivity(Context context) {

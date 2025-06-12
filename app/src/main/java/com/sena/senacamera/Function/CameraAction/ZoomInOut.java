@@ -48,22 +48,21 @@ public class ZoomInOut{
 
 
     private void zoom(PreviewPresenter presenter) {
-        // akamefi202: to be fixed
-//        int maxZoomCount = 50;
-//        lastZoomRate = cameraProperties.getCurrentZoomRatio();
-//        float curProgress = presenter.getZoomViewProgress();
-//        if(lastZoomRate > curProgress){//缩小处理
-//            while (lastZoomRate > (presenter.getZoomViewProgress()) && lastZoomRate > ZoomView.MIN_VALUE && maxZoomCount-- > 0) {
-//                cameraAction.zoomOut();
-//                lastZoomRate = cameraProperties.getCurrentZoomRatio();
-//            }
-//        }else {
-//            while (lastZoomRate < (presenter.getZoomViewProgress()) && lastZoomRate < ZoomView.MAX_VALUE && maxZoomCount-- > 0) {
-//                cameraAction.zoomIn();
-//                lastZoomRate = cameraProperties.getCurrentZoomRatio();
-//            }
-//        }
-//        zoomCompletedListener.onCompleted(lastZoomRate);
+        int maxZoomCount = 50;
+        lastZoomRate = cameraProperties.getCurrentZoomRatio();
+        float curProgress = presenter.getZoomViewProgress();
+        if (lastZoomRate > curProgress) {
+            while (lastZoomRate > (presenter.getZoomViewProgress()) && lastZoomRate > ZoomView.MIN_VALUE && maxZoomCount-- > 0) {
+                cameraAction.zoomOut();
+                lastZoomRate = cameraProperties.getCurrentZoomRatio();
+            }
+        } else {
+            while (lastZoomRate < (presenter.getZoomViewProgress()) && lastZoomRate < ZoomView.MAX_VALUE && maxZoomCount-- > 0) {
+                cameraAction.zoomIn();
+                lastZoomRate = cameraProperties.getCurrentZoomRatio();
+            }
+        }
+        zoomCompletedListener.onCompleted(lastZoomRate);
     }
 
     public interface ZoomCompletedListener{

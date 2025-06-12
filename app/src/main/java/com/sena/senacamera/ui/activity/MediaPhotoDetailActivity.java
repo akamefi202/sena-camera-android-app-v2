@@ -1,5 +1,6 @@
 package com.sena.senacamera.ui.activity;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -18,69 +19,40 @@ import android.widget.TextView;
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.Presenter.PhotoDetailPresenter;
 import com.sena.senacamera.R;
+import com.sena.senacamera.ui.ExtendComponent.ProgressWheel;
 import com.sena.senacamera.ui.Interface.PhotoDetailView;
 import com.icatchtek.pancam.customer.type.ICatchGLPanoramaType;
+import com.sena.senacamera.utils.imageloader.ImageLoaderUtil;
+import com.sena.senacamera.utils.imageloader.TutkUriUtil;
+
+import uk.co.senab.photoview.PhotoView;
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class MediaPhotoDetailActivity extends AppCompatActivity implements PhotoDetailView {
     private static final String TAG = MediaPhotoDetailActivity.class.getSimpleName();
-    private ViewPager viewPager;
-    private ImageButton downloadBtn;
-    private ImageButton deleteBtn;
-    private TextView indexInfoTxv;
-    private RelativeLayout topBar;
-    private LinearLayout bottomBar;
-    private PhotoDetailPresenter presenter;
-    private ImageButton back;
-
+    private LinearLayout downloadButton, deleteButton, topBar, bottomBar;
+    private TextView titleText;
+    private ImageButton backButton;
     private SurfaceView mSurfaceView;
-    private ImageButton doPrevious;
-    private ImageButton doNext;
-    private TextView panoramaTypeTxv;
+    private PhotoView photoView;
+    private PhotoDetailPresenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_photo_detail);
 
-        viewPager = findViewById(R.id.viewpager);
-        indexInfoTxv = (TextView) findViewById(R.id.pb_index_info);
-        downloadBtn = (ImageButton) findViewById(R.id.photo_pb_download);
-        deleteBtn = (ImageButton) findViewById(R.id.photo_pb_delete);
-        topBar = (RelativeLayout) findViewById(R.id.pb_top_layout);
-        bottomBar = (LinearLayout) findViewById(R.id.pb_bottom_layout);
-        back = (ImageButton) findViewById(R.id.pb_back);
-        doPrevious = (ImageButton) findViewById(R.id.do_previous);
-        doNext = (ImageButton) findViewById(R.id.do_next);
-        mSurfaceView = (SurfaceView) findViewById(R.id.m_surfaceView);
-        panoramaTypeTxv = (TextView) findViewById(R.id.panorama_type_btn);
+        titleText = (TextView) findViewById(R.id.title_text);
+        downloadButton = (LinearLayout) findViewById(R.id.save_button);
+        deleteButton = (LinearLayout) findViewById(R.id.delete_button);
+        topBar = (LinearLayout) findViewById(R.id.top_bar);
+        bottomBar = (LinearLayout) findViewById(R.id.bottom_bar);
+        backButton = (ImageButton) findViewById(R.id.back_button);
+        mSurfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        photoView = findViewById(R.id.photo_view);
 
         presenter = new PhotoDetailPresenter(this);
         presenter.setView(this);
-        viewPager.setPageMargin(30);
-        viewPager.setOffscreenPageLimit(1);
-
-        panoramaTypeTxv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                presenter.setPanoramaType();
-
-            }
-        });
-        doPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AppLog.d(TAG, "....doPrevious");
-                presenter.loadPreviousImage();
-            }
-        });
-
-        doNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AppLog.d(TAG, "....doNext");
-                presenter.loadNextImage();
-            }
-        });
 
         mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
@@ -108,23 +80,23 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_DOWN:
-                        presenter.onSufaceViewTouchDown(event);
+                        presenter.onSurfaceViewTouchDown(event);
                         break;
                     // 多点触摸
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        presenter.onSufaceViewPointerDown(event);
+                        presenter.onSurfaceViewPointerDown(event);
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        presenter.onSufaceViewTouchMove(event);
+                        presenter.onSurfaceViewTouchMove(event);
                         break;
                     case MotionEvent.ACTION_UP:
-                        presenter.onSufaceViewTouchUp();
+                        presenter.onSurfaceViewTouchUp();
                         break;
 
                     // 多点松开
                     case MotionEvent.ACTION_POINTER_UP:
-                        presenter.onSufaceViewTouchPointerUp();
+                        presenter.onSurfaceViewTouchPointerUp();
                         break;
                 }
                 return true;
@@ -137,32 +109,60 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
                 AppLog.d(TAG, "mSurfaceView.setOnClickListener");
             }
         });
-        viewPager.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AppLog.d(TAG, "viewPager.setOnClickListener");
-//                presenter.showBar();
-            }
-        });
 
 
-        downloadBtn.setOnClickListener(new View.OnClickListener() {
+        final ProgressWheel progressBar = (ProgressWheel) findViewById(R.id.progress_wheel);
+        if(photoView != null && !presenter.getCurrentItemInfo().isPanorama()){
+            String url = TutkUriUtil.getTutkOriginalUri(presenter.getCurrentItemInfo().iCatchFile);
+            ImageLoaderUtil.loadImageView(url, photoView, new ImageLoaderUtil.OnLoadListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.startSpinning();
+                }
+
+                @Override
+                public void onLoadingFailed(String imageUri, View view) {
+                    progressBar.setVisibility(View.GONE);
+                    progressBar.stopSpinning();
+                }
+
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    progressBar.setVisibility(View.GONE);
+                    progressBar.stopSpinning();
+                }
+            });
+
+            photoView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
+                @Override
+                public void onPhotoTap(View view, float v, float v1) {
+
+                }
+
+                @Override
+                public void onOutsidePhotoTap() {
+
+                }
+            });
+        }
+
+        downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.download();
             }
         });
-        deleteBtn.setOnClickListener(new View.OnClickListener() {
+        deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.delete();
             }
         });
-        back.setOnClickListener(new View.OnClickListener() {
+        backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.back();
-
             }
         });
         presenter.initPanorama();
@@ -172,6 +172,7 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
     protected void onResume() {
         AppLog.d(TAG, "onResume");
         super.onResume();
+
         presenter.initView();
         presenter.submitAppInfo();
         presenter.setSdCardEventListener();
@@ -208,46 +209,40 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
 
 //    @Override
 //    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged( newConfig );
+//        super.onConfigurationChanged(newConfig);
 //        presenter.reloadBitmap();
 //    }
 
     @Override
     public void setViewPagerAdapter(PagerAdapter adapter) {
-        if (adapter != null) {
-            viewPager.setAdapter(adapter);
-        }
     }
 
     @Override
     public void setTopBarVisibility(int visibility) {
-        topBar.setVisibility(visibility);
-
+        //topBar.setVisibility(visibility);
     }
 
     @Override
     public void setBottomBarVisibility(int visibility) {
-        bottomBar.setVisibility(visibility);
+        //bottomBar.setVisibility(visibility);
     }
 
     @Override
-    public void setIndexInfoTxv(String photoName) {
-        indexInfoTxv.setText(photoName);
+    public void setTitleText(String photoName) {
+        titleText.setText(photoName);
     }
 
     @Override
     public void setViewPagerCurrentItem(int position) {
-        viewPager.setCurrentItem(position);
     }
 
     @Override
     public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
-        viewPager.addOnPageChangeListener(listener);
     }
 
     @Override
     public int getViewPagerCurrentItem() {
-        return viewPager.getCurrentItem();
+        return 0;
     }
 
     @Override
@@ -256,8 +251,8 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
     }
 
     @Override
-    public void setSurfaceviewVisibility(int visibility) {
-        int curVisibility= mSurfaceView.getVisibility();
+    public void setSurfaceViewVisibility(int visibility) {
+        int curVisibility = mSurfaceView.getVisibility();
         if(curVisibility != visibility){
             mSurfaceView.setVisibility(visibility);
         }
@@ -265,15 +260,10 @@ public class MediaPhotoDetailActivity extends AppCompatActivity implements Photo
 
     @Override
     public void setPanoramaTypeTxv(int resId) {
-        panoramaTypeTxv.setText(resId);
     }
 
     @Override
     public void setViewPagerVisibility(int visibility) {
-        int curVisibility= viewPager.getVisibility();
-        if(curVisibility != visibility) {
-            viewPager.setVisibility(visibility);
-        }
     }
 
 }

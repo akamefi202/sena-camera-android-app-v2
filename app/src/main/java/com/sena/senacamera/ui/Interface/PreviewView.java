@@ -2,13 +2,15 @@ package com.sena.senacamera.ui.Interface;
 
 import android.graphics.Bitmap;
 
-import com.sena.senacamera.adapter.SettingListAdapter;
+import com.sena.senacamera.ui.adapter.SettingListAdapter;
 
 /**
  * Created by zhang yanhu C001012 on 2015/12/4 15:09.
  */
 public interface PreviewView {
 
+    void updateUIByPhotoMode();
+    void updateUIByVideoMode();
     void setWbStatusVisibility(int visibility);
 
     void setBurstStatusVisibility(int visibility);
@@ -19,11 +21,13 @@ public interface PreviewView {
 
     void setBatteryStatusVisibility(int visibility);
 
-    void setBatteryIcon(int drawableId);
+    void setBatteryIcon(int batteryLevel);
 
-    void settimeLapseModeVisibility(int visibility);
+    void setSdCardIcon(boolean isExist);
 
-    void settimeLapseModeIcon(int drawableId);
+    void setTimeLapseModeVisibility(int visibility);
+
+    void setTimeLapseModeIcon(int drawableId);
 
     void setSlowMotionVisibility(int visibility);
 
@@ -64,7 +68,7 @@ public interface PreviewView {
 
     void showZoomView();
 
-    void  hideZoomView();
+    void hideZoomView();
 
     void setMaxZoomRate(float maxZoomRate);
 

@@ -110,15 +110,15 @@ public class ThumbnailOperation {
         AppLog.d(TAG, "current setBatteryLevelIcon= " + batteryLevel);
         int resId = -1;
         if (batteryLevel < 20 && batteryLevel >= 0) {
-            resId = R.drawable.ic_battery_alert_green_24dp;
+            resId = R.drawable.camera_battery_20;
         } else if (batteryLevel == 33) {
-            resId = R.drawable.ic_battery_30_green_24dp;
+            resId = R.drawable.camera_battery_40_white;
         } else if (batteryLevel == 66) {
-            resId = R.drawable.ic_battery_60_green_24dp;
+            resId = R.drawable.camera_battery_60_white;
         } else if (batteryLevel == 100) {
-            resId = R.drawable.ic_battery_full_green_24dp;
+            resId = R.drawable.camera_battery_80_white;
         } else if (batteryLevel > 100) {
-            resId = R.drawable.ic_battery_charging_full_green_24dp;
+            resId = R.drawable.camera_battery_100_white;
         }
         return resId;
     }
@@ -127,29 +127,29 @@ public class ThumbnailOperation {
         AppLog.d(TAG, "current setBatteryLevelIcon= " + batteryPower);
         int drawableId = -1;
         if (batteryPower <= 0) {
-            drawableId = R.drawable.video_battery_0;
+            drawableId = R.drawable.camera_battery_10;
         } else if (batteryPower > 0 && batteryPower <= 10) {
-            drawableId = R.drawable.video_battery_10;
+            drawableId = R.drawable.camera_battery_10;
         } else if (batteryPower > 10 && batteryPower <= 20) {
-            drawableId = R.drawable.video_battery_20;
+            drawableId = R.drawable.camera_battery_20_white;
         } else if (batteryPower > 20 && batteryPower <= 30) {
-            drawableId = R.drawable.video_battery_30;
+            drawableId = R.drawable.camera_battery_20_white;
         } else if (batteryPower > 30 && batteryPower <= 40) {
-            drawableId = R.drawable.video_battery_40;
+            drawableId = R.drawable.camera_battery_40_white;
         } else if (batteryPower > 40 && batteryPower <= 50) {
-            drawableId = R.drawable.video_battery_50;
+            drawableId = R.drawable.camera_battery_40_white;
         } else if(batteryPower > 50 && batteryPower <= 60){
-            drawableId = R.drawable.video_battery_60;
+            drawableId = R.drawable.camera_battery_60_white;
         } else if(batteryPower > 60 && batteryPower <= 70){
-            drawableId = R.drawable.video_battery_70;
+            drawableId = R.drawable.camera_battery_60_white;
         } else if(batteryPower > 70 && batteryPower <= 80){
-            drawableId = R.drawable.video_battery_80;
+            drawableId = R.drawable.camera_battery_80_white;
         } else if(batteryPower > 80 && batteryPower <= 90){
-            drawableId = R.drawable.video_battery_90;
+            drawableId = R.drawable.camera_battery_80_white;
         } else if(batteryPower > 90 && batteryPower <= 100){
-            drawableId = R.drawable.video_battery_100;
+            drawableId = R.drawable.camera_battery_100_white;
         } else {
-            drawableId = R.drawable.video_battery_100;
+            drawableId = R.drawable.camera_battery_100_white;
         }
         return drawableId;
     }

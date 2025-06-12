@@ -30,13 +30,13 @@ import com.sena.senacamera.data.AppInfo.AppInfo;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
 import com.sena.senacamera.data.Mode.TouchMode;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
-import com.sena.senacamera.data.entity.MultiPbItemInfo;
+import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.ui.ExtendComponent.MyProgressDialog;
 import com.sena.senacamera.ui.ExtendComponent.MyToast;
 import com.sena.senacamera.ui.Interface.PhotoDetailView;
 import com.sena.senacamera.ui.RemoteFileHelper;
-import com.sena.senacamera.adapter.PhotoViewPagerAdapter;
+import com.sena.senacamera.ui.adapter.PhotoViewPagerAdapter;
 import com.sena.senacamera.ui.appdialog.AppDialog;
 import com.sena.senacamera.utils.MediaRefresh;
 import com.sena.senacamera.utils.StorageUtil;
@@ -63,10 +63,10 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     private String TAG = PhotoDetailPresenter.class.getSimpleName();
     private PhotoDetailView photoPbView;
     private Activity activity;
-    private List<MultiPbItemInfo> fileList;
-    private PhotoViewPagerAdapter viewPagerAdapter;
+    //private List<RemoteMediaItemInfo> fileList;
+    //private PhotoViewPagerAdapter viewPagerAdapter;
     private Handler handler;
-    private int curPhotoIdx;
+    //private int curPhotoIdx;
     private int lastItem = -1;
     private int tempLastItem = -1;
     private boolean isScrolling = false;
@@ -104,7 +104,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     private int curPanoramaType = ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE;
     private boolean hasDeleted = false;
     private boolean surfaceCreated = false;
-
+    private RemoteMediaItemInfo currentItemInfo;
 
     public PhotoDetailPresenter(Activity activity) {
         super(activity);
@@ -115,38 +115,38 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     public void setView(PhotoDetailView photoPbView) {
         this.photoPbView = photoPbView;
         initCfg();
-        fileList = new LinkedList<>();
-        List<MultiPbItemInfo> tempList = RemoteFileHelper.getInstance().getLocalFileList(FileType.FILE_PHOTO);
-        if (tempList != null) {
-            fileList.addAll(tempList);
-        }
+//        fileList = new LinkedList<>();
+//        List<RemoteMediaItemInfo> tempList = RemoteFileHelper.getInstance().getLocalFileList(FileType.FILE_PHOTO);
+//        if (tempList != null) {
+//            fileList.addAll(tempList);
+//        }
         Bundle data = activity.getIntent().getExtras();
-        curPhotoIdx = data.getInt("curfilePosition");
+        currentItemInfo = (RemoteMediaItemInfo) RemoteMediaItemInfo.deserialize(data.getString("remoteMedia"));
     }
 
 
     public void loadPanoramaImage() {
-        int curIndex = photoPbView.getViewPagerCurrentItem();
-        loadPanoramaPhoto(fileList.get(curIndex));
+        //int curIndex = photoPbView.getViewPagerCurrentItem();
+        loadPanoramaPhoto(currentItemInfo);
     }
 
     public void initView() {
         CameraManager.getInstance().getCurCamera().setLoadThumbnail(true);
-        viewPagerAdapter = new PhotoViewPagerAdapter(activity, fileList);
-        viewPagerAdapter.setOnPhotoTapListener(new PhotoViewPagerAdapter.OnPhotoTapListener() {
-            @Override
-            public void onPhotoTap() {
-                showBar();
-            }
-        });
-        photoPbView.setViewPagerAdapter(viewPagerAdapter);
-        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
+//        viewPagerAdapter = new PhotoViewPagerAdapter(activity, fileList);
+//        viewPagerAdapter.setOnPhotoTapListener(new PhotoViewPagerAdapter.OnPhotoTapListener() {
+//            @Override
+//            public void onPhotoTap() {
+//                showBar();
+//            }
+//        });
+//        photoPbView.setViewPagerAdapter(viewPagerAdapter);
+//        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
         updateUi();
-        photoPbView.setOnPageChangeListener(new MyViewPagerOnPagerChangeListener());
+//        photoPbView.setOnPageChangeListener(new MyViewPagerOnPagerChangeListener());
     }
 
     public void showBar() {
-        boolean isShowBar = photoPbView.getTopBarVisibility() == View.VISIBLE ? true : false;
+        boolean isShowBar = photoPbView.getTopBarVisibility() == View.VISIBLE;
         AppLog.d(TAG, "showBar isShowBar=" + isShowBar);
         if (isShowBar) {
             photoPbView.setTopBarVisibility(View.GONE);
@@ -165,21 +165,20 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         showDownloadEnsureDialog();
     }
 
-
     public void loadPreviousImage() {
-        AppLog.d(TAG, "loadPreviousImage=");
-        if (curPhotoIdx > 0) {
-            curPhotoIdx--;
-        }
-        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
+//        AppLog.d(TAG, "loadPreviousImage=");
+//        if (curPhotoIdx > 0) {
+//            curPhotoIdx--;
+//        }
+//        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
     }
 
     public void loadNextImage() {
-        AppLog.d(TAG, "loadNextImage=");
-        if (curPhotoIdx < fileList.size() - 1) {
-            curPhotoIdx++;
-        }
-        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
+//        AppLog.d(TAG, "loadNextImage=");
+//        if (curPhotoIdx < fileList.size() - 1) {
+//            curPhotoIdx++;
+//        }
+//        photoPbView.setViewPagerCurrentItem(curPhotoIdx);
     }
 
     public void back() {
@@ -196,52 +195,52 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
 
         @Override
         public void onPageScrollStateChanged(int arg0) {
-//            AppLog.d(TAG,"onPageScrollStateChanged arg0:" + arg0);
-            switch (arg0) {
-                case ViewPager.SCROLL_STATE_DRAGGING:
-                    isScrolling = true;
-                    tempLastItem = photoPbView.getViewPagerCurrentItem();
-                    break;
-                case ViewPager.SCROLL_STATE_SETTLING:
-                    if (isScrolling == true && tempLastItem != -1 && tempLastItem != photoPbView.getViewPagerCurrentItem()) {
-                        lastItem = tempLastItem;
-                    }
-
-                    curPhotoIdx = photoPbView.getViewPagerCurrentItem();
-                    isScrolling = false;
-//                    updateUi();
-                    break;
-                case ViewPager.SCROLL_STATE_IDLE:
-                    break;
-
-                default:
-            }
+////            AppLog.d(TAG,"onPageScrollStateChanged arg0:" + arg0);
+//            switch (arg0) {
+//                case ViewPager.SCROLL_STATE_DRAGGING:
+//                    isScrolling = true;
+//                    tempLastItem = photoPbView.getViewPagerCurrentItem();
+//                    break;
+//                case ViewPager.SCROLL_STATE_SETTLING:
+//                    if (isScrolling == true && tempLastItem != -1 && tempLastItem != photoPbView.getViewPagerCurrentItem()) {
+//                        lastItem = tempLastItem;
+//                    }
+//
+//                    curPhotoIdx = photoPbView.getViewPagerCurrentItem();
+//                    isScrolling = false;
+////                    updateUi();
+//                    break;
+//                case ViewPager.SCROLL_STATE_IDLE:
+//                    break;
+//
+//                default:
+//            }
         }
 
         @Override
         public void onPageScrolled(int arg0, float arg1, int arg2) {
 //            AppLog.d(TAG,"onPageScrolled arg0:" + arg0 + " arg1:" + arg1 + " arg2:" + arg2);
-            if (isScrolling) {
-                if (lastItem > arg2) {
-                    // 递减，向右侧滑动
-                } else if (lastItem < arg2) {
-                    // 递减，向右侧滑动
-                } else if (lastItem == arg2) {
-                }
-            }
-            lastItem = arg2;
+//            if (isScrolling) {
+//                if (lastItem > arg2) {
+//                    // 递减，向右侧滑动
+//                } else if (lastItem < arg2) {
+//                    // 递减，向右侧滑动
+//                } else if (lastItem == arg2) {
+//                }
+//            }
+//            lastItem = arg2;
         }
 
         @Override
         public void onPageSelected(int arg0) {
-            AppLog.d(TAG, "onPageSelected arg0:" + arg0);
-            updateUi();
+//            AppLog.d(TAG, "onPageSelected arg0:" + arg0);
+//            updateUi();
         }
     }
 
     private class DownloadThread implements Runnable {
         private String TAG = "DownloadThread";
-        private int curIdx = photoPbView.getViewPagerCurrentItem();
+        //private int curIdx = photoPbView.getViewPagerCurrentItem();
 
         @Override
         public void run() {
@@ -260,12 +259,13 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
 //                });
 //                return;
 //            }
-            String fileName = fileList.get(curIdx).getFileName();
+            String fileName = currentItemInfo.getFileName();
             AppLog.d(TAG, "------------fileName =" + fileName);
             FileOper.createDirectory(path);
             downloadingFilename = path + fileName;
-            downloadingFilesize = fileList.get(curIdx).iCatchFile.getFileSize();
+            downloadingFilesize = currentItemInfo.iCatchFile.getFileSize();
             File tempFile = new File(downloadingFilename);
+
             //ICOM-4116 Begin modify by b.jiang 20170315
 //            if (tempFile.exists()) {
 //                handler.post( new Runnable() {
@@ -277,9 +277,10 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
 //                } );
 //            } else {
             curFilePath = FileTools.chooseUniqueFilename(downloadingFilename);
-            boolean temp = fileOperation.downloadFile(fileList.get(curIdx).iCatchFile, curFilePath);
+            boolean temp = fileOperation.downloadFile(currentItemInfo.iCatchFile, curFilePath);
+
             //ICOM-4116 End modify by b.jiang 20170315
-            if (temp == false) {
+            if (!temp) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -290,6 +291,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
                 AppInfo.isDownloading = false;
                 return;
             }
+
             MediaRefresh.scanFileAsync(activity, curFilePath);
             AppLog.d(TAG, "end downloadFile temp =" + temp);
             AppInfo.isDownloading = false;
@@ -308,11 +310,13 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     private class DeleteThread implements Runnable {
         @Override
         public void run() {
-            curPhotoIdx = photoPbView.getViewPagerCurrentItem();
-            ICatchFile curFile = fileList.get(curPhotoIdx).iCatchFile;
-            Boolean retValue = false;
+//            curPhotoIdx = photoPbView.getViewPagerCurrentItem();
+//            ICatchFile curFile = fileList.get(curPhotoIdx).iCatchFile;
+
+            ICatchFile curFile = currentItemInfo.iCatchFile;
+            boolean retValue = false;
             retValue = fileOperation.deleteFile(curFile);
-            if (retValue == false) {
+            if (!retValue) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -325,22 +329,22 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
                     @Override
                     public void run() {
                         MyProgressDialog.closeProgressDialog();
-                        RemoteFileHelper.getInstance().remove(fileList.get(curPhotoIdx), FileType.FILE_PHOTO);
-                        fileList.remove(curPhotoIdx);
-                        viewPagerAdapter.notifyDataSetChanged();
-                        photoPbView.setViewPagerAdapter(viewPagerAdapter);
-                        int photoNums = fileList.size();
-                        if (photoNums == 0) {
-                            back();
-                            return;
-                        } else {
-                            if (curPhotoIdx == photoNums) {
-                                curPhotoIdx--;
-                            }
-                            AppLog.d(TAG, "photoNums=" + photoNums + " curPhotoIdx=" + curPhotoIdx);
-                            photoPbView.setViewPagerCurrentItem(curPhotoIdx);
-                            updateUi();
-                        }
+                        back();
+//                        RemoteFileHelper.getInstance().remove(fileList.get(curPhotoIdx), FileType.FILE_PHOTO);
+//                        fileList.remove(curPhotoIdx);
+//                        viewPagerAdapter.notifyDataSetChanged();
+//                        photoPbView.setViewPagerAdapter(viewPagerAdapter);
+//                        int photoNums = fileList.size();
+//                        if (photoNums == 0) {
+//                            back();
+//                        } else {
+//                            if (curPhotoIdx == photoNums) {
+//                                curPhotoIdx--;
+//                            }
+//                            AppLog.d(TAG, "photoNums=" + photoNums + " curPhotoIdx=" + curPhotoIdx);
+//                            photoPbView.setViewPagerCurrentItem(curPhotoIdx);
+//                            updateUi();
+//                        }
                     }
                 });
             }
@@ -349,11 +353,14 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     private void updateUi() {
-        int curIndex = photoPbView.getViewPagerCurrentItem();
-        String indexInfo = (curIndex + 1) + "/" + fileList.size();
-        photoPbView.setIndexInfoTxv(indexInfo);
-        MultiPbItemInfo itemInfo = fileList.get(curIndex);
-        photoPbView.setSurfaceviewVisibility(itemInfo.isPanorama() ? View.VISIBLE : View.GONE);
+//        int curIndex = photoPbView.getViewPagerCurrentItem();
+//        String indexInfo = (curIndex + 1) + "/" + fileList.size();
+//        photoPbView.setTitleText(indexInfo);
+//        RemoteMediaItemInfo itemInfo = fileList.get(curIndex);
+
+        photoPbView.setTitleText(currentItemInfo.iCatchFile.getFileName());
+        RemoteMediaItemInfo itemInfo = currentItemInfo;
+        photoPbView.setSurfaceViewVisibility(itemInfo.isPanorama() ? View.VISIBLE : View.GONE);
         photoPbView.setViewPagerVisibility(itemInfo.isPanorama() ? View.GONE : View.VISIBLE);
         if(itemInfo.isPanorama() && surfaceCreated){
             loadPanoramaPhoto(itemInfo);
@@ -364,10 +371,10 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setCancelable(false);
         builder.setTitle(R.string.gallery_download);
-        long videoFileSize = 0;
-        videoFileSize = fileList.get(curPhotoIdx).getFileSizeInteger() / 1024 / 1024;
+        long videoFileSize = currentItemInfo.getFileSizeInteger() / 1024 / 1024;
         long minute = videoFileSize / 60;
         long seconds = videoFileSize % 60;
+
         CharSequence what = activity.getResources().getString(R.string.gallery_download_with_vid_msg).replace("$1$", "1").replace("$3$", String.valueOf
                 (seconds)).replace("$2$", String.valueOf(minute));
         builder.setMessage(what);
@@ -375,7 +382,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
             public void onClick(DialogInterface dialog, int whichButton) {
                 AppLog.d(TAG, "showProgressDialog");
                 downloadProcess = 0;
-                if (SystemInfo.getSDFreeSize(activity) < fileList.get(curPhotoIdx).getFileSizeInteger()) {
+                if (SystemInfo.getSDFreeSize(activity) < currentItemInfo.getFileSizeInteger()) {
                     dialog.dismiss();
                     MyToast.show(activity, R.string.text_sd_card_memory_shortage);
                 } else {
@@ -452,7 +459,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         panoramaPhotoPlayback.pancamGLTransformRotate(prev, curr);
     }
 
-    public void onSufaceViewTouchDown(MotionEvent event) {
+    public void onSurfaceViewTouchDown(MotionEvent event) {
         touchMode = TouchMode.DRAG;
         mPreviousY = event.getY();// 记录触控笔位置
         mPreviousX = event.getX();// 记录触控笔位置
@@ -460,7 +467,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         afterLenght = 0;
     }
 
-    public void onSufaceViewPointerDown(MotionEvent event) {
+    public void onSurfaceViewPointerDown(MotionEvent event) {
         Log.d("2222", "event.getPointerCount()................=" + event.getPointerCount());
         if (event.getPointerCount() == 2) {
             touchMode = TouchMode.ZOOM;
@@ -468,7 +475,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
-    public void onSufaceViewTouchMove(MotionEvent event) {
+    public void onSurfaceViewTouchMove(MotionEvent event) {
         if (touchMode == TouchMode.DRAG) {
             rotateB(event, mPreviousX, mPreviousY);
             mPreviousY = event.getY();// 记录触控笔位置
@@ -530,11 +537,11 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         locate(1 / currentZoomRate);
     }
 
-    public void onSufaceViewTouchUp() {
+    public void onSurfaceViewTouchUp() {
         touchMode = TouchMode.NONE;
     }
 
-    public void onSufaceViewTouchPointerUp() {
+    public void onSurfaceViewTouchPointerUp() {
         touchMode = TouchMode.NONE;
     }
 
@@ -595,7 +602,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         AppLog.d(TAG, "end setDrawingArea");
     }
 
-    private void loadPanoramaPhoto(final MultiPbItemInfo itemInfo) {
+    private void loadPanoramaPhoto(final RemoteMediaItemInfo itemInfo) {
         if (itemInfo == null) {
             return;
         }
@@ -639,7 +646,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void setPanoramaType() {
-        if (!fileList.get(curPhotoIdx).isPanorama()) {
+        if (!currentItemInfo.isPanorama()) {
             MyToast.show(activity, R.string.non_360_picture_not_support_switch);
             return;
         }
@@ -682,6 +689,10 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
                 }
             }
         });
+    }
+
+    public RemoteMediaItemInfo getCurrentItemInfo() {
+        return currentItemInfo;
     }
 }
 

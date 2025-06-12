@@ -22,6 +22,10 @@
     <string name="action_back">Back</string>
     <string name="action_close">Close</string>
     <string name="action_select_all">All</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_collapse">Collapse</string>
 
     <string name="title_media">Media</string>
     <string name="title_device">Device</string>
@@ -45,6 +49,9 @@
     <string name="dialog_not_show_again">Don\'t show again</string>
     <string name="dialog_set_up_device_before_connecting">Set up your device before connecting to the app. Any changes you make will be applied once connected.</string>
     <string name="dialog_confirm_cancel_download">Canceling the download cannot be undone. Do you still want to proceed?</string>
+    <string name="dialog_confirm_delete">Do you wish to delete this file?</string>
+    <string name="dialog_stop_download_title">Stop Download</string>
+    <string name="dialog_confirm_stop_download">Canceling the download cannot be undone. Do you still want to proceed?</string>
 
     <string name="prism2">Prism 2</string>
     <string name="phantom_cam">Phantom Cam</string>
@@ -186,7 +193,7 @@
     <string name="setting_title_exposure_compensation">Exposure Compensation</string>
     <string name="setting_title_image_stabilization">Image Stabilization</string>
     <string name="setting_title_video_file_length">Video File Length</string>
-    <string name="slowmotion">Slow-motion fuction</string>
+    <string name="slowmotion">Slow-motion function</string>
     <string name="setting_update_fw">Update FW</string>
     <string name="title_timelapse_mode">Timelapse mode</string>
     <string name="dialog_btn_reconnect">Reconnect</string>
@@ -216,7 +223,7 @@
     <string name="action_processing">Processing...</string>
     <string name="dialog_card_inserted">SD card inserted</string>
     <string name="facebook_end_live">End facebook live</string>
-    <string name="facebook_start_live">Strat facebook live</string>
+    <string name="facebook_start_live">Start facebook live</string>
     <string name="wait">Wait...</string>
     <string name="dialog_card_full">SD card is full</string>
     <string name="capture_start">Start capturing...</string>
@@ -243,27 +250,27 @@
     <string name="text_please_connect_camera">Please connect camera $1$.</string>
     <string name="text_camera_has_been_registered">Camera $1$ has been registered.</string>
     <string name="help">Help</string>
-    <string name="message_loading" translatable="false">Loading...</string>
-    <string name="gallery_no_file_selected" translatable="false">No file selected</string>
-    <string name="gallery_delete_des" translatable="false">Confirm deleting $1$ files?</string>
-    <string name="gallery_delete" translatable="false">Delete</string>
-    <string name="dialog_deleting" translatable="false">Deleting...</string>
-    <string name="text_sd_card_memory_shortage" translatable="false">SD card memory shortage!</string>
-    <string name="message_download_failed" translatable="false">Download failed</string>
-    <string name="message_download_to" translatable="false">Downloaded to $1$</string>
-    <string name="dialog_delete_failed_single" translatable="false">Error while deleting</string>
-    <string name="gallery_download" translatable="false">Download</string>
-    <string name="gallery_download_with_vid_msg" translatable="false">"Total Files: $1$,Download Time: $2$ mins and $3$ seconds,Confirm download?"</string>
-    <string name="dialog_downloading_single" translatable="false">Downloading...</string>
-    <string name="image_delete_des" translatable="false">Confirm delete this picture?</string>
-    <string name="gallery_cannot_download_video" translatable="false">Cannot download video</string>
-    <string name="dialog_card_removed_and_back_photo_pb" translatable="false">SD已移除，将退出图片预览</string>
-    <string name="non_360_picture_not_support_switch" translatable="false">The current picture is not a 360 image and does not support switching.</string>
-    <string name="text_panorama" translatable="false">全景</string>
-    <string name="text_asteroid" translatable="false">小行星</string>
-    <string name="text_vr" translatable="false">VR</string>
-    <string name="video_format_not_support" translatable="false">Failed to play because of size is not supported!</string>
-    <string name="dialog_failed" translatable="false">Operation failed!</string>
-    <string name="dialog_card_removed_and_back" translatable="false">SD卡已移除，将退出视频播放。</string>
-    <string name="text_stabilization" translatable="false">Stabilization</string>
+    <string name="message_loading">Loading...</string>
+    <string name="gallery_no_file_selected">No file selected</string>
+    <string name="gallery_delete_des">Confirm deleting $1$ files?</string>
+    <string name="gallery_delete">Delete</string>
+    <string name="dialog_deleting">Deleting...</string>
+    <string name="text_sd_card_memory_shortage">SD card memory shortage!</string>
+    <string name="message_download_failed">Download failed</string>
+    <string name="message_download_to">Downloaded to $1$</string>
+    <string name="dialog_delete_failed_single">Error while deleting</string>
+    <string name="gallery_download">Download</string>
+    <string name="gallery_download_with_vid_msg">"Total Files: $1$,Download Time: $2$ mins and $3$ seconds,Confirm download?"</string>
+    <string name="dialog_downloading_single">Downloading...</string>
+    <string name="image_delete_des">Confirm delete this picture?</string>
+    <string name="gallery_cannot_download_video">Cannot download video</string>
+    <string name="dialog_card_removed_and_back_photo_pb">The SD card has been removed and will exit the photo preview.</string>
+    <string name="non_360_picture_not_support_switch">The current picture is not a 360 image and does not support switching.</string>
+    <string name="text_panorama">Panorama</string>
+    <string name="text_asteroid">Asteroid</string>
+    <string name="text_vr">VR</string>
+    <string name="video_format_not_support">Failed to play because of size is not supported!</string>
+    <string name="dialog_failed">Operation failed!</string>
+    <string name="dialog_card_removed_and_back">The SD card has been removed and will exit video playback.</string>
+    <string name="text_stabilization">Stabilization</string>
 </resources>

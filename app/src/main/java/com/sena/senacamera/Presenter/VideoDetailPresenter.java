@@ -11,7 +11,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
@@ -36,7 +35,7 @@ import com.sena.senacamera.data.Mode.TouchMode;
 import com.sena.senacamera.data.Mode.VideoPbMode;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
 import com.sena.senacamera.data.entity.DownloadInfo;
-import com.sena.senacamera.data.entity.MultiPbItemInfo;
+import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.ui.ExtendComponent.MyProgressDialog;
 import com.sena.senacamera.ui.ExtendComponent.MyToast;
@@ -57,7 +56,6 @@ import com.icatchtek.pancam.customer.type.ICatchGLPoint;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 
 import java.io.File;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +66,7 @@ import java.util.concurrent.Executors;
  */
 public class VideoDetailPresenter extends BasePresenter implements SensorEventListener {
     private String TAG = VideoDetailPresenter.class.getSimpleName();
-    private VideoDetailView VideoDetailView;
+    private VideoDetailView videoDetailView;
     private Activity activity;
     private FileOperation fileOperation;
     private VideoPbMode videoPbMode = VideoPbMode.MODE_VIDEO_IDLE;
@@ -94,10 +92,10 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     private float currentZoomRate = MAX_ZOOM;
     private SensorManager sensorManager;
     private Sensor gyroscopeSensor;
-    private int curVideoPosition;
+    //private int curVideoPosition;
     private ExecutorService executor;
     protected Timer downloadProgressTimer;
-    private List<MultiPbItemInfo> fileList;
+    //private List<RemoteMediaItemInfo> fileList;
     private SingleDownloadDialog singleDownloadDialog;
     private SDKEvent sdkEvent;
     private VideoStreaming videoStreaming;
@@ -105,20 +103,24 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     private int curPanoramaType = ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE;
     private FileType fileType;
     private boolean hasDeleted = false;
+    private RemoteMediaItemInfo currentItemInfo;
 
     public VideoDetailPresenter(Activity activity) {
         super(activity);
         this.activity = activity;
         Intent intent = activity.getIntent();
         Bundle data = intent.getExtras();
-        curVideoPosition = data.getInt("curfilePosition");
+        //curVideoPosition = data.getInt("curfilePosition");
         int fileTypeInt = data.getInt("fileType");
         fileType = FileType.values()[fileTypeInt];
-        fileList = RemoteFileHelper.getInstance().getLocalFileList(fileType);
-        if (fileList != null && fileList.isEmpty() == false) {
-            this.curVideoFile = fileList.get(curVideoPosition).iCatchFile;
-        }
-        AppLog.i(TAG, "cur video fileType=" + fileType + " position=" + curVideoPosition + " video name=" + curVideoFile.getFileName());
+        currentItemInfo = (RemoteMediaItemInfo) RemoteMediaItemInfo.deserialize(data.getString("remoteMedia"));
+        this.curVideoFile = currentItemInfo.iCatchFile;
+//        fileList = RemoteFileHelper.getInstance().getLocalFileList(fileType);
+//        if (fileList != null && fileList.isEmpty() == false) {
+//            this.curVideoFile = fileList.get(curVideoPosition).iCatchFile;
+//        }
+//        AppLog.i(TAG, "cur video fileType=" + fileType + " position=" + curVideoPosition + " video name=" + curVideoFile.getFileName());
+
         initClint();
     }
 
@@ -129,17 +131,17 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void updatePbSeekbar(double pts) {
-        if (videoPbMode != VideoPbMode.MODE_VIDEO_PLAY || needUpdateSeekBar == false) {
+        if (videoPbMode != VideoPbMode.MODE_VIDEO_PLAY || !needUpdateSeekBar) {
             return;
         }
         currentTime = pts;
         int temp = new Double(currentTime * 100).intValue();
-        VideoDetailView.setSeekBarProgress(temp);
+        videoDetailView.setSeekBarProgress(temp);
         //handler.obtainMessage(AppMessage.MESSAGE_UPDATE_VIDEOPB_BAR, temp, 0).sendToTarget();
     }
 
     public void setView(VideoDetailView VideoDetailView) {
-        this.VideoDetailView = VideoDetailView;
+        this.videoDetailView = VideoDetailView;
         initCfg();
         initView();
     }
@@ -148,11 +150,11 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         String fileName = curVideoFile.getFileName();
         int start = fileName.lastIndexOf("/");
         String videoName = fileName.substring(start + 1);
-        VideoDetailView.setVideoNameTxv(videoName);
+        videoDetailView.setVideoNameTxv(videoName);
         if (enableRender && PanoramaTools.isPanorama(curVideoFile.getFileWidth(), curVideoFile.getFileHeight())) {
-            VideoDetailView.setPanoramaTypeBtnVisibility(View.VISIBLE);
+            videoDetailView.setPanoramaTypeBtnVisibility(View.VISIBLE);
         } else {
-            VideoDetailView.setPanoramaTypeBtnVisibility(View.GONE);
+            videoDetailView.setPanoramaTypeBtnVisibility(View.GONE);
         }
     }
 
@@ -228,20 +230,20 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
 //                return;
 //            }
             videoPbMode = VideoPbMode.MODE_VIDEO_PLAY;
-            VideoDetailView.showLoadingCircle(true);
+            videoDetailView.showLoadingCircle(true);
             cacheFlag = true;
             waitForCaching = true;
             needUpdateSeekBar = true;
-            AppLog.i(TAG, "seekBar.getProgress() =" + VideoDetailView.getSeekBarProgress());
+            AppLog.i(TAG, "seekBar.getProgress() =" + videoDetailView.getSeekBarProgress());
             int tempDuration = panoramaVideoPlayback.getLength();
             videoDuration = tempDuration;
             AppLog.i(TAG, "end getLength = " + tempDuration);
-            VideoDetailView.setPlayBtnSrc(R.drawable.button_pause);
-            VideoDetailView.setSeekbarEnabled(true);
-            VideoDetailView.setTimeLapsedValue("00:00");
-            VideoDetailView.setTimeDurationValue(ConvertTools.secondsToMinuteOrHours(tempDuration / 100));
-            VideoDetailView.setSeekBarMaxValue(tempDuration);
-            VideoDetailView.setDownloadBtnEnabled(false);
+            videoDetailView.setPlayBtnSrc(R.drawable.selector_button_pause);
+            videoDetailView.setSeekbarEnabled(true);
+            videoDetailView.setTimeLapsedValue("00:00");
+            videoDetailView.setTimeDurationValue(ConvertTools.secondsToMinuteOrHours(tempDuration / 100));
+            videoDetailView.setSeekBarMaxValue(tempDuration);
+            videoDetailView.setDownloadBtnEnabled(false);
             // temp attemp to avoid sdk
 //            startVideoPb();
             AppLog.i(TAG, "has start the GetVideoFrameThread() to get play video");
@@ -261,9 +263,9 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
             return;
         }
 //            needUpdateSeekBar = true;
-        VideoDetailView.setPlayBtnSrc(R.drawable.button_pause);
+        videoDetailView.setPlayBtnSrc(R.drawable.selector_button_pause);
         videoPbMode = VideoPbMode.MODE_VIDEO_PLAY;
-        VideoDetailView.setDownloadBtnEnabled(false);
+        videoDetailView.setDownloadBtnEnabled(false);
     }
 
     private void pauseVideoPb() {
@@ -275,26 +277,26 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         }
 //        removeEventListener();
 //        removeGyroscopeListener();
-        VideoDetailView.setPlayBtnSrc(R.drawable.button_play);
+        videoDetailView.setPlayBtnSrc(R.drawable.selector_button_play);
         videoPbMode = VideoPbMode.MODE_VIDEO_PAUSE;
-        VideoDetailView.showLoadingCircle(false);
-        VideoDetailView.setDownloadBtnEnabled(true);
+        videoDetailView.showLoadingCircle(false);
+        videoDetailView.setDownloadBtnEnabled(true);
         return;
     }
 
     public void seekBarOnStopTrackingTouch() {
         AppLog.d(TAG, "seekBarOnStopTrackingTouch lastSeekBarPosition=" + lastSeekBarPosition + " videoDuration=" + videoDuration);
-        int curProgress = VideoDetailView.getSeekBarProgress();
+        int curProgress = videoDetailView.getSeekBarProgress();
         if(videoDuration - curProgress < 500){
-            VideoDetailView.setSeekbarEnabled(false);
+            videoDetailView.setSeekbarEnabled(false);
         }
         if(videoDuration - curProgress < 100){
             lastSeekBarPosition = videoDuration -100;
-            VideoDetailView.setSeekBarProgress(lastSeekBarPosition);
+            videoDetailView.setSeekBarProgress(lastSeekBarPosition);
         }else {
             lastSeekBarPosition = curProgress;
         }
-        VideoDetailView.setTimeLapsedValue(ConvertTools.secondsToMinuteOrHours(lastSeekBarPosition / 100));
+        videoDetailView.setTimeLapsedValue(ConvertTools.secondsToMinuteOrHours(lastSeekBarPosition / 100));
         MyProgressDialog.showProgressDialog(activity, R.string.action_processing);
         new Thread(new Runnable() {
             @Override
@@ -314,11 +316,11 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                         @Override
                         public void run() {
                             MyProgressDialog.closeProgressDialog();
-                            VideoDetailView.setPlayBtnSrc(R.drawable.button_pause);
+                            videoDetailView.setPlayBtnSrc(R.drawable.selector_button_pause);
 //                            VideoDetailView.setPlayCircleImageViewVisibility(View.GONE);
 //                            VideoDetailView.setDeleteBtnEnabled(false);
-                            VideoDetailView.setDownloadBtnEnabled(false);
-                            VideoDetailView.showLoadingCircle(true);
+                            videoDetailView.setDownloadBtnEnabled(false);
+                            videoDetailView.showLoadingCircle(true);
                         }
                     });
                 } else {
@@ -326,7 +328,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                         @Override
                         public void run() {
                             MyProgressDialog.closeProgressDialog();
-                            VideoDetailView.setSeekBarProgress(lastSeekBarPosition);
+                            videoDetailView.setSeekBarProgress(lastSeekBarPosition);
                             MyToast.show(activity, R.string.dialog_failed);
                         }
                     });
@@ -359,18 +361,18 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
 
     public void seekBarOnStartTrackingTouch() {
         needUpdateSeekBar = false;
-        lastSeekBarPosition = VideoDetailView.getSeekBarProgress();
+        lastSeekBarPosition = videoDetailView.getSeekBarProgress();
         panoramaVideoPlayback.pausePlayback();
-        VideoDetailView.showLoadingCircle(false);
+        videoDetailView.showLoadingCircle(false);
         videoPbMode = VideoPbMode.MODE_VIDEO_PAUSE;
     }
 
     public void setTimeLapsedValue(int progress) {
         if(needUpdateSeekBar && videoDuration >0 && (videoDuration - progress) < 500) {
             AppLog.i(TAG, "setTimeLapsedValue setSeekbarEnabled");
-            VideoDetailView.setSeekbarEnabled(false);
+            videoDetailView.setSeekbarEnabled(false);
         }
-        VideoDetailView.setTimeLapsedValue(ConvertTools.secondsToMinuteOrHours(progress / 100));
+        videoDetailView.setTimeLapsedValue(ConvertTools.secondsToMinuteOrHours(progress / 100));
     }
 
     public void initSurface(SurfaceHolder surfaceHolder) {
@@ -380,8 +382,8 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
             locate(FIXED_INSIDE_DISTANCE);
         }
         if (!enableRender) {
-            int width = VideoDetailView.getSurfaceViewWidth();
-            int heigth = VideoDetailView.getSurfaceViewHeight();
+            int width = videoDetailView.getSurfaceViewWidth();
+            int heigth = videoDetailView.getSurfaceViewHeight();
             AppLog.i(TAG, "SurfaceViewWidth=" + width + " SurfaceViewHeight=" + heigth);
             if (width <= 0 || heigth <= 0) {
                 width = 1080;
@@ -401,17 +403,17 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         if (enableRender) {
             removeGyroscopeListener();
         }
-        VideoDetailView.setTimeLapsedValue("00:00");
+        videoDetailView.setTimeLapsedValue("00:00");
         videoStreaming.stop();
-        VideoDetailView.setPlayBtnSrc(R.drawable.button_play);
-        VideoDetailView.setSeekBarProgress(0);
-        VideoDetailView.setSeekBarSecondProgress(0);
-        VideoDetailView.setTopBarVisibility(View.VISIBLE);
-        VideoDetailView.setBottomBarVisibility(View.VISIBLE);
-        VideoDetailView.showLoadingCircle(false);
-        VideoDetailView.setSeekbarEnabled(false);
+        videoDetailView.setPlayBtnSrc(R.drawable.selector_button_play);
+        videoDetailView.setSeekBarProgress(0);
+        videoDetailView.setSeekBarSecondProgress(0);
+        videoDetailView.setTopBarVisibility(View.VISIBLE);
+        videoDetailView.setBottomBarVisibility(View.VISIBLE);
+        videoDetailView.showLoadingCircle(false);
+        videoDetailView.setSeekbarEnabled(false);
         videoPbMode = VideoPbMode.MODE_VIDEO_IDLE;
-        VideoDetailView.setDownloadBtnEnabled(true);
+        videoDetailView.setDownloadBtnEnabled(true);
         AppLog.i(TAG, "End stopVideoStream");
     }
 
@@ -472,10 +474,10 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                         return;
                     }
                     if (msg.arg1 == 1) {
-                        VideoDetailView.showLoadingCircle(true);
+                        videoDetailView.showLoadingCircle(true);
                         waitForCaching = true;
                     } else if (msg.arg1 == 2) {
-                        VideoDetailView.showLoadingCircle(false);
+                        videoDetailView.showLoadingCircle(false);
                         waitForCaching = false;
                         needUpdateSeekBar = true;
                     }
@@ -490,9 +492,9 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                         return;
                     }
                     if (waitForCaching) {
-                        VideoDetailView.setLoadPercent(msg.arg1);
+                        videoDetailView.setLoadPercent(msg.arg1);
                     }
-                    VideoDetailView.setSeekBarSecondProgress(msg.arg2);
+                    videoDetailView.setSeekBarSecondProgress(msg.arg2);
                     break;
 
                 case SDKEvent.EVENT_VIDEO_PLAY_PTS:
@@ -508,7 +510,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                         cacheFlag = false;
                         stopVideoStream();
                         videoPbMode = VideoPbMode.MODE_VIDEO_IDLE;
-                        VideoDetailView.setProgress(0);
+                        videoDetailView.setProgress(0);
                     }
                     break;
                 case AppMessage.MESSAGE_CANCEL_VIDEO_DOWNLOAD:
@@ -540,7 +542,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                     break;
                 case AppMessage.MESSAGE_VIDEO_STREAM_NO_EIS_INFORMATION:
                     enableEIS(false);
-                    VideoDetailView.setEisSwitchChecked(false);
+                    videoDetailView.setEisSwitchChecked(false);
                     break;
             }
         }
@@ -550,12 +552,12 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     public void showBar(boolean isShowBar) {
         if (isShowBar) {
             if (videoPbMode == VideoPbMode.MODE_VIDEO_PLAY) {
-                VideoDetailView.setBottomBarVisibility(View.GONE);
-                VideoDetailView.setTopBarVisibility(View.GONE);
+                videoDetailView.setBottomBarVisibility(View.GONE);
+                videoDetailView.setTopBarVisibility(View.GONE);
             }
         } else {
-            VideoDetailView.setBottomBarVisibility(View.VISIBLE);
-            VideoDetailView.setTopBarVisibility(View.VISIBLE);
+            videoDetailView.setBottomBarVisibility(View.VISIBLE);
+            videoDetailView.setTopBarVisibility(View.VISIBLE);
             if (videoPbMode != VideoPbMode.MODE_VIDEO_PLAY) {
             }
         }
@@ -636,7 +638,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                     @Override
                     public void run() {
                         MyProgressDialog.closeProgressDialog();
-                        RemoteFileHelper.getInstance().remove(fileList.get(curVideoPosition), fileType);
+                        RemoteFileHelper.getInstance().remove(currentItemInfo, fileType);
                         hasDeleted  = true;
                         Intent intent = new Intent();
                         intent.putExtra("hasDeleted", hasDeleted);
@@ -655,7 +657,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         builder.setCancelable(false);
         builder.setTitle(R.string.dialog_downloading_single);
         long videoFileSize = 0;
-        videoFileSize = fileList.get(curVideoPosition).getFileSizeInteger() / 1024 / 1024;
+        videoFileSize = currentItemInfo.getFileSizeInteger() / 1024 / 1024;
         AppLog.d(TAG, "video FileSize=" + videoFileSize);
         long minute = videoFileSize / 60;
         long seconds = videoFileSize % 60;
@@ -779,7 +781,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
-    public void onSufaceViewTouchDown(MotionEvent event) {
+    public void onSurfaceViewTouchDown(MotionEvent event) {
         if (videoPbMode == VideoPbMode.MODE_VIDEO_IDLE) {
             return;
         }
@@ -790,7 +792,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         afterLenght = 0;
     }
 
-    public void onSufaceViewPointerDown(MotionEvent event) {
+    public void onSurfaceViewPointerDown(MotionEvent event) {
         if (videoPbMode == VideoPbMode.MODE_VIDEO_IDLE) {
             return;
         }
@@ -800,7 +802,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
-    public void onSufaceViewTouchMove(MotionEvent event) {
+    public void onSurfaceViewTouchMove(MotionEvent event) {
         if (videoPbMode == VideoPbMode.MODE_VIDEO_IDLE) {
             return;
         }
@@ -857,14 +859,14 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         locate(1 / currentZoomRate);
     }
 
-    public void onSufaceViewTouchUp() {
+    public void onSurfaceViewTouchUp() {
         if (videoPbMode == VideoPbMode.MODE_VIDEO_IDLE) {
             return;
         }
         touchMode = TouchMode.NONE;
     }
 
-    public void onSufaceViewTouchPointerUp() {
+    public void onSurfaceViewTouchPointerUp() {
         if (videoPbMode == VideoPbMode.MODE_VIDEO_IDLE) {
             return;
         }
@@ -925,8 +927,8 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void redrawSurface() {
-        int width = VideoDetailView.getSurfaceViewWidth();
-        int heigth = VideoDetailView.getSurfaceViewHeight();
+        int width = videoDetailView.getSurfaceViewWidth();
+        int heigth = videoDetailView.getSurfaceViewHeight();
         videoStreaming.setViewParam(width, heigth);
         videoStreaming.setSurfaceViewArea();
     }
@@ -936,17 +938,17 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         if (curPanoramaType == ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE) {
             videoStreaming.changePanoramaType(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_ASTEROID);
             curPanoramaType = ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_ASTEROID;
-            VideoDetailView.setPanoramaTypeImageResource(R.drawable.asteroid);
+            videoDetailView.setPanoramaTypeImageResource(R.drawable.asteroid);
             activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         } else if (curPanoramaType == ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_ASTEROID) {
             videoStreaming.changePanoramaType(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_VIRTUAL_R);
             curPanoramaType = ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_VIRTUAL_R;
-            VideoDetailView.setPanoramaTypeImageResource(R.drawable.vr);
+            videoDetailView.setPanoramaTypeImageResource(R.drawable.vr);
             activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         } else {
             videoStreaming.changePanoramaType(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE);
             curPanoramaType = ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE;
-            VideoDetailView.setPanoramaTypeImageResource(R.drawable.panorama);
+            videoDetailView.setPanoramaTypeImageResource(R.drawable.panorama);
             activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         }
     }
@@ -954,13 +956,13 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
 
     public void showMoreSettingLayout(boolean isShowBar) {
         if (isShowBar) {
-            VideoDetailView.setBottomBarVisibility(View.GONE);
-            VideoDetailView.setTopBarVisibility(View.GONE);
-            VideoDetailView.setMoreSettingLayoutVisibility(View.VISIBLE);
+            videoDetailView.setBottomBarVisibility(View.GONE);
+            videoDetailView.setTopBarVisibility(View.GONE);
+            videoDetailView.setMoreSettingLayoutVisibility(View.VISIBLE);
         } else {
-            VideoDetailView.setBottomBarVisibility(View.VISIBLE);
-            VideoDetailView.setTopBarVisibility(View.VISIBLE);
-            VideoDetailView.setMoreSettingLayoutVisibility(View.GONE);
+            videoDetailView.setBottomBarVisibility(View.VISIBLE);
+            videoDetailView.setTopBarVisibility(View.VISIBLE);
+            videoDetailView.setMoreSettingLayoutVisibility(View.GONE);
         }
     }
 

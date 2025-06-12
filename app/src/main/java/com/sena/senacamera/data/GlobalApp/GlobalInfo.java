@@ -9,9 +9,8 @@ import com.sena.senacamera.Function.SDKEvent;
 import com.sena.senacamera.Listener.ScreenListener;
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.data.AppInfo.AppInfo;
-import com.sena.senacamera.data.entity.LocalPbItemInfo;
+import com.sena.senacamera.data.entity.LocalMediaItemInfo;
 import com.sena.senacamera.utils.WifiCheck;
-import com.icatchtek.control.customer.type.ICatchCamEventID;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class GlobalInfo {
     private static GlobalInfo instance;
     private Activity activity;
     private SDKEvent sdkEvent;
-    private List<LocalPbItemInfo> localMediaList;
+    private List<LocalMediaItemInfo> localMediaList;
     private WifiCheck wifiCheck;
     ScreenListener listener;
     private OnEventListener onEventListener;
@@ -51,11 +50,11 @@ public class GlobalInfo {
         return activity;
     }
 
-    public List<LocalPbItemInfo> getLocalMediaList() {
+    public List<LocalMediaItemInfo> getLocalMediaList() {
         return localMediaList;
     }
 
-    public void setLocalMediaList(List<LocalPbItemInfo> localMediaListParam) {
+    public void setLocalMediaList(List<LocalMediaItemInfo> localMediaListParam) {
         this.localMediaList = localMediaListParam;
     }
 

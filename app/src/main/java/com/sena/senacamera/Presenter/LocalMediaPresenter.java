@@ -9,16 +9,14 @@ import android.view.View;
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.Presenter.Interface.BasePresenter;
 import com.sena.senacamera.data.AppInfo.AppInfo;
-import com.sena.senacamera.data.GlobalApp.GlobalInfo;
 import com.sena.senacamera.data.Mode.OperationMode;
-import com.sena.senacamera.data.entity.LocalPbItemInfo;
+import com.sena.senacamera.data.entity.LocalMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
-import com.sena.senacamera.data.type.MediaType;
 import com.sena.senacamera.data.type.PhotoWallLayoutType;
 import com.sena.senacamera.ui.ExtendComponent.MyProgressDialog;
 import com.sena.senacamera.ui.Interface.LocalMediaView;
-import com.sena.senacamera.adapter.LocalMultiPbWallGridAdapter;
-import com.sena.senacamera.adapter.LocalMultiPbWallListAdapter;
+import com.sena.senacamera.ui.adapter.LocalMultiPbWallGridAdapter;
+import com.sena.senacamera.ui.adapter.LocalMultiPbWallListAdapter;
 import com.sena.senacamera.utils.StorageUtil;
 import com.sena.senacamera.utils.fileutils.MFileTools;
 import com.sena.senacamera.utils.PanoramaTools;
@@ -31,8 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by b.jiang on 2017/5/19.
@@ -48,7 +44,7 @@ public class LocalMediaPresenter extends BasePresenter {
     private static int section = 1;
     private Map<String, Integer> sectionMap = new HashMap<String, Integer>();
     private OperationMode curOperationMode = OperationMode.MODE_BROWSE;
-    private List<LocalPbItemInfo> pbItemInfoList;
+    private List<LocalMediaItemInfo> pbItemInfoList;
     private Handler handler;
     private FileType fileType = FileType.FILE_PHOTO;
 
@@ -70,10 +66,10 @@ public class LocalMediaPresenter extends BasePresenter {
         initCfg();
     }
 
-    public List<LocalPbItemInfo> getPhotoInfoList() {
+    public List<LocalMediaItemInfo> getPhotoInfoList() {
         String fileDate;
         String rootPath = StorageUtil.getRootPath(activity);
-        final List<LocalPbItemInfo> photoList = new ArrayList<LocalPbItemInfo>();
+        final List<LocalMediaItemInfo> photoList = new ArrayList<LocalMediaItemInfo>();
         List<File> fileList;
         if (fileType == FileType.FILE_PHOTO) {
             String filePath = rootPath + AppInfo.DOWNLOAD_PATH_PHOTO;
@@ -95,72 +91,16 @@ public class LocalMediaPresenter extends BasePresenter {
 
             if (!sectionMap.containsKey(fileDate)) {
                 sectionMap.put(fileDate, section);
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(fileList.get(ii), section, PanoramaTools.isPanorama(fileList.get(ii).getPath()), fileType == FileType.FILE_PHOTO? "photo": "video", "");
+                LocalMediaItemInfo mGridItem = new LocalMediaItemInfo(fileList.get(ii), section, PanoramaTools.isPanorama(fileList.get(ii).getPath()), fileType == FileType.FILE_PHOTO? "photo": "video", "");
                 photoList.add(mGridItem);
                 section++;
             } else {
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(fileList.get(ii), sectionMap.get(fileDate), PanoramaTools.isPanorama(fileList.get(ii).getPath()), fileType == FileType.FILE_PHOTO? "photo": "video", "");
+                LocalMediaItemInfo mGridItem = new LocalMediaItemInfo(fileList.get(ii), sectionMap.get(fileDate), PanoramaTools.isPanorama(fileList.get(ii).getPath()), fileType == FileType.FILE_PHOTO? "photo": "video", "");
                 photoList.add(mGridItem);
             }
         }
 
         return photoList;
-    }
-
-    public List<LocalPbItemInfo> getMediaList() {
-        String fileDate;
-        String rootPath = StorageUtil.getRootPath(activity);
-        final List<LocalPbItemInfo> mediaList = new ArrayList<LocalPbItemInfo>();
-        List<File> photoFileList, videoFileList;
-
-        // get file list
-        String photoFilePath = rootPath + AppInfo.DOWNLOAD_PATH_PHOTO;
-        String videoFilePath = rootPath + AppInfo.DOWNLOAD_PATH_VIDEO;
-        photoFileList = MFileTools.getPhotosOrderByDate(photoFilePath);
-        videoFileList = MFileTools.getVideosOrderByDate(videoFilePath);
-
-        if (photoFileList != null && videoFileList != null && photoFileList.isEmpty() && videoFileList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        AppLog.i(TAG, "fileList size = " + (photoFileList.size() + videoFileList.size()));
-
-        // get photo media item list
-        for (int i = 0; i < photoFileList.size(); i++) {
-            long time = photoFileList.get(i).lastModified();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            fileDate = format.format(new Date(time));
-
-            if (!sectionMap.containsKey(fileDate)) {
-                sectionMap.put(fileDate, section);
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(photoFileList.get(i), section, PanoramaTools.isPanorama(photoFileList.get(i).getPath()), MediaType.PHOTO, "");
-                mediaList.add(mGridItem);
-                section++;
-            } else {
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(photoFileList.get(i), sectionMap.get(fileDate), PanoramaTools.isPanorama(photoFileList.get(i).getPath()), MediaType.PHOTO, "");
-                mediaList.add(mGridItem);
-            }
-        }
-
-        // get video media item list
-        for (int i = 0; i < videoFileList.size(); i++) {
-            long time = videoFileList.get(i).lastModified();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            fileDate = format.format(new Date(time));
-
-            if (!sectionMap.containsKey(fileDate)) {
-                sectionMap.put(fileDate, section);
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(videoFileList.get(i), section, PanoramaTools.isPanorama(videoFileList.get(i).getPath()), MediaType.VIDEO, "");
-                mediaList.add(mGridItem);
-                section++;
-            } else {
-                LocalPbItemInfo mGridItem = new LocalPbItemInfo(videoFileList.get(i), sectionMap.get(fileDate), PanoramaTools.isPanorama(videoFileList.get(i).getPath()), MediaType.VIDEO, "");
-                mediaList.add(mGridItem);
-            }
-        }
-
-        GlobalInfo.getInstance().setLocalMediaList(mediaList);
-        return mediaList;
     }
 
     public void loadPhotoWall() {
@@ -344,7 +284,7 @@ public class LocalMediaPresenter extends BasePresenter {
         }
     }
 
-    public List<LocalPbItemInfo> getSelectedList() {
+    public List<LocalMediaItemInfo> getSelectedList() {
         if (AppInfo.photoWallLayoutType == PhotoWallLayoutType.PREVIEW_TYPE_LIST) {
             return photoWallListAdapter.getSelectedList();
         } else {
@@ -352,7 +292,7 @@ public class LocalMediaPresenter extends BasePresenter {
         }
     }
 
-    public void deleteFiles(List<LocalPbItemInfo> list) {
+    public void deleteFiles(List<LocalMediaItemInfo> list) {
         if (list == null || list.isEmpty()) {
             return;
         }
@@ -361,13 +301,13 @@ public class LocalMediaPresenter extends BasePresenter {
     }
 
     class DeleteFileThread implements Runnable {
-        private final List<LocalPbItemInfo> fileList;
-        private List<LocalPbItemInfo> deleteFailedList;
-        private List<LocalPbItemInfo> deleteSucceedList;
+        private final List<LocalMediaItemInfo> fileList;
+        private List<LocalMediaItemInfo> deleteFailedList;
+        private List<LocalMediaItemInfo> deleteSucceedList;
         private Handler handler;
         private FileType fileType;
 
-        public DeleteFileThread(List<LocalPbItemInfo> fileList, FileType fileType) {
+        public DeleteFileThread(List<LocalMediaItemInfo> fileList, FileType fileType) {
             this.fileList = fileList;
             this.handler = new Handler();
             this.fileType = fileType;
@@ -378,17 +318,17 @@ public class LocalMediaPresenter extends BasePresenter {
             AppLog.d(TAG, "DeleteThread");
 
             if (deleteFailedList == null) {
-                deleteFailedList = new LinkedList<LocalPbItemInfo>();
+                deleteFailedList = new LinkedList<LocalMediaItemInfo>();
             } else {
                 deleteFailedList.clear();
             }
             if (deleteSucceedList == null) {
-                deleteSucceedList = new LinkedList<LocalPbItemInfo>();
+                deleteSucceedList = new LinkedList<LocalMediaItemInfo>();
             } else {
                 deleteSucceedList.clear();
             }
 
-            for (LocalPbItemInfo tempFile: fileList) {
+            for (LocalMediaItemInfo tempFile: fileList) {
                 File file = tempFile.file;
                 Log.e("DeleteThread", file.getPath());
                 Log.e("DeleteThread", file.getAbsolutePath());

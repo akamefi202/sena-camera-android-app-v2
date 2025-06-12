@@ -7,12 +7,12 @@ public interface PhotoDetailView {
     void setViewPagerAdapter(PagerAdapter adapter);
     void setTopBarVisibility(int visibility);
     void setBottomBarVisibility(int visibility);
-    void setIndexInfoTxv(String indexInfo);
+    void setTitleText(String indexInfo);
     void setViewPagerCurrentItem(int position);
     void setOnPageChangeListener(ViewPager.OnPageChangeListener listener);
     int getViewPagerCurrentItem();
     int getTopBarVisibility();
     void setViewPagerVisibility(int visibility);
-    void setSurfaceviewVisibility(int visibility);
+    void setSurfaceViewVisibility(int visibility);
     void setPanoramaTypeTxv( int resId);
 }

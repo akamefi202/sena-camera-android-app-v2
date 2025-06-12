@@ -1,7 +1,5 @@
 package com.sena.senacamera.ui;
 
-import android.util.Log;
-
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
@@ -9,7 +7,7 @@ import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.SdkApi.FileOperation;
 import com.sena.senacamera.data.PropertyId.PropertyId;
 import com.sena.senacamera.data.entity.MultiPbFileResult;
-import com.sena.senacamera.data.entity.MultiPbItemInfo;
+import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.utils.ConvertTools;
 import com.sena.senacamera.utils.FileFilter;
@@ -19,7 +17,6 @@ import com.icatchtek.control.customer.type.ICatchCamListFileFilter;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 import com.icatchtek.reliant.customer.type.ICatchFileType;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -33,7 +30,7 @@ import java.util.List;
 public class RemoteFileHelper {
     private String TAG = RemoteFileHelper.class.getSimpleName();
     private static RemoteFileHelper instance;
-    public HashMap<Integer, List<MultiPbItemInfo>> listHashMap = new HashMap<>();
+    public HashMap<Integer, List<RemoteMediaItemInfo>> listHashMap = new HashMap<>();
     private int curFilterFileType = ICatchCamListFileFilter.ICH_OFC_FILE_TYPE_ALL_MEDIA;
     private FileFilter fileFilter = null;
     private final int MAX_NUM = 30;
@@ -84,7 +81,7 @@ public class RemoteFileHelper {
         return supportSetFileListAttribute;
     }
 
-    public List<MultiPbItemInfo> getRemoteFile(FileOperation fileOperation, FileType fileType) {
+    public List<RemoteMediaItemInfo> getRemoteFile(FileOperation fileOperation, FileType fileType) {
         int icatchFileType = ICatchFileType.ICH_FILE_TYPE_IMAGE;
         if (fileType == FileType.FILE_PHOTO) {
             icatchFileType = ICatchFileType.ICH_FILE_TYPE_IMAGE;
@@ -95,7 +92,7 @@ public class RemoteFileHelper {
         }
         MyCamera camera = CameraManager.getInstance().getCurCamera();
         CameraProperties cameraProperties = null;
-        List<MultiPbItemInfo> tempItemInfos;
+        List<RemoteMediaItemInfo> tempItemInfos;
         if (camera != null) {
             cameraProperties = camera.getCameraProperties();
         }
@@ -135,7 +132,7 @@ public class RemoteFileHelper {
         List<ICatchFile> fileList = fileOperation.getFileList(ICatchFileType.ICH_FILE_TYPE_ALL, startIndex, endIndex);
 //        List<ICatchFile> fileList = fileOperation.getFileList(icatchFileType, startIndex, endIndex);
         if (fileFilter == null || fileFilter.getTimeFilterType() == FileFilter.TIME_TYPE_ALL_TIME) {
-            List<MultiPbItemInfo> pbItemInfos = getList(fileList, null, fileType);
+            List<RemoteMediaItemInfo> pbItemInfos = getList(fileList, null, fileType);
             int lastIndex = endIndex + 1;
             boolean isMore = lastIndex < fileTotalNum;
             MultiPbFileResult result = new MultiPbFileResult();
@@ -146,8 +143,8 @@ public class RemoteFileHelper {
 
             return result;
         } else {
-            List<MultiPbItemInfo> tempItemInfos = getList(fileList, fileFilter, fileType);
-            List<MultiPbItemInfo> pbItemInfos = new LinkedList<>();
+            List<RemoteMediaItemInfo> tempItemInfos = getList(fileList, fileFilter, fileType);
+            List<RemoteMediaItemInfo> pbItemInfos = new LinkedList<>();
             if (tempItemInfos != null && tempItemInfos.size() > 0) {
                 pbItemInfos.addAll(tempItemInfos);
             }
@@ -183,7 +180,7 @@ public class RemoteFileHelper {
         }
     }
 
-    public List<MultiPbItemInfo> getFileList(FileOperation fileOperation, int type, int maxNum) {
+    public List<RemoteMediaItemInfo> getFileList(FileOperation fileOperation, int type, int maxNum) {
         AppLog.i(TAG, "begin getFileList type: " + type + " maxNum：" + maxNum);
         if(fileOperation == null){
             AppLog.i(TAG, "cameraPlayback is null");
@@ -237,8 +234,8 @@ public class RemoteFileHelper {
             AppLog.i(TAG, "end getFileList startIndex=" + startIndex + " endIndex=" + endIndex);
         }
 
-        List<MultiPbItemInfo> photoInfoList = getList(photoList, fileFilter, FileType.FILE_PHOTO);
-        List<MultiPbItemInfo> videoInfoList = getList(videoList, fileFilter, FileType.FILE_VIDEO);
+        List<RemoteMediaItemInfo> photoInfoList = getList(photoList, fileFilter, FileType.FILE_PHOTO);
+        List<RemoteMediaItemInfo> videoInfoList = getList(videoList, fileFilter, FileType.FILE_VIDEO);
 //        GlobalInfo.getInstance().photoInfoList = photoInfoList;
 //        GlobalInfo.getInstance().videoInfoList = videoInfoList;
         setLocalFileList(photoInfoList,FileType.FILE_PHOTO);
@@ -252,8 +249,8 @@ public class RemoteFileHelper {
         }
     }
 
-    private List<MultiPbItemInfo> getList(List<ICatchFile> fileList, FileFilter fileFilter, FileType fileType) {
-        List<MultiPbItemInfo> multiPbItemInfoList = new LinkedList<>();
+    private List<RemoteMediaItemInfo> getList(List<ICatchFile> fileList, FileFilter fileFilter, FileType fileType) {
+        List<RemoteMediaItemInfo> multiPbItemInfoList = new LinkedList<>();
         if (fileList == null) {
             return multiPbItemInfoList;
         }
@@ -272,11 +269,11 @@ public class RemoteFileHelper {
 
             if (fileFilter != null) {
                 if (fileFilter.isMatch(iCatchFile)) {
-                    MultiPbItemInfo mGridItem = new MultiPbItemInfo(iCatchFile, 0, isPanorama, fileSize, fileTime, fileDate, fileDuration, fileType == FileType.FILE_PHOTO? "photo": "video");
+                    RemoteMediaItemInfo mGridItem = new RemoteMediaItemInfo(iCatchFile, 0, isPanorama, fileSize, fileTime, fileDate, fileDuration, fileType == FileType.FILE_PHOTO? "photo": "video");
                     multiPbItemInfoList.add(mGridItem);
                 }
             } else {
-                MultiPbItemInfo mGridItem = new MultiPbItemInfo(iCatchFile, 0, isPanorama, fileSize, fileTime, fileDate, fileDuration, fileType == FileType.FILE_PHOTO? "photo": "video");
+                RemoteMediaItemInfo mGridItem = new RemoteMediaItemInfo(iCatchFile, 0, isPanorama, fileSize, fileTime, fileDate, fileDuration, fileType == FileType.FILE_PHOTO? "photo": "video");
                 multiPbItemInfoList.add(mGridItem);
             }
         }
@@ -326,19 +323,19 @@ public class RemoteFileHelper {
         return fileFilter;
     }
 
-    public void setLocalFileList(List<MultiPbItemInfo> pbItemInfoList, FileType fileType) {
+    public void setLocalFileList(List<RemoteMediaItemInfo> pbItemInfoList, FileType fileType) {
         if(pbItemInfoList == null){
             return;
         }
         if (listHashMap.containsKey(fileType.ordinal())) {
             listHashMap.remove(fileType.ordinal());
         }
-        List<MultiPbItemInfo> temp = new LinkedList<>();
+        List<RemoteMediaItemInfo> temp = new LinkedList<>();
         temp.addAll(pbItemInfoList);
         listHashMap.put(fileType.ordinal(), temp);
     }
 
-    public List<MultiPbItemInfo> getLocalFileList(FileType fileType) {
+    public List<RemoteMediaItemInfo> getLocalFileList(FileType fileType) {
         return listHashMap.get(fileType.ordinal());
     }
 
@@ -348,8 +345,8 @@ public class RemoteFileHelper {
         }
     }
 
-    public void remove(MultiPbItemInfo file, FileType fileType) {
-        List<MultiPbItemInfo> multiPbItemInfos = getLocalFileList(fileType);
+    public void remove(RemoteMediaItemInfo file, FileType fileType) {
+        List<RemoteMediaItemInfo> multiPbItemInfos = getLocalFileList(fileType);
         if (multiPbItemInfos != null) {
             multiPbItemInfos.remove(file);
         }

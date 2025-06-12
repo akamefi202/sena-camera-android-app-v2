@@ -18,29 +18,29 @@ import com.sena.senacamera.SdkApi.FileOperation;
 import com.sena.senacamera.data.Mode.OperationMode;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
 import com.sena.senacamera.data.entity.MultiPbFileResult;
-import com.sena.senacamera.data.entity.MultiPbItemInfo;
+import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.data.type.PhotoWallLayoutType;
 import com.sena.senacamera.ui.ExtendComponent.MyProgressDialog;
 import com.sena.senacamera.ui.ExtendComponent.MyToast;
 import com.sena.senacamera.ui.Interface.RemoteMediaView;
 import com.sena.senacamera.ui.RemoteFileHelper;
-import com.sena.senacamera.adapter.MultiPbRecyclerViewAdapter;
+import com.sena.senacamera.ui.adapter.MultiPbRecyclerViewAdapter;
 import com.sena.senacamera.utils.imageloader.ImageLoaderConfig;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class RemoteMediaPresenter extends BasePresenter {
-
     private String TAG = RemoteMediaPresenter.class.getSimpleName();
     private RemoteMediaView multiPbPhotoView;
     private MultiPbRecyclerViewAdapter recyclerViewAdapter;
     private Activity activity;
     private OperationMode curOperationMode = OperationMode.MODE_BROWSE;
-    private List<MultiPbItemInfo> pbItemInfoList = new LinkedList<>();
-    private FileOperation fileOperation = CameraManager.getInstance().getCurCamera().getFileOperation();
+    private List<RemoteMediaItemInfo> pbItemInfoList = new LinkedList<>();
+    private FileOperation fileOperation;
     private Handler handler;
     private FileType fileType = FileType.FILE_PHOTO;
     private int fileTotalNum;
@@ -56,12 +56,20 @@ public class RemoteMediaPresenter extends BasePresenter {
         super(activity);
         this.activity = activity;
         handler = new Handler();
+
+        if (CameraManager.getInstance().getCurCamera() != null) {
+            fileOperation = CameraManager.getInstance().getCurCamera().getFileOperation();
+        }
     }
     public RemoteMediaPresenter(Activity activity, FileType fileType) {
         super(activity);
         this.activity = activity;
         handler = new Handler();
         this.fileType = fileType;
+
+        if (CameraManager.getInstance().getCurCamera() != null) {
+            fileOperation = CameraManager.getInstance().getCurCamera().getFileOperation();
+        }
     }
 
     public void setView(RemoteMediaView pbFragmentView) {
@@ -81,7 +89,12 @@ public class RemoteMediaPresenter extends BasePresenter {
         recyclerViewAdapter = null;
     }
 
-    public synchronized List<MultiPbItemInfo> getRemotePhotoInfoList() {
+    public synchronized List<RemoteMediaItemInfo> getRemotePhotoInfoList() {
+        if (CameraManager.getInstance().getCurCamera() == null) {
+            Log.e(TAG, "Camera is not connected");
+            return new ArrayList<>();
+        }
+
         if (supportSegmentedLoading) {
             fileTotalNum = RemoteFileHelper.getInstance().getFileCount(fileOperation, fileType);
             MultiPbFileResult multiPbFileResult = RemoteFileHelper.getInstance().getRemoteFile(fileOperation, fileType, fileTotalNum, curIndex);
@@ -108,7 +121,7 @@ public class RemoteMediaPresenter extends BasePresenter {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    List<MultiPbItemInfo> tempList = getRemotePhotoInfoList();
+                    List<RemoteMediaItemInfo> tempList = getRemotePhotoInfoList();
                     if (tempList != null && tempList.size() > 0) {
                         pbItemInfoList.addAll(tempList);
                     }
@@ -138,7 +151,7 @@ public class RemoteMediaPresenter extends BasePresenter {
                 if (supportSegmentedLoading) {
                     fileTotalNum = RemoteFileHelper.getInstance().getFileCount(fileOperation, fileType);
                     pbItemInfoList.clear();
-                    List<MultiPbItemInfo> temp = RemoteFileHelper.getInstance().getLocalFileList(fileType);
+                    List<RemoteMediaItemInfo> temp = RemoteFileHelper.getInstance().getLocalFileList(fileType);
                     if (fileTotalNum > 0 && temp != null && temp.size() > 0) {
                         pbItemInfoList.addAll(temp);
                     } else if (fileTotalNum > 0) {
@@ -173,7 +186,7 @@ public class RemoteMediaPresenter extends BasePresenter {
                     }
                 } else {
                     pbItemInfoList.clear();
-                    List<MultiPbItemInfo> temp = RemoteFileHelper.getInstance().getLocalFileList(fileType);
+                    List<RemoteMediaItemInfo> temp = RemoteFileHelper.getInstance().getLocalFileList(fileType);
                     if (temp != null) {
                         pbItemInfoList.addAll(temp);
                     } else {
@@ -358,7 +371,7 @@ public class RemoteMediaPresenter extends BasePresenter {
         //multiPbPhotoView.setPhotoSelectNumText(selectNum);
     }
 
-    public List<MultiPbItemInfo> getSelectedList() {
+    public List<RemoteMediaItemInfo> getSelectedList() {
         //return recyclerViewAdapter.getCheckedItemsList();
         return new LinkedList<>();
     }
@@ -369,7 +382,7 @@ public class RemoteMediaPresenter extends BasePresenter {
     }
 
     public void deleteFile() {
-        List<MultiPbItemInfo> list = getSelectedList();
+        List<RemoteMediaItemInfo> list = getSelectedList();
         if (list == null || list.isEmpty()) {
             MyToast.show(activity, R.string.gallery_no_file_selected);
         } else {
@@ -385,7 +398,7 @@ public class RemoteMediaPresenter extends BasePresenter {
                 }
             });
 
-            final List<MultiPbItemInfo> finalList = list;
+            final List<RemoteMediaItemInfo> finalList = list;
             final FileType finalFileType = fileType;
             builder.setNegativeButton(activity.getResources().getString(R.string.gallery_delete), new DialogInterface.OnClickListener() {
 
@@ -402,7 +415,7 @@ public class RemoteMediaPresenter extends BasePresenter {
     }
 
     // delete files selected
-    public void deleteFiles(List<MultiPbItemInfo> list) {
+    public void deleteFiles(List<RemoteMediaItemInfo> list) {
         if (list == null || list.isEmpty()) {
             //MyToast.show(activity, R.string.gallery_no_file_selected);
             return;
@@ -414,7 +427,7 @@ public class RemoteMediaPresenter extends BasePresenter {
     }
 
     // download files
-    public void downloadFiles(List<MultiPbItemInfo> list) {
+    public void downloadFiles(List<RemoteMediaItemInfo> list) {
         LinkedList<ICatchFile> linkedList = new LinkedList<>();
         long fileSizeTotal = 0;
 
@@ -422,7 +435,7 @@ public class RemoteMediaPresenter extends BasePresenter {
             return;
         }
 
-        for (MultiPbItemInfo temp : list) {
+        for (RemoteMediaItemInfo temp : list) {
             linkedList.add(temp.iCatchFile);
             fileSizeTotal += temp.getFileSizeInteger();
         }
@@ -441,14 +454,14 @@ public class RemoteMediaPresenter extends BasePresenter {
     }
 
     private class DeleteFileThread implements Runnable {
-        private List<MultiPbItemInfo> fileList;
+        private List<RemoteMediaItemInfo> fileList;
         //        private List<MultiPbItemInfo> deleteFailedList;
-        private List<MultiPbItemInfo> deleteSucceedList;
+        private List<RemoteMediaItemInfo> deleteSucceedList;
         private Handler handler;
         private FileOperation fileOperation;
         private FileType fileType;
 
-        public DeleteFileThread(List<MultiPbItemInfo> fileList, FileType fileType) {
+        public DeleteFileThread(List<RemoteMediaItemInfo> fileList, FileType fileType) {
             this.fileList = fileList;
             this.handler = new Handler();
             this.fileOperation = CameraManager.getInstance().getCurCamera().getFileOperation();
@@ -459,8 +472,8 @@ public class RemoteMediaPresenter extends BasePresenter {
         public void run() {
             AppLog.d(TAG, "DeleteThread");
 //            deleteFailedList = new LinkedList<MultiPbItemInfo>();
-            deleteSucceedList = new LinkedList<MultiPbItemInfo>();
-            for (MultiPbItemInfo tempFile : fileList) {
+            deleteSucceedList = new LinkedList<RemoteMediaItemInfo>();
+            for (RemoteMediaItemInfo tempFile : fileList) {
                 AppLog.d(TAG, "deleteFile f.getFileHandle =" + tempFile.getFileHandle());
                 if (fileOperation.deleteFile(tempFile.iCatchFile)) {
                     deleteSucceedList.add(tempFile);

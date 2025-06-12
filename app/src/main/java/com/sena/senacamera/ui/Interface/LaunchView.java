@@ -2,7 +2,7 @@ package com.sena.senacamera.ui.Interface;
 
 import android.graphics.Bitmap;
 
-import com.sena.senacamera.adapter.CameraSlotAdapter;
+import com.sena.senacamera.ui.adapter.CameraSlotAdapter;
 
 /**
  * Created by yh.zhang C001012 on 2015/10/20:14:44.
@@ -25,6 +25,5 @@ public interface LaunchView {
     void setLaunchSettingFrameVisibility(int visibility);
     void setLocalPhotoThumbnail(String filePath);
     void setLocalVideoThumbnail(String filePath);
-
     void fragmentPopStackOfAll();
 }

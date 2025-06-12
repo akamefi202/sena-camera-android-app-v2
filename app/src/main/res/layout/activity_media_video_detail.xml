@@ -8,251 +8,214 @@
     android:layout_height="match_parent"
     android:background="@color/background_primary_color"
     android:fitsSystemWindows="true"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ui.activity.MediaVideoDetailActivity">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+    <!-- progress wheel -->
+    <com.sena.senacamera.ui.ExtendComponent.ProgressWheel
+        android:id="@+id/progress_wheel"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        ProgressWheel:barColor="#0097D6"
+        ProgressWheel:barLengthP="50dp"
+        ProgressWheel:rimColor="#330097D6"
+        ProgressWheel:rimWidth="5dp"
+        ProgressWheel:textColor="@android:color/white"
+        ProgressWheel:contourColor="#330097D6"
+        android:layout_centerInParent="true"/>
 
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+    <!-- media view -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
 
-            <SurfaceView
-                android:id="@+id/m_surfaceView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"/>
-        </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/video_pb_top_layout"
-            android:layout_width="fill_parent"
+        <!-- photo & video view -->
+        <SurfaceView
+            android:id="@+id/surface_view"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:background="@color/half_transparent_grey"
-            android:orientation="horizontal">
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:src="@drawable/camera_preview_portrait" />
+
+        <!-- play & pause button -->
+        <ImageButton
+            android:id="@+id/play_detail_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="@string/action_play"
+            android:background="@drawable/selector_button_play_media_detail" />
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <!-- top bar -->
+        <LinearLayout
+            android:id="@+id/top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
 
             <ImageButton
-                android:id="@+id/video_pb_back"
+                android:id="@+id/back_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:background="@color/full_transparent"
-                android:gravity="center"
-                android:padding="15dp"
-                android:src="@drawable/selector_button_back"/>
-
-            <TextView
-                android:id="@+id/video_pb_video_name"
+                android:contentDescription="@string/action_back"
+                android:background="@drawable/selector_button_back" />
+            <View
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/video_pb_back"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:singleLine="true"
-                android:text=""
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                />
-
-            <ImageButton
-                android:id="@+id/delete"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <TextView
+                android:id="@+id/title_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:layout_toLeftOf="@+id/download"
-                android:background="@color/full_transparent"
-                android:padding="15dp"
-                android:src="@drawable/selector_button_delete_white"
-                android:visibility="gone"/>
-
-            <ImageButton
-                android:id="@+id/download"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center"
-                android:background="@color/full_transparent"
-                android:padding="15dp"
-                android:src="@drawable/selector_button_download"/>
-            <ImageButton
-                android:id="@+id/more_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:background="@color/full_transparent"
-                android:padding="10dp"
-                android:src="@drawable/ic_more_vert_white_24dp"/>
+                android:textSize="20sp"
+                android:text="" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
         </LinearLayout>
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- slider -->
         <LinearLayout
-            android:id="@+id/more_setting_layout"
+            android:id="@+id/slider_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:orientation="vertical"
-            android:background="@color/half_transparent_grey"
-            android:visibility="gone"
-            >
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="更多设置"
-                    android:textSize="@dimen/second_title_size"
-                    android:textColor="@color/white"/>
-                <ImageButton
-                    android:id="@+id/cancel_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:background="@color/full_transparent"
-                    android:padding="14dp"
-                    android:src="@drawable/selector_button_close"/>
-            </RelativeLayout>
-            <TextView
-                android:id="@+id/delete_txv"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_centerVertical="true"
-                android:gravity="center_vertical"
-                android:text="@string/gallery_delete"
-                android:textColor="@color/white"
-                android:layout_marginLeft="20dp"
-                android:textSize="@dimen/second_title_size"/>
+            android:paddingBottom="24dp"
+            android:orientation="vertical">
 
-            <RelativeLayout
-                android:id="@+id/eis_layout"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:visibility="visible">
-                <TextView
-                    android:id="@+id/eis_txv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:text="@string/text_stabilization"
-                    android:textColor="@color/white"
-                    android:layout_marginLeft="20dp"
-                    android:textSize="@dimen/second_title_size"/>
-
-                <Switch
-                    android:id="@+id/eis_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginRight="20dp"
-                    android:checked="false"
-                    />
-            </RelativeLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/video_pb_bottom_layout"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@color/half_transparent_grey"
-            android:orientation="vertical"
-            android:layout_alignParentBottom="true"
-            >
-            <SeekBar
-                android:id="@+id/video_pb_seekBar"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:indeterminate="false"
-                android:maxHeight="3dp"
-                android:progressDrawable="@drawable/po_seekbar_02"
-                android:theme="@drawable/status_eis"
-                android:thumb="@drawable/status_eis"/>
+                android:gravity="center">
+                <ImageButton
+                    android:id="@+id/play_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_button_play" />
+                <SeekBar
+                    android:id="@+id/video_seekbar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:indeterminate="false"
+                    android:maxHeight="4dp"
+                    android:progressDrawable="@color/white"
+                    android:thumb="@drawable/custom_thumb"/>
+                <ImageButton
+                    android:id="@+id/expand_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_button_expand" />
+            </LinearLayout>
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@+id/video_pb_seekBar"
-                android:layout_gravity="center">
-                <ImageButton
-                    android:id="@+id/video_pb_play_btn"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="45dp"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/running_time"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="10dp"
-                    android:background="@color/full_transparent"
-                    android:src="@drawable/button_play"/>
-                <LinearLayout
+                    android:layout_height="wrap_content"
+                    android:text="0:08" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+                <TextView
+                    android:id="@+id/duration_time"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_marginLeft="10dp"
-                    android:layout_toRightOf="@+id/video_pb_play_btn"
-                    >
-                    <TextView
-                        android:id="@+id/video_pb_time_lapsed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="00:00"
-                        android:textColor="@color/gray"
-                        android:textSize="14sp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="/"
-                        android:textColor="@color/gray"
-                        android:textSize="14sp"/>
+                    android:layout_height="wrap_content"
+                    android:text="0:50" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/video_pb_time_duration"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentRight="true"
-                        android:layout_gravity="center"
-                        android:text="00:00"
-                        android:textColor="@color/gray"
-                        android:textSize="14sp"/>
-                </LinearLayout>
-
-                <ImageButton
-                    android:id="@+id/panorama_type_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="@string/text_panorama"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginRight="10dp"
-                    android:textColor="@color/white"
-                    android:background="@color/full_transparent"
-                    android:src="@drawable/panorama"
-                    />
-            </RelativeLayout>
         </LinearLayout>
-        <com.sena.senacamera.ui.ExtendComponent.ProgressWheel
-            android:id="@+id/video_pb_spinner"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_centerInParent="true"
-            android:visibility="gone"
-            ProgressWheel:barColor="#0097D6"
-            ProgressWheel:barLengthP="100dp"
-            ProgressWheel:barWidth="5dp"
-            ProgressWheel:contourColor="#330097D6"
-            ProgressWheel:rimColor="#330097D6"
-            ProgressWheel:rimWidth="10dp"
-            ProgressWheel:text="0%"
-            ProgressWheel:textColor="@android:color/white"
-            ProgressWheel:textSize="14sp"/>
 
-    </RelativeLayout>
+        <!-- bottom bar -->
+        <LinearLayout
+            android:id="@+id/bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="20dp"
+            android:paddingBottom="24dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:id="@+id/save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+                <ImageButton
+                    android:clickable="false"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="@string/action_save"
+                    android:background="@drawable/selector_button_download" />
+                <TextView
+                    android:textColor="@color/selector_button_text_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_save" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:id="@+id/delete_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+                <ImageButton
+                    android:clickable="false"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="@string/action_delete"
+                    android:background="@drawable/selector_button_delete_white" />
+                <TextView
+                    android:textColor="@color/selector_button_text_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_delete" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

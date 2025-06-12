@@ -1,9 +1,13 @@
 package com.sena.senacamera.ui.activity;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
+
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -26,53 +30,34 @@ import com.icatchtek.pancam.customer.type.ICatchGLPanoramaType;
 
 public class MediaVideoDetailActivity extends AppCompatActivity implements VideoDetailView {
     private String TAG = MediaVideoDetailActivity.class.getSimpleName();
-    private TextView timeLapsed;
-    private TextView timeDuration;
+    private TextView timeLapsed, timeDuration;
     private SeekBar seekBar;
-    private ImageButton play;
-    private ImageButton back;
-    private ImageButton deleteBtn;
-    private ImageButton downloadBtn;
-    //    private ImageButton stopBtn;
-    private LinearLayout topBar;
-    private LinearLayout bottomBar;
-    private TextView videoNameTxv;
+    private ImageButton playButton, expandButton, backbutton, playDetailButton;
+    private LinearLayout deleteButton, downloadButton;
+    private LinearLayout topBar, bottomBar;
+    private TextView titleText;
     private ProgressWheel progressWheel;
     private VideoDetailPresenter presenter;
     private SurfaceView mSurfaceView;
-    private ImageButton panoramaTypeBtn;
-
-    private LinearLayout moreSettingLayout;
-    private ImageButton moreBtn;
-    private ImageButton cancelBtn;
-    private Switch eisSwitch;
-    private TextView deleteTxv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media_video_detail);
-        timeLapsed = (TextView) findViewById(R.id.video_pb_time_lapsed);
-        timeDuration = (TextView) findViewById(R.id.video_pb_time_duration);
-        seekBar = (SeekBar) findViewById(R.id.video_pb_seekBar);
-        play = (ImageButton) findViewById(R.id.video_pb_play_btn);
-        back = (ImageButton) findViewById(R.id.video_pb_back);
-//        stopBtn = (ImageButton) findViewById(R.id.video_pb_stop_btn);
+        timeLapsed = (TextView) findViewById(R.id.running_time);
+        timeDuration = (TextView) findViewById(R.id.duration_time);
+        seekBar = (SeekBar) findViewById(R.id.video_seekbar);
+        playButton = (ImageButton) findViewById(R.id.play_button);
+        expandButton = (ImageButton) findViewById(R.id.expand_button);
+        backbutton = (ImageButton) findViewById(R.id.back_button);
+        playDetailButton = (ImageButton) findViewById(R.id.play_detail_button);
 
-        topBar = (LinearLayout) findViewById(R.id.video_pb_top_layout);
-        bottomBar = (LinearLayout) findViewById(R.id.video_pb_bottom_layout);
-        mSurfaceView = (SurfaceView) findViewById(R.id.m_surfaceView);
-        videoNameTxv = (TextView) findViewById(R.id.video_pb_video_name);
-        progressWheel = (ProgressWheel) findViewById(R.id.video_pb_spinner);
-        deleteBtn = (ImageButton) findViewById(R.id.delete);
-        downloadBtn = (ImageButton) findViewById(R.id.download);
-
-        moreSettingLayout = (LinearLayout) findViewById(R.id.more_setting_layout);
-        moreBtn = (ImageButton) findViewById(R.id.more_btn);
-        cancelBtn = (ImageButton) findViewById(R.id.cancel_btn);
-        eisSwitch = (Switch) findViewById(R.id.eis_switch);
-        deleteTxv  = (TextView) findViewById(R.id.delete_txv);
-        panoramaTypeBtn = (ImageButton) findViewById(R.id.panorama_type_btn);
+        topBar = (LinearLayout) findViewById(R.id.top_bar);
+        bottomBar = (LinearLayout) findViewById(R.id.bottom_bar);
+        mSurfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        titleText = (TextView) findViewById(R.id.title_text);
+        deleteButton = (LinearLayout) findViewById(R.id.delete_button);
+        downloadButton = (LinearLayout) findViewById(R.id.save_button);
 
         presenter = new VideoDetailPresenter(this);
         presenter.setView(this);
@@ -81,64 +66,35 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
         // do not display menu bar
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        moreBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                presenter.showMoreSettingLayout(true);
-            }
-        });
-
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                presenter.showMoreSettingLayout(false);
-            }
-        });
-
-        eisSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean isChecked = eisSwitch.isChecked();
-                presenter.enableEIS(isChecked);
-            }
-        });
-
-        deleteTxv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                presenter.delete();
-            }
-        });
-
-        back.setOnClickListener(new View.OnClickListener() {
+        backbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.back();
             }
         });
 
-        panoramaTypeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                presenter.setPanoramaType();
-            }
-        });
-
-        play.setOnClickListener(new View.OnClickListener() {
+        playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.play();
             }
         });
 
-        deleteBtn.setOnClickListener(new View.OnClickListener() {
+        playDetailButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.play();
+            }
+        });
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.delete();
             }
         });
 
-        downloadBtn.setOnClickListener(new View.OnClickListener() {
+        downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.download();
@@ -206,21 +162,21 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
                     case MotionEvent.ACTION_DOWN:
-                        presenter.onSufaceViewTouchDown(event);
+                        presenter.onSurfaceViewTouchDown(event);
                         break;
                     case MotionEvent.ACTION_POINTER_DOWN:
-                        presenter.onSufaceViewPointerDown(event);
+                        presenter.onSurfaceViewPointerDown(event);
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        presenter.onSufaceViewTouchMove(event);
+                        presenter.onSurfaceViewTouchMove(event);
                         break;
                     case MotionEvent.ACTION_UP:
-                        presenter.onSufaceViewTouchUp();
+                        presenter.onSurfaceViewTouchUp();
                         break;
 
                     case MotionEvent.ACTION_POINTER_UP:
-                        presenter.onSufaceViewTouchPointerUp();
+                        presenter.onSurfaceViewTouchPointerUp();
                         break;
                 }
                 return true;
@@ -291,35 +247,41 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
 
     @Override
-    public void setPlayBtnSrc(int resid) {
-        play.setImageResource(resid);
+    public void setPlayBtnSrc(int resId) {
+        playButton.setBackground(ResourcesCompat.getDrawable(getResources(), resId, (Resources.Theme) null));
+
+        if (resId == R.drawable.selector_button_play) {
+            playDetailButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.selector_button_play_media_detail, (Resources.Theme) null));
+        } else {
+            playDetailButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.selector_button_pause_media_detail, (Resources.Theme) null));
+        }
     }
 
     @Override
     public void showLoadingCircle(boolean isShow) {
         if (isShow) {
             AppLog.d(TAG, "showLoadingCircle");
-            progressWheel.setVisibility(View.VISIBLE);
-            progressWheel.setText("0%");
-            progressWheel.startSpinning();
+            //progressWheel.setVisibility(View.VISIBLE);
+            //progressWheel.setText("0%");
+            //progressWheel.startSpinning();
         } else {
             AppLog.d(TAG, "display LoadingCircle");
-            progressWheel.stopSpinning();
-            progressWheel.setVisibility(View.GONE);
+            //progressWheel.stopSpinning();
+            //progressWheel.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void setLoadPercent(int value) {
-        if(value >=0) {
+        if (value >=0) {
             String temp = value + "%";
-            progressWheel.setText(temp);
+            //progressWheel.setText(temp);
         }
     }
 
     @Override
     public void setVideoNameTxv(String value) {
-        videoNameTxv.setText(value);
+        titleText.setText(value);
     }
 
     @Override
@@ -360,22 +322,18 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public void setPanoramaTypeImageResource(int resId) {
-        panoramaTypeBtn.setImageResource(resId);
     }
 
     @Override
     public void setPanoramaTypeBtnVisibility(int visibility) {
-        panoramaTypeBtn.setVisibility(visibility);
     }
 
     @Override
     public void setMoreSettingLayoutVisibility(int visibility) {
-        moreSettingLayout.setVisibility(visibility);
     }
 
     @Override
     public void setEisSwitchChecked(boolean checked) {
-        eisSwitch.setChecked(checked);
     }
 
     @Override
@@ -388,12 +346,7 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public void setDownloadBtnEnabled(boolean enabled) {
-        downloadBtn.setEnabled(enabled);
-        if (enabled) {
-            downloadBtn.setImageResource(R.drawable.button_download);
-        } else {
-            downloadBtn.setImageResource(R.drawable.button_download_disabled);
-        }
+        downloadButton.setEnabled(enabled);
     }
 
     @Override

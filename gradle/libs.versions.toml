@@ -1,5 +1,6 @@
 [versions]
 agp = "8.8.1"
+androidUniversalImageLoader = "f6a9615868482672c3630cb7db6dcf43391e80de"
 core = "3.5.3"
 facebookAndroidSdk = "4.27.0"
 glide = "4.11.0"
@@ -16,6 +17,7 @@ universalImageLoader = "1.9.5"
 adsMobileSdk = "0.16.0-alpha01"
 
 [libraries]
+android-universal-image-loader = { module = "com.github.nostra13:Android-Universal-Image-Loader", version.ref = "androidUniversalImageLoader" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
 facebook-android-sdk = { module = "com.facebook.android:facebook-android-sdk", version.ref = "facebookAndroidSdk" }

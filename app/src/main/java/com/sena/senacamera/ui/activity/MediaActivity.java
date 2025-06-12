@@ -1,10 +1,9 @@
 package com.sena.senacamera.ui.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.res.Resources;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,41 +13,56 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
 import com.sena.senacamera.Log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
+import com.sena.senacamera.Presenter.LocalMediaPresenter;
+import com.sena.senacamera.Presenter.RemoteMediaPresenter;
 import com.sena.senacamera.R;
-import com.sena.senacamera.adapter.MediaViewPagerAdapter;
+import com.sena.senacamera.ui.adapter.MediaRecyclerViewAdapter;
 import com.sena.senacamera.data.Mode.MediaViewMode;
-import com.sena.senacamera.data.entity.MultiPbItemInfo;
+import com.sena.senacamera.data.entity.GroupMediaItemInfo;
+import com.sena.senacamera.data.entity.LocalMediaItemInfo;
+import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
+import com.sena.senacamera.data.type.FileType;
+import com.sena.senacamera.data.type.MediaItemType;
+import com.sena.senacamera.data.type.MediaStorageType;
+import com.sena.senacamera.data.type.MediaType;
 import com.sena.senacamera.ui.ExtendComponent.MyProgressDialog;
 import com.sena.senacamera.ui.ExtendComponent.MyToast;
+import com.sena.senacamera.ui.decoration.GridSpacingItemDecoration;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MediaActivity extends AppCompatActivity {
-    private String TAG = "MediaActivity";
+    private String TAG = MediaActivity.class.getSimpleName();
     private ImageButton backButton, closeButton;
     private Button selectButton, selectAllButton, deselectAllButton;
     private TabLayout mediaTabView;
-    private ViewPager2 mediaViewPager;
-    private MediaViewPagerAdapter mediaViewPagerAdapter;
     private LinearLayout downloadButton, shareButton, deleteButton, bottomBarLayout;
     private TextView titleText, selectedNumberText;
-    //private RecyclerView recyclerView;
+    private RecyclerView recyclerView;
+    private GridLayoutManager gridLayoutManager;
+    private MediaRecyclerViewAdapter recyclerViewAdapter;
+    private LocalMediaPresenter localPhotoPresenter, localVideoPresenter;
+    private RemoteMediaPresenter remotePhotoPresenter, remoteVideoPresenter;
 
     private String mediaViewMode = MediaViewMode.NORMAL;
+    private String mediaStorageType = MediaStorageType.REMOTE;
     private boolean isSelectedAll = false;
-
-    // 0: remote tab, 1: local tab
-    private int currentTabIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +82,7 @@ public class MediaActivity extends AppCompatActivity {
         titleText = findViewById(R.id.title_text);
         selectedNumberText = findViewById(R.id.selected_number_text);
         mediaTabView = findViewById(R.id.media_tab_view);
-        mediaViewPager = findViewById(R.id.media_viewpager);
+        recyclerView = findViewById(R.id.recycler_view);
 
         backButton.setOnClickListener((v) -> {
             finish();
@@ -81,14 +95,40 @@ public class MediaActivity extends AppCompatActivity {
         shareButton.setOnClickListener((v) -> shareFiles());
         deleteButton.setOnClickListener((v) -> deleteFiles());
 
-        mediaViewPagerAdapter = new MediaViewPagerAdapter(this);
-        mediaViewPager.setAdapter(mediaViewPagerAdapter);
+
+        // initialize presenters
+        localPhotoPresenter = new LocalMediaPresenter(this, FileType.FILE_PHOTO);
+        localVideoPresenter = new LocalMediaPresenter(this, FileType.FILE_VIDEO);
+        remotePhotoPresenter = new RemoteMediaPresenter(this, FileType.FILE_PHOTO);
+        remoteVideoPresenter = new RemoteMediaPresenter(this, FileType.FILE_VIDEO);
+
+        // initialize recycler view
+        gridLayoutManager = new GridLayoutManager(this, 3);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.addItemDecoration(new GridSpacingItemDecoration(3, 6));
+        this.updateData();
+
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (recyclerViewAdapter.getCurMediaItemType(position).equals(MediaItemType.GROUP)) {
+                    return 3;
+                } else {
+                    return 1;
+                }
+            }
+        });
 
         mediaTabView.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mediaViewPager.setCurrentItem(tab.getPosition());
-                currentTabIndex = tab.getPosition();
+                if (tab.getPosition() == 0) {
+                    mediaStorageType = MediaStorageType.REMOTE;
+                } else {
+                    mediaStorageType = MediaStorageType.LOCAL;
+                }
+
+                updateData();
             }
 
             @Override
@@ -99,14 +139,6 @@ public class MediaActivity extends AppCompatActivity {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
 
-            }
-        });
-
-        mediaViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                mediaTabView.getTabAt(position).select();
             }
         });
     }
@@ -120,7 +152,7 @@ public class MediaActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        AppLog.d(TAG, "onStop()");
+        AppLog.d(TAG, "onStop");
         //presenter.isAppBackground();
     }
 
@@ -128,12 +160,11 @@ public class MediaActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        Log.e(TAG, "onResume");
+
         //presenter.submitAppInfo();
         //presenter.setSdCardEventListener();
         //AppLog.d(TAG, "onResume()");
-
-        //mediaArrayAdapter.clear();
-        Log.e("RemoteMultiPbActivity", "onResume");
 
         loadPhotoWall();
 
@@ -149,7 +180,7 @@ public class MediaActivity extends AppCompatActivity {
         super.onDestroy();
 
         MyCamera camera = CameraManager.getInstance().getCurCamera();
-        if(camera != null){
+        if(camera != null) {
             camera.setLoadThumbnail(false);
         }
 
@@ -157,8 +188,8 @@ public class MediaActivity extends AppCompatActivity {
         //presenter.removeActivity();
 
         // remove file list
-//        imagePresenter.emptyFileList();
-//        videoPresenter.emptyFileList();
+        remotePhotoPresenter.emptyFileList();
+        remoteVideoPresenter.emptyFileList();
     }
 
     public void beginSelectionMode() {
@@ -168,7 +199,7 @@ public class MediaActivity extends AppCompatActivity {
         // in selection mode, show bottom bar
         bottomBarLayout.setVisibility(View.VISIBLE);
 
-        if (currentTabIndex == 0) {
+        if (this.mediaStorageType.equals(MediaStorageType.REMOTE)) {
             // in remote tab, show download button & hide share button
             downloadButton.setVisibility(View.VISIBLE);
             shareButton.setVisibility(View.GONE);
@@ -189,6 +220,7 @@ public class MediaActivity extends AppCompatActivity {
         selectButton.setVisibility(View.GONE);
 
         // show selected number text
+        selectedNumberText.setText("");
         selectedNumberText.setVisibility(View.VISIBLE);
         titleText.setVisibility(View.GONE);
 
@@ -205,7 +237,8 @@ public class MediaActivity extends AppCompatActivity {
         //this.mediaArrayAdapter.updateMode(this.isSelectMode? "selection": "normal");
         //mediaArrayAdapter.unselectAllFiles();
 
-        updateUI();
+        this.recyclerViewAdapter.updateUI();
+        this.updateScreenTitle();
     }
 
     private void finishSelectionMode() {
@@ -238,21 +271,13 @@ public class MediaActivity extends AppCompatActivity {
         mediaTabView.setTabTextColors(getResources().getColor(R.color.button_pressed_color), getResources().getColor(R.color.yellow));
         mediaTabView.setSelectedTabIndicatorColor(getResources().getColor(R.color.yellow));
 
-        updateUI();
-    }
-
-    public void updateUI() {
-        this.mediaViewPagerAdapter.updateUI();
+        this.recyclerViewAdapter.deselectAll();
+        this.recyclerViewAdapter.updateUI();
     }
 
     public void quitEditMode() {
-//        imagePresenter.quitEditMode();
-//        videoPresenter.quitEditMode();
-    }
-
-    public void selectOrCancelAll(boolean isSelectAll) {
-//        imagePresenter.selectOrCancelAll(isSelectAll);
-//        videoPresenter.selectOrCancelAll(isSelectAll);
+        remotePhotoPresenter.quitEditMode();
+        remoteVideoPresenter.quitEditMode();
     }
 
 //    public List<MultiPbItemInfo> getSelectedList() {
@@ -260,64 +285,115 @@ public class MediaActivity extends AppCompatActivity {
 //    }
 
     public void deleteFiles() {
-//        List<MultiPbItemInfo> list = this.mediaArrayAdapter.getSelectedFileList();
-//        if (list == null || list.isEmpty()) {
-//            MyToast.show(this, R.string.gallery_no_file_selected);
-//            return;
-//        }
-//
-//        CharSequence what = this.getResources().getString(R.string.gallery_delete_des).replace("$1$", String.valueOf(list.size()));
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setCancelable(false);
-//        builder.setMessage(what);
-//
-//        builder.setPositiveButton(this.getResources().getString(R.string.gallery_cancel), new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                dialog.dismiss();
-//            }
-//        });
-//
-//        builder.setNegativeButton(this.getResources().getString(R.string.gallery_delete), new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                MyProgressDialog.showProgressDialog(context, R.string.dialog_deleting);
-//                imagePresenter.deleteFiles(list.stream().filter(e -> e.fileType.equals("photo")).collect(Collectors.toList()));
-//                videoPresenter.deleteFiles(list.stream().filter(e -> e.fileType.equals("video")).collect(Collectors.toList()));
-//                //this.loadPhotoWall();
-//
-//                // update the media list of grid view
-//                //ArrayList<MultiPbItemInfo> mediaList = Stream.concat(imagePresenter.getRemotePhotoInfoList().stream(), videoPresenter.getRemotePhotoInfoList().stream()).collect(Collectors.toCollection(ArrayList::new));
-//                //this.mediaArrayAdapter.setArrayList(mediaList);
-//                mediaArrayAdapter.deleteSelectedFiles();
-//            }
-//        });
-//        builder.create().show();
+        MediaActivity activity = this;
 
-        updateUI();
+        if (this.mediaStorageType.equals(MediaStorageType.LOCAL)) {
+            List<LocalMediaItemInfo> arrayList = new ArrayList<>();
+            for (Object item: this.recyclerViewAdapter.getSelectedItemList()) {
+                arrayList.add((LocalMediaItemInfo) item);
+            }
+
+            if (arrayList.isEmpty()) {
+                MyToast.show(this, R.string.gallery_no_file_selected);
+                return;
+            }
+
+            BottomSheetDialog deleteDialog = new BottomSheetDialog(this);
+            View deleteDialogLayout = LayoutInflater.from(this).inflate(R.layout.dialog_delete, null);
+            deleteDialog.setContentView(deleteDialogLayout);
+            deleteDialog.show();
+
+            Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
+            Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
+
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteDialog.dismiss();
+                }
+            });
+
+            deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteDialog.dismiss();
+
+                    MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
+                    localPhotoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
+                    localVideoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
+                    MyProgressDialog.closeProgressDialog();
+
+                    // update the recycler view
+                    activity.updateData();
+                }
+            });
+        } else {
+            List<RemoteMediaItemInfo> arrayList = new ArrayList<>();
+            for (Object item: this.recyclerViewAdapter.getSelectedItemList()) {
+                arrayList.add((RemoteMediaItemInfo) item);
+            }
+
+            if (arrayList.isEmpty()) {
+                MyToast.show(this, R.string.gallery_no_file_selected);
+                return;
+            }
+
+            BottomSheetDialog deleteDialog = new BottomSheetDialog(this);
+            View deleteDialogLayout = LayoutInflater.from(this).inflate(R.layout.dialog_delete, null);
+            deleteDialog.setContentView(deleteDialogLayout);
+            deleteDialog.show();
+
+            Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
+            Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
+
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteDialog.dismiss();
+                }
+            });
+
+            deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteDialog.dismiss();
+
+                    MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
+                    remotePhotoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
+                    remoteVideoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
+                    MyProgressDialog.closeProgressDialog();
+
+                    // update the recycler view
+                    activity.updateData();
+                }
+            });
+        }
     }
 
     public void downloadFiles() {
-//        List<MultiPbItemInfo> list = this.mediaArrayAdapter.getSelectedFileList();
-//        if (list == null || list.isEmpty()) {
-//            MyToast.show(this, R.string.gallery_no_file_selected);
-//            return;
-//        }
-//
-//        imagePresenter.downloadFiles(list.stream().filter(e -> e.fileType.equals("photo")).collect(Collectors.toList()));
-//        videoPresenter.downloadFiles(list.stream().filter(e -> e.fileType.equals("video")).collect(Collectors.toList()));
+        if (this.mediaStorageType.equals(MediaStorageType.LOCAL)) {
+            Log.e(TAG, "Downloading is not available in local storage");
+            return;
+        }
 
-        //this.loadPhotoWall();
+        List<RemoteMediaItemInfo> arrayList = new ArrayList<>();
+        for (Object item: this.recyclerViewAdapter.getSelectedItemList()) {
+            arrayList.add((RemoteMediaItemInfo) item);
+        }
 
-        // update the media list of grid view
-        //mediaArrayAdapter.deleteSelectedFiles();
+        if (arrayList.isEmpty()) {
+            MyToast.show(this, R.string.gallery_no_file_selected);
+            return;
+        }
 
-        updateUI();
+        remotePhotoPresenter.downloadFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
+        remoteVideoPresenter.downloadFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
+
+        // update the recycler view
+        this.updateData();
     }
 
     public void shareFiles() {
-
-        updateUI();
     }
 
     public void loadPhotoWall(){
@@ -345,7 +421,7 @@ public class MediaActivity extends AppCompatActivity {
         deselectAllButton.setVisibility(View.GONE);
         selectButton.setVisibility(View.GONE);
 
-        mediaViewPagerAdapter.deselectAllFiles();
+        this.recyclerViewAdapter.deselectAll();
     }
 
     private void selectAllFiles() {
@@ -357,10 +433,137 @@ public class MediaActivity extends AppCompatActivity {
         selectAllButton.setVisibility(View.GONE);
         selectButton.setVisibility(View.GONE);
 
-        updateUI();
+        this.recyclerViewAdapter.selectAll();
     }
 
     public String getMediaViewMode() {
         return this.mediaViewMode;
+    }
+
+    public void updateData() {
+        List<Object> updatedMediaItemList = new ArrayList<>();
+
+        if (this.mediaStorageType.equals(MediaStorageType.LOCAL)) {
+            // initialize the media item list
+            List<LocalMediaItemInfo> mediaInfoList = Stream.concat(this.localPhotoPresenter.getPhotoInfoList().stream(), localVideoPresenter.getPhotoInfoList().stream()).collect(Collectors.toList());
+            HashMap<String, List<Object>> mediaGroupList = new HashMap<>();
+
+            for (LocalMediaItemInfo mediaItem: mediaInfoList) {
+                String curKey = mediaItem.getFileDate();
+                if (mediaGroupList.containsKey(curKey)) {
+                    List<Object> arrayList = mediaGroupList.get(curKey);
+                    if (arrayList == null) {
+                        Log.e(TAG, "arrayList is null");
+                        continue;
+                    }
+
+                    arrayList.add(mediaItem);
+                    mediaGroupList.replace(curKey, arrayList);
+                } else {
+                    List<Object> arrayList = new ArrayList<>();
+                    arrayList.add(mediaItem);
+                    mediaGroupList.put(curKey, arrayList);
+                }
+            }
+
+            // sort media item list by date
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//            Collections.sort(mediaItemList, new Comparator<LocalMediaItemInfo>() {
+//                public int compare(LocalMediaItemInfo e1, LocalMediaItemInfo e2) {
+//                    try {
+//                        return dateFormat.parse(e2.getFileDate()).compareTo(dateFormat.parse(e1.getFileDate()));
+//                    } catch (ParseException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//            });
+
+            List<String> keyList = new ArrayList<>(mediaGroupList.keySet());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Collections.sort(keyList, new Comparator<String>() {
+                public int compare(String e1, String e2) {
+                    try {
+                        return dateFormat.parse(e2).compareTo(dateFormat.parse(e1));
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            for (String key: keyList) {
+                List<Object> arrayList = mediaGroupList.get(key);
+                if (arrayList == null) {
+                    Log.e(TAG, "arrayList is null");
+                    continue;
+                }
+
+                updatedMediaItemList.add(new GroupMediaItemInfo(key, arrayList.size()));
+                updatedMediaItemList.addAll(arrayList);
+            }
+        } else {
+            // initialize the media item list
+            List<RemoteMediaItemInfo> mediaInfoList = Stream.concat(this.remotePhotoPresenter.getRemotePhotoInfoList().stream(), remoteVideoPresenter.getRemotePhotoInfoList().stream()).collect(Collectors.toList());
+            HashMap<String, List<Object>> mediaGroupList = new HashMap<>();
+
+            for (RemoteMediaItemInfo mediaItem: mediaInfoList) {
+                String curKey = mediaItem.getFileDate();
+                if (mediaGroupList.containsKey(curKey)) {
+                    List<Object> arrayList = mediaGroupList.get(curKey);
+                    if (arrayList == null) {
+                        Log.e(TAG, "arrayList is null");
+                        continue;
+                    }
+
+                    arrayList.add(mediaItem);
+                    mediaGroupList.replace(curKey, arrayList);
+                } else {
+                    List<Object> arrayList = new ArrayList<>();
+                    arrayList.add(mediaItem);
+                    mediaGroupList.put(curKey, arrayList);
+                }
+            }
+
+            List<String> keyList = new ArrayList<>(mediaGroupList.keySet());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Collections.sort(keyList, new Comparator<String>() {
+                public int compare(String e1, String e2) {
+                    try {
+                        return dateFormat.parse(e2).compareTo(dateFormat.parse(e1));
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            for (String key: keyList) {
+                List<Object> arrayList = mediaGroupList.get(key);
+                if (arrayList == null) {
+                    Log.e(TAG, "arrayList is null");
+                    continue;
+                }
+
+                updatedMediaItemList.add(new GroupMediaItemInfo(key, arrayList.size()));
+                updatedMediaItemList.addAll(arrayList);
+            }
+        }
+
+        // update the adapter
+        this.recyclerViewAdapter = new MediaRecyclerViewAdapter(this, updatedMediaItemList);
+        this.recyclerView.setAdapter(recyclerViewAdapter);
+        this.updateScreenTitle();
+    }
+
+    public void updateScreenTitle() {
+        this.selectedNumberText.setText(this.recyclerViewAdapter.getSelectedCount() + "/" + this.recyclerViewAdapter.getTotalCount());
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(data != null){
+            boolean hasDeleted = data.getBooleanExtra("hasDeleted",false);
+            if (hasDeleted) {
+                this.updateData();
+            }
+        }
     }
 }
