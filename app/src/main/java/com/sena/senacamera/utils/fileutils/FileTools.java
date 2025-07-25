@@ -1,11 +1,10 @@
 package com.sena.senacamera.utils.fileutils;
 
-import android.os.Environment;
 import android.util.Log;
 
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,9 +28,9 @@ import java.util.List;
  * Created by zhang yanhu C001012 on 2015/11/19 10:02.
  */
 public class FileTools {
-    private final static String TAG = "FileTools";
+    private static final String TAG = FileTools.class.getSimpleName();
     private static String[] Urls = null;
-    private final static String FILENAME_SEQUENCE_SEPARATOR = "-";
+    private static final String FILENAME_SEQUENCE_SEPARATOR = "-";
 
     //按照文件大小排序
     public static List<File> getFilesOrderByLength(String fliePath) {
@@ -85,7 +84,7 @@ public class FileTools {
         AppLog.i(TAG, "Start getFilesOrderByDate file=" + file);
         File[] fileArray = file.listFiles();
         AppLog.i(TAG, "Start getFilesOrderByDate fileArray=" + fileArray);
-        if(fileArray == null){
+        if (fileArray == null) {
             return null;
         }
         AppLog.i(TAG, "Start getFilesOrderByDate size=" + fileArray.length);
@@ -142,13 +141,13 @@ public class FileTools {
         return Urls;
     }
 
-    public static String getFileDate(String fileName){
-        if(fileName == null){
+    public static String getFileDate(String fileName) {
+        if (fileName == null) {
             return null;
         }
 
         File file = new File(fileName);
-        if(!file.exists()){
+        if (!file.exists()) {
             return null;
         }
         long time = file.lastModified();
@@ -172,7 +171,7 @@ public class FileTools {
         }
         return size;
     }
-    public static boolean checkFwUpgradeFile(String filePath,String fileName){
+    public static boolean checkFwUpgradeFile(String filePath,String fileName) {
         File file = new File(filePath, fileName);
         File Folder = new File(filePath);
         if (!Folder.exists())
@@ -216,7 +215,7 @@ public class FileTools {
                 out.write(buffer, 0, read);
             }
         } catch (IOException e) {
-            Log.e("Failed to copy file", e.toString());
+            AppLog.e("Failed to copy file", e.toString());
         } finally {
             try {
                 in.close();
@@ -230,13 +229,13 @@ public class FileTools {
     }
 
     public static String chooseUniqueFilename(String fileNamePath) {
-        if(fileNamePath == null){
+        if (fileNamePath == null) {
             return "error";
         }
         String filename = fileNamePath.substring(0, fileNamePath.lastIndexOf("."));
         String extension = fileNamePath.substring(fileNamePath.lastIndexOf("."), fileNamePath.length());
         String fullFilename = filename + extension;
-        if(!new File(fullFilename).exists()) {
+        if (!new File(fullFilename).exists()) {
             Log.d(TAG, "file not exists=" + fullFilename);
             return fullFilename;
         }
@@ -264,7 +263,7 @@ public class FileTools {
         return fullFilename;
     }
 	
-	public static boolean saveSerializable(String fileName, Serializable data){
+	public static boolean saveSerializable(String fileName, Serializable data) {
         FileOutputStream fileOutputStream = null;
         ObjectOutputStream objectOutputStream = null;
         File file = new File(fileName);

@@ -12,7 +12,7 @@ public class LimitQueue<E> implements Queue<E>{
 //    Queue<E> queue = new LinkedList<E>();
     LinkedList<E> queue = new LinkedList<E>();
 
-    public LimitQueue(int limit){
+    public LimitQueue(int limit) {
         this.limit = limit;
     }
 
@@ -21,8 +21,8 @@ public class LimitQueue<E> implements Queue<E>{
      * @param e
      */
     @Override
-    public boolean offer(E e){
-        if(queue.size() >= limit){
+    public boolean offer(E e) {
+        if (queue.size() >= limit) {
             //如果超出长度,入队时,先出队
             queue.poll();
         }
@@ -38,7 +38,7 @@ public class LimitQueue<E> implements Queue<E>{
         return queue.poll();
     }
 
-    public E removeLast(){
+    public E removeLast() {
         return queue.removeLast();
     }
 
@@ -47,7 +47,7 @@ public class LimitQueue<E> implements Queue<E>{
      * 获取队列
      * @return
      */
-    public Queue<E> getQueue(){
+    public Queue<E> getQueue() {
         return queue;
     }
 
@@ -55,7 +55,7 @@ public class LimitQueue<E> implements Queue<E>{
      * 获取限制大小
      * @return
      */
-    public int getLimit(){
+    public int getLimit() {
         return limit;
     }
 

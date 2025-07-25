@@ -4,10 +4,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.Log;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.SdkApi.CameraProperties;
-import com.sena.senacamera.data.CustomException.NullPointerException;
 import com.sena.senacamera.data.Hash.PropertyHashMapDynamic;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.data.PropertyId.PropertyId;
@@ -22,7 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class PropertyTypeInteger {
-    private static final String TAG = "PropertyTypeInteger";
+    private static final String TAG = PropertyTypeInteger.class.getSimpleName();
+
     private HashMap<Integer, ItemInfo> hashMap;
     private int propertyId;
     private String[] valueListString;
@@ -31,7 +31,7 @@ public class PropertyTypeInteger {
     private Resources res;
     private CameraProperties cameraProperties;
 
-    public PropertyTypeInteger(CameraProperties cameraProperties,HashMap<Integer, ItemInfo> hashMap, int propertyId, Context context) {
+    public PropertyTypeInteger(CameraProperties cameraProperties, HashMap<Integer, ItemInfo> hashMap, int propertyId, Context context) {
         this.hashMap = hashMap;
         this.propertyId = propertyId;
         this.context = context;
@@ -39,7 +39,7 @@ public class PropertyTypeInteger {
         initItem();
     }
 
-    public PropertyTypeInteger(CameraProperties cameraProperties,int propertyId, Context context) {
+    public PropertyTypeInteger(CameraProperties cameraProperties, int propertyId, Context context) {
         this.propertyId = propertyId;
         this.context = context;
         this.cameraProperties = cameraProperties;
@@ -49,7 +49,7 @@ public class PropertyTypeInteger {
     public void initItem() {
         // TODO Auto-generated method stub
         if (hashMap == null) {
-            hashMap = PropertyHashMapDynamic.getInstance().getDynamicHashInt(cameraProperties,propertyId);
+            hashMap = PropertyHashMapDynamic.getInstance().getDynamicHashInt(cameraProperties, propertyId);
         }
         res = context.getResources();
 
@@ -61,22 +61,30 @@ public class PropertyTypeInteger {
                 valueListInt = cameraProperties.getSupportedCaptureDelays();
                 break;
             case PropertyId.BURST_NUMBER:
-                List<Integer> tempList = cameraProperties.getsupportedBurstNums();
                 valueListInt = new LinkedList<>();
-                for (int key:tempList
-                ) {
-                    if(hashMap != null && hashMap.containsKey(key)){
+                for (int key: cameraProperties.getSupportedBurstNums()) {
+                    if (hashMap != null && hashMap.containsKey(key)) {
                         valueListInt.add(key);
-                    }else {
+                    } else {
                         AppLog.d(TAG,"Contains unsupported values BurstNums key:" + key);
                     }
                 }
                 break;
+            case PropertyId.GENERAL_COLOR_EFFECT:
+                valueListInt = new LinkedList<>();
+                for (int key: cameraProperties.getSupportedColorEffects()) {
+                    if (hashMap != null && hashMap.containsKey(key)) {
+                        valueListInt.add(key);
+                    } else {
+                        AppLog.d(TAG,"Contains unsupported values ColorEffects key: " + key);
+                    }
+                }
+                break;
             case PropertyId.LIGHT_FREQUENCY:
-                valueListInt = cameraProperties.getSupportedLightFrequencys();
+                valueListInt = cameraProperties.getSupportedLightFrequencies();
                 break;
             case PropertyId.DATE_STAMP:
-                valueListInt = cameraProperties.getsupportedDateStamps();
+                valueListInt = cameraProperties.getSupportedDateStamps();
                 break;
             case PropertyId.UP_SIDE:
                 valueListInt = new ArrayList<Integer>();
@@ -93,21 +101,31 @@ public class PropertyTypeInteger {
                 valueListInt.add(TimeLapseMode.TIME_LAPSE_MODE_STILL);
                 valueListInt.add(TimeLapseMode.TIME_LAPSE_MODE_VIDEO);
                 break;
+            case PropertyId.AP_MODE_TO_STA_MODE:
+                valueListInt = new LinkedList<>();
+                for (int key: cameraProperties.getSupportedBurstNums()) {
+                    if (hashMap != null && hashMap.containsKey(key)) {
+                        valueListInt.add(key);
+                    } else {
+                        AppLog.d(TAG,"Contains unsupported values BurstNums key:" + key);
+                    }
+                }
             default:
                 valueListInt = cameraProperties.getSupportedPropertyValues(propertyId);
                 break;
         }
+
         valueListString = new String[valueListInt.size()];
         if (valueListInt != null) {
-            for (int ii = 0; ii < valueListInt.size(); ii++) {
-                if (hashMap.get(valueListInt.get(ii)) == null) {
+            for (int i = 0; i < valueListInt.size(); i++) {
+                if (hashMap.get(valueListInt.get(i)) == null) {
                     continue;
                 }
-                String uiStringInSettingString = hashMap.get(valueListInt.get(ii)).uiStringInSettingString;
+                String uiStringInSettingString = hashMap.get(valueListInt.get(i)).uiStringInSettingString;
                 if (uiStringInSettingString != null) {
-                    valueListString[ii] = uiStringInSettingString;
-                }else {
-                    valueListString[ii] = res.getString(hashMap.get(valueListInt.get(ii)).uiStringInSetting);
+                    valueListString[i] = uiStringInSettingString;
+                } else {
+                    valueListString[i] = res.getString(hashMap.get(valueListInt.get(i)).uiStringInSetting);
                 }
             }
         }
@@ -125,6 +143,9 @@ public class PropertyTypeInteger {
                 break;
             case PropertyId.BURST_NUMBER:
                 retValue = cameraProperties.getCurrentBurstNum();
+                break;
+            case PropertyId.GENERAL_COLOR_EFFECT:
+                retValue = cameraProperties.getCurrentColorEffect();
                 break;
             case PropertyId.LIGHT_FREQUENCY:
                 retValue = cameraProperties.getCurrentLightFrequency();
@@ -150,7 +171,7 @@ public class PropertyTypeInteger {
 
     public String getCurrentUiStringInSetting() {
         // TODO Auto-generated method stub
-        if(hashMap == null){
+        if (hashMap == null) {
             return "Unknown";
         }
         int curValue = getCurrentValue();
@@ -161,18 +182,22 @@ public class PropertyTypeInteger {
         String ret = null;
         if (itemInfo == null) {
             ret = "Unknown";
-        } else {
+        } else if (itemInfo.uiStringInSetting != 0) {
             ret = res.getString(itemInfo.uiStringInSetting);
+        } else if (itemInfo.uiStringInSettingString != null) {
+            ret = itemInfo.uiStringInSettingString;
+        } else {
+            ret = "";
         }
         return ret;
     }
 
     public String getCurrentUiStringInPreview() {
-        if(hashMap == null){
+        if (hashMap == null) {
             return "Unknown";
         }
         ItemInfo itemInfo = hashMap.get(getCurrentValue());
-        String ret = null;
+        String ret;
         if (itemInfo == null) {
             ret = "Unknown";
         } else {
@@ -215,6 +240,9 @@ public class PropertyTypeInteger {
             case PropertyId.BURST_NUMBER:
                 retValue = cameraProperties.setCurrentBurst(value);
                 break;
+            case PropertyId.GENERAL_COLOR_EFFECT:
+                retValue = cameraProperties.setColorEffect(value);
+                break;
             case PropertyId.LIGHT_FREQUENCY:
                 retValue = cameraProperties.setLightFrequency(value);
                 break;
@@ -242,6 +270,9 @@ public class PropertyTypeInteger {
             case PropertyId.BURST_NUMBER:
                 retValue = cameraProperties.setCurrentBurst(valueListInt.get(position));
                 break;
+            case PropertyId.GENERAL_COLOR_EFFECT:
+                retValue = cameraProperties.setColorEffect(valueListInt.get(position));
+                break;
             case PropertyId.LIGHT_FREQUENCY:
                 retValue = cameraProperties.setLightFrequency(valueListInt.get(position));
                 break;
@@ -266,22 +297,22 @@ public class PropertyTypeInteger {
         switch (propertyId) {
             case PropertyId.WHITE_BALANCE:
                 //retValue = cameraProperties.setWhiteBalance(valueListInt.get(position));
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_WHITE_BALANCE)) {
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_WHITE_BALANCE)) {
                     retValue = true;
                     break;
                 }
                 retValue = true;
                 break;
             case PropertyId.CAPTURE_DELAY:
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE) &&
-                        cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY) && //IC-564
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE) &&
+                        cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY) && //IC-564
                         previewMode == PreviewMode.APP_STATE_STILL_PREVIEW) {
                     retValue = true;
                     break;
                 }
                 break;
             case PropertyId.BURST_NUMBER:
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) &&
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) &&
                         previewMode == PreviewMode.APP_STATE_STILL_PREVIEW) {
                     retValue = true;
                     break;
@@ -291,7 +322,7 @@ public class PropertyTypeInteger {
                 retValue = true;
                 break;
             case PropertyId.DATE_STAMP:
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_DATE_STAMP)) {
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_DATE_STAMP)) {
                     if (previewMode == PreviewMode.APP_STATE_STILL_PREVIEW || previewMode == PreviewMode.APP_STATE_VIDEO_PREVIEW) {
                         retValue = true;
                         break;
@@ -299,12 +330,12 @@ public class PropertyTypeInteger {
                 }
                 break;
             case PropertyId.UP_SIDE:
-                if (cameraProperties.hasFuction(PropertyId.UP_SIDE)) {
+                if (cameraProperties.hasFunction(PropertyId.UP_SIDE)) {
                     return true;
                 }
                 break;
             case PropertyId.SLOW_MOTION:
-                if (cameraProperties.hasFuction(PropertyId.SLOW_MOTION) &&
+                if (cameraProperties.hasFunction(PropertyId.SLOW_MOTION) &&
                         (previewMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
                                 previewMode == PreviewMode.APP_STATE_VIDEO_CAPTURE)) {
                     retValue = true;
@@ -313,7 +344,7 @@ public class PropertyTypeInteger {
                 break;
 
             case PropertyId.TIMELAPSE_MODE:
-                boolean supportTimelapseMode  = cameraProperties.hasFuction(PropertyId.TIMELAPSE_MODE);
+                boolean supportTimelapseMode  = cameraProperties.hasFunction(PropertyId.TIMELAPSE_MODE);
                 AppLog.i(TAG, "TIMELAPSE_MODE isSupportTimelapseMode=" + supportTimelapseMode);
                 if (supportTimelapseMode) {
                     if (previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||

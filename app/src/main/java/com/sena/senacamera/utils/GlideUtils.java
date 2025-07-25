@@ -102,12 +102,12 @@ public class GlideUtils {
     }
 
     //设置动态GIF加载方式
-    public static void loadImageViewDynamicGif(Context mContext, String path, ImageView mImageView) {
-//        Glide.with(mContext).load(path).asGif().into(mImageView);
+    public static void loadImageViewDynamicGif (Context mContext, String path, ImageView mImageView) {
+//        Glide.with(mContext).load(path).asGif ().into(mImageView);
     }
 
     //设置静态GIF加载方式
-    public static void loadImageViewStaticGif(Context mContext, String path, ImageView mImageView) {
+    public static void loadImageViewStaticGif (Context mContext, String path, ImageView mImageView) {
 //        Glide.with(mContext).load(path).asBitmap().into(mImageView);
     }
 
@@ -137,7 +137,7 @@ public class GlideUtils {
         Glide.get(mContext).clearMemory();
     }
 
-    public static void clear(ImageView mImageView){
+    public static void clear(ImageView mImageView) {
 
     }
 }

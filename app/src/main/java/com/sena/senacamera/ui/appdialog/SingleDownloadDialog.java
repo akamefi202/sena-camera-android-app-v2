@@ -7,7 +7,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.sena.senacamera.data.entity.DownloadInfo;
-import com.sena.senacamera.ui.ExtendComponent.NumberProgressBar;
+import com.sena.senacamera.ui.component.NumberProgressBar;
 import com.sena.senacamera.R;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 
@@ -23,7 +23,7 @@ public class SingleDownloadDialog {
     Context context;
     ICatchFile curVideoFile;
 
-    public SingleDownloadDialog(Context context,ICatchFile iCatchFile){
+    public SingleDownloadDialog(Context context,ICatchFile iCatchFile) {
         this.context = context;
         this.curVideoFile = iCatchFile;
         builder = new AlertDialog.Builder(context);
@@ -41,24 +41,24 @@ public class SingleDownloadDialog {
     }
 
     public void showDownloadDialog() {
-        if(alertDialog != null){
+        if (alertDialog != null) {
             alertDialog.show();
         }
     }
 
-    public void dismissDownloadDialog(){
-        if (alertDialog != null){
+    public void dismissDownloadDialog() {
+        if (alertDialog != null) {
             alertDialog.dismiss();
         }
     }
 
-    public void setBackBtnOnClickListener(View.OnClickListener onClickListener){
-        if(onClickListener != null){
+    public void setBackBtnOnClickListener(View.OnClickListener onClickListener) {
+        if (onClickListener != null) {
             exitBtn.setOnClickListener(onClickListener);
         }
     }
 
-    public void updateDownloadStatus(DownloadInfo downloadInfo){
+    public void updateDownloadStatus(DownloadInfo downloadInfo) {
         numberProgressBar.setProgress(downloadInfo.progress);
         DecimalFormat df = new DecimalFormat("#.#");
         String curFileLength = df.format(downloadInfo.curFileLength / 1024.0 / 1024) + "M";

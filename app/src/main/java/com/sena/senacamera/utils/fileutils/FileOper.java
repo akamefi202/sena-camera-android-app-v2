@@ -1,6 +1,6 @@
 package com.sena.senacamera.utils.fileutils;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +11,7 @@ import java.io.IOException;
  * Fucntion:
  */
 public class FileOper {
-    public static void createDirectory(String directoryPath){
+    public static void createDirectory(String directoryPath) {
         if (directoryPath != null) {
             File directory = new File(directoryPath);
             if (!directory.exists()) {

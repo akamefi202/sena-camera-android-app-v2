@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sena.senacamera.R;
@@ -14,11 +15,11 @@ import com.sena.senacamera.R;
  */
 
 public class CustomProgressDialog extends ProgressDialog {
+    private String text;
+
     public CustomProgressDialog(Context context) {
         super(context);
     }
-
-    private String text;
 
     public CustomProgressDialog(Context context, int theme, String text) {
         super(context, theme);
@@ -36,12 +37,20 @@ public class CustomProgressDialog extends ProgressDialog {
         //设置不可取消，点击其他区域不能取消，实际中可以抽出去封装供外包设置
         setCancelable(false);
         setCanceledOnTouchOutside(false);
+        setContentView(R.layout.loading_dialog);
 
-        setContentView(R.layout.load_dialog);
-        TextView textview = (TextView) findViewById(R.id.tv_load_dialog);
-        if (textview != null && text != null) {
-            textview.setText(text);
+        TextView loadingText = (TextView) findViewById(R.id.tv_load_dialog);
+        if (loadingText != null) {
+            if (text != null) {
+                loadingText.setText(text);
+            }
+            if (text == null || text.isBlank()) {
+                loadingText.setVisibility(TextView.GONE);
+            } else {
+                loadingText.setVisibility(TextView.VISIBLE);
+            }
         }
+
         WindowManager.LayoutParams params = getWindow().getAttributes();
         params.width = WindowManager.LayoutParams.WRAP_CONTENT;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;

@@ -1,6 +1,6 @@
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.ICatchIPancamVideoPlayback;
 import com.icatchtek.pancam.customer.ICatchPancamConfig;
 import com.icatchtek.pancam.customer.ICatchPancamSession;
@@ -46,7 +46,7 @@ public class PanoramaVideoPlayback {
             e.printStackTrace();
         }
     }
-    public StreamStablization getStreamStablization(){
+    public StreamStablization getStreamStablization() {
             return streamStablization;
     }
 
@@ -54,7 +54,7 @@ public class PanoramaVideoPlayback {
         try {
             pancamGL = videoPlayback.enableGLRender(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE);
         } catch (Exception e) {
-            AppLog.e(TAG, "Exception : " + e.getClass().getSimpleName());
+            AppLog.e(TAG, "Exception: " + e.getClass().getSimpleName());
             e.printStackTrace();
         }
         AppLog.d(TAG, "enableGLRender pancamGL=" + pancamGL);
@@ -84,7 +84,7 @@ public class PanoramaVideoPlayback {
         AppLog.d(TAG, "enableGLRender pancamGL=" + pancamGL);
     }
 
-    public  boolean changePanoramaType(int panoramaType){
+    public boolean changePanoramaType(int panoramaType) {
         AppLog.d(TAG, "start changePanoramaType panoramaType=" + panoramaType);
         boolean ret = false;
         if (pancamGL == null) {

@@ -19,7 +19,7 @@ public class TutkUriUtil {
         return uri != null && uri.length() != 0 ? belongsTo(uri) : false;
     }
     //filehandle会变化，需要移除fileHandle
-    public static String getKey(String uri){
+    public static String getKey(String uri) {
         String infoStr = crop(uri);
         int beginIndex = infoStr.indexOf("fileName");
         String temp = infoStr.substring(beginIndex);
@@ -34,18 +34,17 @@ public class TutkUriUtil {
         return URI_PREFIX + fileInfoStr;
     }
 
-    public static boolean isOriginalUri(String uri){
+    public static boolean isOriginalUri(String uri) {
         return  (uri != null && uri.contains("original"));
     }
 
     public static String getTutkThumbnailUri(ICatchFile iCatchFile) {
-
         // int fileType, String fileName, long fileSize
         String fileInfoStr = "fileHandle=" + iCatchFile.getFileHandle()  + "&fileName=" + iCatchFile.getFileName() + "&fileSize=" + iCatchFile.getFileSize() + "&thumbnail";
         return URI_PREFIX + fileInfoStr;
     }
 
-    public static boolean isThumbnailUri(String uri){
+    public static boolean isThumbnailUri(String uri) {
         return  (uri != null && uri.contains("thumbnail"));
     }
 
@@ -68,11 +67,10 @@ public class TutkUriUtil {
 
     private static ICatchFile getICatchFile(String infoStr) {
         String[] fileAttrs = infoStr.split("&");
-        if (fileAttrs != null && fileAttrs.length >= 3) {
+        if (fileAttrs.length >= 3) {
             String[] keyVal1 = fileAttrs[0].split("=");
             if (keyVal1.length == 2) {
-                ICatchFile iCatchFile = new ICatchFile(Integer.valueOf(keyVal1[1]));
-                return iCatchFile;
+                return new ICatchFile(Integer.parseInt(keyVal1[1]));
             } else {
                 return null;
             }

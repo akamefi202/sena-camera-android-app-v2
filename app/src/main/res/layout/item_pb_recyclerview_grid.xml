@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:src="@drawable/ic_check_box_blank_grey"
+        android:src="@drawable/status_checkbox_off"
         />
 
     <ImageView

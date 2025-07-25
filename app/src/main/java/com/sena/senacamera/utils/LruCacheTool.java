@@ -3,10 +3,10 @@ package com.sena.senacamera.utils;
 import android.graphics.Bitmap;
 import android.util.LruCache;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 public class LruCacheTool {
-    private final static String TAG = "LruCacheTool";
+    private static final String TAG = LruCacheTool.class.getSimpleName();
     private static LruCacheTool instance;
     private LruCache<String, Bitmap> localThumbnailLruCache;
 
@@ -21,7 +21,7 @@ public class LruCacheTool {
 
     }
 
-    public LruCache<String, Bitmap> getLruCache(){
+    public LruCache<String, Bitmap> getLruCache() {
         return localThumbnailLruCache;
     }
 
@@ -58,7 +58,7 @@ public class LruCacheTool {
     }
 
     public Bitmap getBitmapFromLruCache(String file) {
-        if(file == null || file.isEmpty()){
+        if (file == null || file.isEmpty()) {
             return null;
         }
         Bitmap bitmap = localThumbnailLruCache.get(file);
@@ -75,6 +75,5 @@ public class LruCacheTool {
             }
         }
     }
-
 
 }

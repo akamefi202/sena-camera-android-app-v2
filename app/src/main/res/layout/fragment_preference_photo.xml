@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/background_primary_color"
+    tools:context=".ui.fragment.FragmentPreferencePhoto">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="32dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- mode -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/button_disabled_color"
+                android:text="@string/mode" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="56dp"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/rounded_gray_section">
+
+                <!-- modes -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/photo_mode_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_underline="false"
+                    app:menu_selection_title="@string/modes"
+                    app:menu_selection_value="Single" />
+
+            </LinearLayout>
+
+            <!-- option -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/button_disabled_color"
+                android:text="@string/option" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/rounded_gray_section">
+
+                <!-- resolution -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/photo_resolution_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/resolution"
+                    app:menu_selection_value="20MP" />
+
+                <!-- image quality -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/image_quality_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/image_quality"
+                    app:menu_selection_value="High" />
+
+                <!-- iso -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/iso_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/iso"
+                    app:menu_selection_value="Auto" />
+
+                <!-- fov -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/fov_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/fov"
+                    app:menu_selection_value="Wide" />
+
+                <!-- ev -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/ev_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/ev"
+                    app:menu_selection_value="0" />
+
+                <!-- metering -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/metering_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/metering"
+                    app:menu_selection_value="Multi" />
+
+                <!-- photo burst -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/photo_burst_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/photo_burst"
+                    app:menu_selection_value="3 shots" />
+
+                <!-- self timer -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/self_timer_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/photo_mode_self_timer"
+                    app:menu_selection_value="Delay 2s" />
+
+                <!-- timelapse interval -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/timelapse_interval_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/setting_time_lapse_interval"
+                    app:menu_selection_value="3 sec" />
+
+                <!-- timelapse duration -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/timelapse_duration_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_title="@string/setting_time_lapse_duration"
+                    app:menu_selection_value="Unlimited" />
+
+                <!-- date caption -->
+                <com.sena.senacamera.ui.component.MenuSelection
+                    android:id="@+id/date_caption_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:menu_selection_underline="false"
+                    app:menu_selection_title="@string/date_caption"
+                    app:menu_selection_value="Off" />
+
+            </LinearLayout>
+
+            <!-- reset default button -->
+            <LinearLayout
+                android:id="@+id/reset_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/selector_button_reset" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/selector_button_light_gray_color"
+                    android:text="@string/dialog_reset_to_default_title"/>
+            </LinearLayout>
+
+            <!-- bottom gap -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- fragment container -->
+    <FrameLayout
+        android:id="@+id/fragment_container_preference_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

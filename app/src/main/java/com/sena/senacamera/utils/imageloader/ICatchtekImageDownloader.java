@@ -3,7 +3,7 @@ package com.sena.senacamera.utils.imageloader;
 import android.content.Context;
 import android.graphics.Bitmap;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.SdkApi.FileOperation;
@@ -22,7 +22,7 @@ import java.io.InputStream;
  */
 
 public class ICatchtekImageDownloader extends BaseImageDownloader {
-    private static String TAG = ICatchtekImageDownloader.class.getSimpleName();
+    private static final String TAG = ICatchtekImageDownloader.class.getSimpleName();
     private static final int HTTP_SOCKET_TIMEOUT_MS = 10000;
 
     public ICatchtekImageDownloader(Context context) {
@@ -48,10 +48,10 @@ public class ICatchtekImageDownloader extends BaseImageDownloader {
             return null;
         }
         MyCamera myCamera = CameraManager.getInstance().getCurCamera();
-        if(myCamera == null || !myCamera.isConnected()){
+        if (myCamera == null || !myCamera.isConnected()) {
             return null;
         }
-        if(!myCamera.isLoadThumbnail()){
+        if (!myCamera.isLoadThumbnail()) {
             AppLog.d(TAG, "getStreamFromTUTK isLoadThumbnail is false");
             return null;
         }

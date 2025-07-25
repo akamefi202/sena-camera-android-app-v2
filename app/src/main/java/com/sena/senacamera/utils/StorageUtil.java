@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.AppInfo.AppInfo;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import static android.content.Context.MODE_PRIVATE;
  */
 
 public class StorageUtil {
-    private static String TAG = "StorageUtil";
+    private static final String TAG = StorageUtil.class.getSimpleName();
 
     public static String getDownloadPath(Context context) {
         AppLog.i(TAG, "start getDownloadVideoPath");

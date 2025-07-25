@@ -3,7 +3,6 @@ package com.sena.senacamera.ui.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.icatchtek.reliant.customer.type.ICatchFile;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 import com.sena.senacamera.data.Mode.MediaViewMode;
 import com.sena.senacamera.data.entity.GroupMediaItemInfo;
@@ -29,7 +29,6 @@ import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.data.type.MediaItemType;
 import com.sena.senacamera.data.type.MediaType;
 import com.sena.senacamera.ui.BuildConfig;
-import com.sena.senacamera.ui.Interface.PhotoDetailView;
 import com.sena.senacamera.ui.activity.MediaActivity;
 import com.sena.senacamera.ui.activity.MediaPhotoDetailActivity;
 import com.sena.senacamera.ui.activity.MediaVideoDetailActivity;
@@ -43,12 +42,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecyclerViewAdapter.ViewHolder> {
-    private String TAG = MediaRecyclerViewAdapter.class.getSimpleName();
+    private static final String TAG = MediaRecyclerViewAdapter.class.getSimpleName();
     List<Object> mediaItemList;
     private Context context;
 
     private final View.OnClickListener buttonClickListener = view -> {
-        Log.e(TAG, "buttonClickListener");
+        AppLog.i(TAG, "buttonClickListener");
         int itemIndex = Integer.parseInt(view.getTag().toString());
         if (itemIndex > -1 && itemIndex < mediaItemList.size()) {
             int id = view.getId();
@@ -318,16 +317,17 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
                 return;
             }
 
-            File file = item.file;
             String fileName = item.getFileName().toLowerCase();
             if (fileName.endsWith(".mov") || fileName.endsWith(".avi") || fileName.endsWith(".mp4")) {
-                intent = new Intent(Intent.ACTION_VIEW);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setDataAndType(FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file), "video/3gp");
+                intent = new Intent();
+                intent.putExtra("localMedia", LocalMediaItemInfo.serialize(item));
+                intent.putExtra("fileType", FileType.FILE_PHOTO.ordinal());
+                intent.setClass(context, MediaVideoDetailActivity.class);
             } else if (fileName.endsWith(".jpg")) {
-                intent = new Intent(Intent.ACTION_VIEW);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setDataAndType(FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file), "image/jpeg");
+                intent = new Intent();
+                intent.putExtra("localMedia", LocalMediaItemInfo.serialize(item));
+                intent.putExtra("fileType", FileType.FILE_VIDEO.ordinal());
+                intent.setClass(context, MediaPhotoDetailActivity.class);
             } else {
                 // unknown file type
                 return;

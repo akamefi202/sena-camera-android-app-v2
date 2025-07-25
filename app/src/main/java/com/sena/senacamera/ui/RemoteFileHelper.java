@@ -1,6 +1,6 @@
 package com.sena.senacamera.ui;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.SdkApi.CameraProperties;
@@ -28,7 +28,7 @@ import java.util.List;
  * @description
  */
 public class RemoteFileHelper {
-    private String TAG = RemoteFileHelper.class.getSimpleName();
+    private static final String TAG = RemoteFileHelper.class.getSimpleName();
     private static RemoteFileHelper instance;
     public HashMap<Integer, List<RemoteMediaItemInfo>> listHashMap = new HashMap<>();
     private int curFilterFileType = ICatchCamListFileFilter.ICH_OFC_FILE_TYPE_ALL_MEDIA;
@@ -55,7 +55,7 @@ public class RemoteFileHelper {
             cameraProperties = camera.getCameraProperties();
         }
         if (cameraProperties != null
-                && cameraProperties.hasFuction(PropertyId.CAMERA_PB_LIMIT_NUMBER)
+                && cameraProperties.hasFunction(PropertyId.CAMERA_PB_LIMIT_NUMBER)
                 && cameraProperties.checkCameraCapabilities(ICatchCamFeatureID.ICH_CAM_NEW_PAGINATION_GET_FILE)) {
             supportSegmentedLoading = true;
             supportSetFileListAttribute = true;
@@ -64,7 +64,7 @@ public class RemoteFileHelper {
             supportSetFileListAttribute = false;
         }
 
-        if(cameraProperties != null){
+        if (cameraProperties != null) {
             sensorsNum = cameraProperties.getNumberOfSensors();
         }
     }
@@ -96,7 +96,7 @@ public class RemoteFileHelper {
         if (camera != null) {
             cameraProperties = camera.getCameraProperties();
         }
-        if (cameraProperties != null && cameraProperties.hasFuction(PropertyId.CAMERA_PB_LIMIT_NUMBER)) {
+        if (cameraProperties != null && cameraProperties.hasFunction(PropertyId.CAMERA_PB_LIMIT_NUMBER)) {
             tempItemInfos = getFileList(fileOperation,icatchFileType,500);
         } else {
             setFileListAttribute(fileOperation, fileType);
@@ -182,7 +182,7 @@ public class RemoteFileHelper {
 
     public List<RemoteMediaItemInfo> getFileList(FileOperation fileOperation, int type, int maxNum) {
         AppLog.i(TAG, "begin getFileList type: " + type + " maxNum：" + maxNum);
-        if(fileOperation == null){
+        if (fileOperation == null) {
             AppLog.i(TAG, "cameraPlayback is null");
             return null;
         }
@@ -193,24 +193,24 @@ public class RemoteFileHelper {
         List<ICatchFile> videoList = new LinkedList<>();
 
         fileCount = fileOperation.getFileCount();
-        if(fileCount <=0){
+        if (fileCount <=0) {
             return null;
         }
-        if(fileCount  < maxNum){
+        if (fileCount  < maxNum) {
             startIndex = 1 ;
             endIndex = fileCount;
-        }else {
+        } else {
             startIndex = 1;
             endIndex = maxNum;
         }
-        while (fileCount >= startIndex){
+        while (fileCount >= startIndex) {
             AppLog.i(TAG, "start getFileList startIndex=" + startIndex + " endIndex=" + endIndex);
             try {
                 List<ICatchFile> templist = fileOperation.getFileList(ICatchFileType.ICH_FILE_TYPE_ALL,startIndex, endIndex);//timeout 20s
                 if (templist != null) {
                     AppLog.i(TAG, "end getFileList tempList =" + templist.size());
                 }
-                if (templist != null && templist.size() > 0){
+                if (templist != null && templist.size() > 0) {
                     for (ICatchFile file: templist) {
                         AppLog.i(TAG, "getFileList fileInfo[" + file.toString() + "]");
                         if (file != null && file.getFileType() == ICatchFileType.ICH_FILE_TYPE_VIDEO) {
@@ -261,7 +261,7 @@ public class RemoteFileHelper {
         boolean isPanorama;
         for (int ii = 0; ii < fileList.size(); ii++) {
             ICatchFile iCatchFile = fileList.get(ii);
-            fileDate = ConvertTools.getTimeByfileDate(iCatchFile.getFileDate());
+            fileDate = ConvertTools.getTimeByFileDate(iCatchFile.getFileDate());
             fileSize = ConvertTools.ByteConversionGBMBKB(iCatchFile.getFileSize());;
             fileTime = ConvertTools.getDateTimeString(iCatchFile.getFileDate());
             fileDuration = ConvertTools.millisecondsToMinuteOrHours((int) Math.ceil(iCatchFile.getFileDuration()));
@@ -324,7 +324,7 @@ public class RemoteFileHelper {
     }
 
     public void setLocalFileList(List<RemoteMediaItemInfo> pbItemInfoList, FileType fileType) {
-        if(pbItemInfoList == null){
+        if (pbItemInfoList == null) {
             return;
         }
         if (listHashMap.containsKey(fileType.ordinal())) {

@@ -2,7 +2,7 @@ package com.sena.senacamera.utils;
 
 import android.view.View;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 
 /**
@@ -17,13 +17,12 @@ public class ClickUtils {
     private static int mLastClickViewId;
 
     public static synchronized boolean isFastClick() {
-        boolean flag = false;
         long curClickTime = System.currentTimeMillis();
         long timeInterval = Math.abs(curClickTime - lastClickTime);
         if (timeInterval < MIN_CLICK_DELAY_TIME) {
             AppLog.d("ClickUtils","isFastClick");
             return true;
-        }else {
+        } else {
             lastClickTime = curClickTime;
             return false;
         }
@@ -62,15 +61,14 @@ public class ClickUtils {
     }
 
     public static boolean isFastDoubleClick(int id) {
-        int viewId = id;
         long time = System.currentTimeMillis();
         long timeInterval = time - lastClickTime;
-        if (timeInterval < MIN_CLICK_DELAY_TIME && viewId == mLastClickViewId) {
-            AppLog.d("ClickUtils","isFastDoubleClick timeInterval:" + timeInterval+ " viewId:" + viewId + " mLastClickViewId:" +mLastClickViewId);
+        if (timeInterval < MIN_CLICK_DELAY_TIME && id == mLastClickViewId) {
+            AppLog.d("ClickUtils","isFastDoubleClick timeInterval:" + timeInterval+ " viewId:" + id + " mLastClickViewId:" +mLastClickViewId);
             return true;
         } else {
             lastClickTime = time;
-            mLastClickViewId = viewId;
+            mLastClickViewId = id;
             return false;
         }
     }

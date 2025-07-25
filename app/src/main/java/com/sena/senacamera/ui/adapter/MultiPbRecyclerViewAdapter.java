@@ -97,7 +97,7 @@ public class MultiPbRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             gridHolder.mIsPanoramaSign.setVisibility(list.get(position).isPanorama() ? View.VISIBLE : View.GONE);
             gridHolder.mCheckImageView.setVisibility(operationMode == OperationMode.MODE_EDIT ? View.VISIBLE : View.GONE);
             if (operationMode == OperationMode.MODE_EDIT) {
-                gridHolder.mCheckImageView.setImageResource(list.get(position).isItemChecked ? R.drawable.ic_check_box_blue : R.drawable.ic_check_box_blank_grey);
+                gridHolder.mCheckImageView.setImageResource(list.get(position).isItemChecked ? R.drawable.status_checkbox_on : R.drawable.status_checkbox_off);
             }
             ViewGroup.LayoutParams photoLayoutParams = gridHolder.mImageView.getLayoutParams();
             photoLayoutParams.width = (width - 3) / 4;
@@ -115,14 +115,14 @@ public class MultiPbRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             listHolder.imageDateTextView.setText(list.get(position).getFileDateMMSS());
             listHolder.videoSignImageView.setVisibility(fileType == FileType.FILE_PHOTO ? View.GONE : View.VISIBLE);
             listHolder.imageDurationView.setVisibility(fileType == FileType.FILE_PHOTO ? View.GONE : View.VISIBLE);
-            if(fileType != FileType.FILE_PHOTO){
+            if (fileType != FileType.FILE_PHOTO) {
                 listHolder.imageDurationView.setText(list.get(position).getFileDuration());
             }
             listHolder.mIsPanoramaSign.setVisibility(list.get(position).isPanorama() ? View.VISIBLE : View.GONE);
             listHolder.mCheckImageView.setVisibility(operationMode == OperationMode.MODE_EDIT ? View.VISIBLE : View.GONE);
 
             if (operationMode == OperationMode.MODE_EDIT) {
-                listHolder.mCheckImageView.setImageResource(list.get(position).isItemChecked ? R.drawable.ic_check_box_blue : R.drawable.ic_check_box_blank_grey);
+                listHolder.mCheckImageView.setImageResource(list.get(position).isItemChecked ? R.drawable.status_checkbox_on : R.drawable.status_checkbox_off);
             }
             listHolder.thumbnailLayout.setVisibility(listHolder.showThumbnail ? View.VISIBLE : View.GONE);
             if (listHolder.showThumbnail) {

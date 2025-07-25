@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/background_primary_color"
+    tools:context=".ui.fragment.FragmentDeviceManual">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_back"
+                android:background="@drawable/selector_button_back" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <TextView
+                android:id="@+id/device_model_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="@string/prism2" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="24dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/guide_image"
+                android:layout_width="wrap_content"
+                android:layout_height="220dp"
+                android:src="@drawable/guide_power"
+                android:layout_marginBottom="64dp" />
+
+            <ImageView
+                android:id="@+id/slide_status_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/status_slide_1"
+                android:layout_marginBottom="40dp" />
+
+            <TextView
+                android:id="@+id/manual_title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:textAlignment="center"
+                android:textSize="20sp"
+                android:text="@string/power_on" />
+
+            <TextView
+                android:id="@+id/manual_desc_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textColor="@color/text_gray"
+                android:text="@string/power_on_desc" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <android.widget.Button
+                android:id="@+id/next_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/button_min_height"
+                android:background="@drawable/rounded_gray_button"
+                android:textColor="@color/selector_button_text_white_color"
+                android:text="@string/action_next"
+                android:textAllCaps="false"
+                android:textSize="@dimen/button_text_size"
+                android:textStyle="bold" />
+
+            <android.widget.Button
+                android:id="@+id/settings_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:minHeight="@dimen/button_min_height"
+                android:background="@drawable/rounded_yellow_button"
+                android:textColor="@color/selector_button_text_black_color"
+                android:text="@string/action_go_to_settings"
+                android:textAllCaps="false"
+                android:textSize="@dimen/button_text_size"
+                android:textStyle="bold" />
+
+            <!-- bottom gap -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="32dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,7 @@ package com.sena.senacamera.MyCamera;
 
 import android.util.Log;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.control.customer.ICatchCameraSession;
 import com.icatchtek.reliant.customer.exception.IchInvalidArgumentException;
 import com.icatchtek.reliant.customer.exception.IchInvalidSessionException;
@@ -11,8 +11,8 @@ import com.icatchtek.reliant.customer.transport.ICatchITransport;
 
 public class CommandSession {
     private static final String TAG = CommandSession.class.getSimpleName();
-    private static int scanflag;
-    private final static String tag = "CommandSession";
+
+    private static int scanFlag;
     private ICatchCameraSession session;
     private String ipAddress;
     private String uid;
@@ -43,48 +43,48 @@ public class CommandSession {
         try {
             retValue = session.prepareSession(itrans);
         } catch (IchTransportException e) {
-            AppLog.d(tag, "IchTransportException");
+            AppLog.d(TAG, "IchTransportException");
             e.printStackTrace();
         }
         sessionPrepared = retValue;
-        AppLog.e(tag, "preparePanoramaSession =" + sessionPrepared);
+        AppLog.e(TAG, "preparePanoramaSession =" + sessionPrepared);
         return retValue;
     }
 
     public boolean prepareSession(ICatchITransport itrans,boolean enablePTPIP) {
         // TODO Auto-generated constructor stub
-        AppLog.d(TAG, "start prepareSession itrans="+ itrans + " enablePTPIP=" +enablePTPIP);
+        AppLog.d(TAG, "start prepareSession itrans=" + itrans + " enablePTPIP=" +enablePTPIP);
         if (enablePTPIP) {
             try {
                 ICatchCameraSession.getCameraConfig(itrans).enablePTPIP();
             } catch (IchInvalidArgumentException e) {
-                AppLog.e(tag, "enablePTPIP IchInvalidArgumentException");
+                AppLog.e(TAG, "enablePTPIP IchInvalidArgumentException");
                 e.printStackTrace();
             }
         } else {
             try {
                 ICatchCameraSession.getCameraConfig(itrans).disablePTPIP();
             } catch (IchInvalidArgumentException e) {
-                AppLog.e(tag, "disablePTPIP IchInvalidArgumentException");
+                AppLog.e(TAG, "disablePTPIP IchInvalidArgumentException");
                 e.printStackTrace();
             }
         }
 
         sessionPrepared = true;
-        AppLog.d(tag, "start createSession");
+        AppLog.d(TAG, "start createSession");
         session = ICatchCameraSession.createSession();
+
         boolean retValue = false;
         try {
             retValue = session.prepareSession(itrans);
         } catch (IchTransportException e) {
             e.printStackTrace();
         }
-        if (retValue == false) {
-            AppLog.e(tag, "failed to preparePanoramaSession");
+        if (!retValue) {
+            AppLog.e(TAG, "failed to preparePanoramaSession");
             sessionPrepared = false;
-            Log.v("1111", "CommandSession,preparePanoramaSession fail!");
         }
-        AppLog.d(tag, "end preparePanoramaSession ret=" + sessionPrepared);
+        AppLog.d(TAG, "end preparePanoramaSession ret=" + sessionPrepared);
         return sessionPrepared;
     }
 
@@ -94,7 +94,7 @@ public class CommandSession {
     }
 
     public boolean checkWifiConnection() {
-        AppLog.i(tag, "Start checkWifiConnection");
+        AppLog.i(TAG, "Start checkWifiConnection");
         boolean retValue = false;
 
         try {
@@ -103,16 +103,16 @@ public class CommandSession {
             e.printStackTrace();
         }
 
-        AppLog.i(tag, "End checkWifiConnection,retValue=" + retValue);
+        AppLog.i(TAG, "End checkWifiConnection,retValue=" + retValue);
         return retValue;
     }
 
     public boolean destroySession() {
-        AppLog.i(tag, "Start destroyPanoramaSession");
+        AppLog.i(TAG, "Start destroyPanoramaSession");
         Boolean retValue = false;
         try {
             retValue = session.destroySession();
-            AppLog.i(tag, "End  destroyPanoramaSession,retValue=" + retValue);
+            AppLog.i(TAG, "End  destroyPanoramaSession,retValue=" + retValue);
         } catch (IchInvalidSessionException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -121,26 +121,26 @@ public class CommandSession {
     }
 
     public static boolean startDeviceScan() {
-        AppLog.i(tag, "Start startDeviceScan");
+        AppLog.i(TAG, "Start startDeviceScan");
         boolean tempStartDeviceScanValue = false;
 //        boolean tempStartDeviceScanValue = ICatchCameraSession.startDeviceScan();
 
-        AppLog.i(tag, "End startDeviceScan,tempStartDeviceScanValue=" + tempStartDeviceScanValue);
+        AppLog.i(TAG, "End startDeviceScan,tempStartDeviceScanValue=" + tempStartDeviceScanValue);
         if (tempStartDeviceScanValue) {
-            scanflag = 1;
+            scanFlag = 1;
         }
         return tempStartDeviceScanValue;
     }
 
     public static void stopDeviceScan() {
-        AppLog.i(tag, "Start stopDeviceScan");
+        AppLog.i(TAG, "Start stopDeviceScan");
         boolean tempStopDeviceScanValue = false;
-        if (scanflag == 1) {
+        if (scanFlag == 1) {
 //            tempStopDeviceScanValue = ICatchCameraSession.stopDeviceScan();
         } else {
             tempStopDeviceScanValue = true;
         }
-        scanflag = 0;
-        AppLog.i(tag, "End stopDeviceScan,tempStopDeviceScanValue=" + tempStopDeviceScanValue);
+        scanFlag = 0;
+        AppLog.i(TAG, "End stopDeviceScan,tempStopDeviceScanValue=" + tempStopDeviceScanValue);
     }
 }

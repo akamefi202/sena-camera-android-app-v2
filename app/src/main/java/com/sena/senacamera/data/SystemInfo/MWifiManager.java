@@ -1,22 +1,31 @@
 package com.sena.senacamera.data.SystemInfo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.os.Build;
+import android.os.PowerManager;
+import android.widget.Toast;
 
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.data.AppInfo.AppInfo;
-import com.sena.senacamera.data.AppInfo.AppSharedPreferences;
+import androidx.annotation.RequiresApi;
 
+import com.sena.senacamera.log.AppLog;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MWifiManager {
-    private static String TAG = "MWifiManager";
-    private static String WIFI_SSID_UNKNOWN = "unknown";
+    private static final String TAG = MWifiManager.class.getSimpleName();
+    private static final String WIFI_SSID_UNKNOWN = "unknown";
+
     public static String getSsid(Context context) {
         if (!isWifiEnabled(context)) {
             AppLog.e(TAG, "----------ssid is null=");
@@ -24,22 +33,22 @@ public class MWifiManager {
         }
         //android 8.0及以下
         String ssid = WIFI_SSID_UNKNOWN;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             WifiManager mWifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = mWifi.getConnectionInfo();
             if (wifiInfo != null) {
                 ssid = wifiInfo.getSSID();
-                if(ssid.contains("\"")){
+                if (ssid.contains("\"")) {
                     ssid =ssid.replace("\"","");
                 }
-            }else {
+            } else {
                 AppLog.i(TAG, "getSsid wifiInfo is null");
             }
-        }else if(Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo wifiInfo2 = mConnectivityManager.getActiveNetworkInfo();
             AppLog.i(TAG, "getSsid wifiInfo2:" + wifiInfo2);
-            if(wifiInfo2 !=null){
+            if (wifiInfo2 !=null) {
                 AppLog.i(TAG, "getSsid wifiInfo2.getExtraInfo()" + wifiInfo2.getExtraInfo());
             }
             if (wifiInfo2 == null || wifiInfo2.getExtraInfo() == null) {
@@ -48,15 +57,15 @@ public class MWifiManager {
                 String wifiName = wifiInfo2.getExtraInfo();
                 ssid =  wifiName.replaceAll("\"", "");
             }
-        }else {
+        } else {
             WifiManager mWifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = mWifi.getConnectionInfo();
             if (wifiInfo != null) {
                 ssid = wifiInfo.getSSID();
-                if(ssid.contains("\"")){
+                if (ssid.contains("\"")) {
                     ssid =ssid.replace("\"","");
                 }
-            }else {
+            } else {
                 AppLog.i(TAG, "getSsid wifiInfo is null");
             }
         }
@@ -68,39 +77,40 @@ public class MWifiManager {
     /**
      * 华为android 9.0 获取 ssid
      */
-    private static String getSsidByNetworkId(Context context){
+    @SuppressLint("MissingPermission")
+    private static String getSsidByNetworkId(Context context) {
         AppLog.d(TAG, "getSsidByNetworkId ");
         String ssid = null;
         WifiManager wifiManager = ((WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE));
-        if(null != wifiManager){
+        if (null != wifiManager) {
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             int networkId = wifiInfo.getNetworkId();
             List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
-            for (WifiConfiguration wifiConfiguration:configuredNetworks){
-                if (wifiConfiguration.networkId==networkId){
+            for (WifiConfiguration wifiConfiguration:configuredNetworks) {
+                if (wifiConfiguration.networkId==networkId) {
                     ssid=wifiConfiguration.SSID;
                     break;
                 }
             }
         }
 
-        if(ssid != null && ssid.contains("\"")){
+        if (ssid != null && ssid.contains("\"")) {
             ssid =ssid.replace("\"","");
         }
         AppLog.d(TAG, "getSsidByNetworkId ssid:" + ssid);
         return ssid;
     }
 
-//    public static String getIp(Context context){
+//    public static String getIp(Context context) {
 //        String ip = "192.168.1.1";
-//        if(HotSpot.isApEnabled(context)){
+//        if (HotSpot.isApEnabled(context)) {
 //            String value = HotSpot.getFirstConnectedHotIP();
-//            if(value != null){
+//            if (value != null) {
 //                ip = value;
 //            }
-//        }else if(AppInfo.youtubeLive){
+//        } else if (AppInfo.youtubeLive) {
 //            String value = AppSharedPreferences.readIp(context);
-//            if(value != null){
+//            if (value != null) {
 //                ip = value;
 //            }
 //        }
@@ -117,15 +127,82 @@ public class MWifiManager {
     public static boolean isWifiConnected(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetworkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiNetworkInfo != null && wifiNetworkInfo.isConnected()) {
-            return true;
-        }
-
-        return false;
+        return wifiNetworkInfo != null && wifiNetworkInfo.isConnected();
 
     }
-    public static  boolean isWifiEnabled(Context context){
-        WifiManager mWifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-        return  mWifiManager.isWifiEnabled();
+    public static boolean isWifiEnabled(Context context) {
+        WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        return mWifiManager != null && mWifiManager.isWifiEnabled();
+    }
+
+    public static void disconnect(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        wifiManager.disconnect();
+    }
+
+    @SuppressLint("NewApi")
+    public static void removeCurrentNetwork(Context context, String ssid, String password, ConnectivityManager.NetworkCallback callback) {
+        WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                .setSsid(ssid)
+                .setWpa2Passphrase(password)
+                .build();
+
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+        suggestions.add(suggestion);
+
+        int status = wifiManager.removeNetworkSuggestions(suggestions);
+
+        if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+            AppLog.i(TAG, "remove suggestion added successfully");
+        } else {
+            AppLog.i(TAG, "remove failed to add suggestion: " + status);
+        }
+    }
+
+    @SuppressLint("NewApi")
+    public static void connect(Context context, String ssid, String password, ConnectivityManager.NetworkCallback callback) {
+//        WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
+//                .setSsid(ssid)
+//                .setWpa2Passphrase(password)
+//                .build();
+//
+//        // build the wifi request
+//        NetworkRequest networkRequest = new NetworkRequest.Builder()
+//                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+//                .setNetworkSpecifier(specifier)
+//                .build();
+//
+//        // connect to wifi network
+//        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+//        connectivityManager.requestNetwork(networkRequest, callback);
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        // suggest network
+        WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                .setSsid(ssid)
+                .setWpa2Passphrase(password)
+                .build();
+
+        List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+        suggestions.add(suggestion);
+
+        int status = wifiManager.addNetworkSuggestions(suggestions);
+
+        if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+            AppLog.i(TAG, "connect suggestion added successfully");
+        } else {
+            AppLog.i(TAG, "connect failed to add suggestion: " + status);
+        }
+    }
+
+    public static void allowWifiAlwaysConnect(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        WifiManager.WifiLock wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyAppWifiLock");
+        wifiLock.acquire();
+
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::WakeLock");
+        wakeLock.acquire();
     }
 }

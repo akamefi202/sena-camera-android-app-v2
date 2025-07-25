@@ -5,9 +5,9 @@ package com.sena.senacamera.test;
 
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.util.Log;
 
 import com.icatchtek.reliant.customer.type.ICatchFrameBuffer;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,7 +52,7 @@ public class test {
         }
         writeFile = path + fileName;
         writeLogFile = new File(writeFile);
-        Log.d("tigertiger", "writeFile: " + writeFile);
+        AppLog.d("tigertiger", "writeFile: " + writeFile);
         try {
             out = new FileOutputStream(writeFile, false);
         } catch (IOException e) {
@@ -73,10 +73,10 @@ public class test {
 
     public static void saveImage11(ICatchFrameBuffer buffer, int size) {
         // videoBitmap = bitmap;
-        // if(System.currentTimeMillis() < lastTime11 + 5000){
+        // if (System.currentTimeMillis() < lastTime11 + 5000) {
         // return;
         // }
-        // if(videoBitmap == null){
+        // if (videoBitmap == null) {
         // Bitmap videoBitmap = Bitmap.createBitmap(640, 360, Config.ARGB_8888);
         // }
         // videoBitmap.copyPixelsFromBuffer(buffer);
@@ -101,7 +101,7 @@ public class test {
         }
         writeFile = path + fileName;
         writeLogFile = new File(writeFile);
-        Log.d("tigertiger", "writeFile: " + writeFile);
+        AppLog.d("tigertiger", "writeFile: " + writeFile);
         try {
             out = new FileOutputStream(writeFile, false);
         } catch (IOException e) {
@@ -139,7 +139,7 @@ public class test {
         }
         writeFile = path + fileName;
         writeLogFile = new File(writeFile);
-        Log.d("tigertiger", "writeFile: " + writeFile);
+        AppLog.d("tigertiger", "writeFile: " + writeFile);
         try {
             if (out == null) {
                 out = new FileOutputStream(writeFile);
@@ -178,7 +178,7 @@ public class test {
         }
         writeFile = path + fileName;
         writeLogFile = new File(writeFile);
-        Log.d("tigertiger", "writeFile: " + writeFile);
+        AppLog.d("tigertiger", "writeFile: " + writeFile);
         try {
             if (out == null) {
                 out = new FileOutputStream(writeFile);

@@ -13,7 +13,7 @@ public final class  CameraNetworkMode {
 
 
     public static String getModeConvert(int mode) {
-        if(modeMap.size() == 0) {
+        if (modeMap.size() == 0) {
             initNetworkModeMap();
         }
         return modeMap.get(mode);

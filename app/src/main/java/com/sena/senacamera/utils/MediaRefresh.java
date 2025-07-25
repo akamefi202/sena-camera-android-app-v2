@@ -10,8 +10,8 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-import com.sena.senacamera.Application.PanoramaApp;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.application.PanoramaApp;
+import com.sena.senacamera.log.AppLog;
 
 
 /**
@@ -20,7 +20,7 @@ import com.sena.senacamera.Log.AppLog;
 public class MediaRefresh {
 
     private static final String ACTION_MEDIA_SCANNER_SCAN_DIR = "android.intent.action.MEDIA_SCANNER_SCAN_DIR";
-    private static final String TAG = "MediaRefresh";
+    private static final String TAG = MediaRefresh.class.getSimpleName();
 
     public static void scanDirAsync(Context ctx, String dir) {
         Intent scanIntent = new Intent(ACTION_MEDIA_SCANNER_SCAN_DIR);

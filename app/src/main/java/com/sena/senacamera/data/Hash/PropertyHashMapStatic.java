@@ -15,7 +15,7 @@ import com.sena.senacamera.data.type.TimeLapseDuration;
 import com.sena.senacamera.data.type.TimeLapseMode;
 import com.sena.senacamera.data.type.Upside;
 import com.sena.senacamera.data.entity.ItemInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 import com.sena.senacamera.data.type.VideoFovAngle;
 import com.sena.senacamera.data.type.VideoMode;
@@ -27,7 +27,8 @@ import com.icatchtek.control.customer.type.ICatchCamWhiteBalance;
 import java.util.HashMap;
 
 public class PropertyHashMapStatic {
-    private final String tag = "PropertyHashMapStatic";
+    private static final String TAG = PropertyHashMapStatic.class.getSimpleName();
+
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> burstMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
@@ -77,7 +78,7 @@ public class PropertyHashMapStatic {
     }
 
     public void initPropertyHashMap() {
-        AppLog.i(tag, "Start initPropertyHashMap");
+        AppLog.i(TAG, "Start initPropertyHashMap");
         initWhiteBalanceMap();
         initTimeLapseDuration();
         initSlowMotion();
@@ -85,7 +86,7 @@ public class PropertyHashMapStatic {
         initBurstMap();
         initElectricityFrequencyMap();
         initDateStampMap();
-        ininTimeLapseMode();
+        initTimeLapseMode();
         initCameraSwitch();
 
         initPhotoModeMap();
@@ -97,7 +98,7 @@ public class PropertyHashMapStatic {
         initGeneralLanguageMap();
         initGeneralColorEffectMap();
         initGeneralDateFormatMap();
-        AppLog.i(tag, "End initPropertyHashMap");
+        AppLog.i(TAG, "End initPropertyHashMap");
     }
 
     private void initCameraSwitch() {
@@ -106,7 +107,7 @@ public class PropertyHashMapStatic {
         cameraSwitchMap.put(CameraSwitch.CAMERA_BACK, new ItemInfo(R.string.setting_camera_back, null, 0));
     }
 
-    private void ininTimeLapseMode() {
+    private void initTimeLapseMode() {
         timeLapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_STILL, new ItemInfo(R.string.timeLapse_capture_mode, null, 0));
         timeLapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_VIDEO, new ItemInfo(R.string.timeLapse_video_mode, null, 0));
         // TODO Auto-generated method stub
@@ -189,7 +190,7 @@ public class PropertyHashMapStatic {
     public void initVideoModeMap() {
         videoModeMap.put(VideoMode.VIDEO_MODE_NORMAL, new ItemInfo(R.string.video_mode_normal, null, 0));
         videoModeMap.put(VideoMode.VIDEO_MODE_TIMELAPSE, new ItemInfo(R.string.video_mode_timelapse, null, 0));
-        videoModeMap.put(VideoMode.VIDEO_MODE_LOOP, new ItemInfo(R.string.video_mode_loop, null, 0));
+        videoModeMap.put(VideoMode.VIDEO_MODE_LOOP, new ItemInfo(R.string.video_mode_loop_recording, null, 0));
         videoModeMap.put(VideoMode.VIDEO_MODE_SLOW_MOTION, new ItemInfo(R.string.video_mode_slow_motion, null, 0));
     }
 

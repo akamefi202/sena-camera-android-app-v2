@@ -6,6 +6,6 @@
     <corners android:radius="16dp" />
 
     <!-- Background color -->
-    <solid android:color="@color/button_primary_color" />
+    <solid android:color="@color/selector_button_yellow_color" />
 
 </shape>

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <selector android:layout_width="wrap_content" android:layout_height="wrap_content">
+        <item android:drawable="@drawable/button_share_disabled" android:state_enabled="false" />
+        <item android:drawable="@drawable/button_share_pressed" android:state_pressed="true" />
+        <item android:drawable="@drawable/button_share" />
+    </selector>
     <item
         android:state_enabled="false"
         android:drawable="@drawable/button_share_disabled" />

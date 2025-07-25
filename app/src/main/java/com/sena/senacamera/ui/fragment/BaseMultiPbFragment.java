@@ -2,7 +2,7 @@ package com.sena.senacamera.ui.fragment;
 
 import androidx.fragment.app.Fragment;
 
-import com.sena.senacamera.Listener.OnStatusChangedListener;
+import com.sena.senacamera.listener.OnStatusChangedListener;
 import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.PhotoWallLayoutType;
 

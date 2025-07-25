@@ -17,7 +17,7 @@
             android:id="@+id/local_photo_wall_list_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_check_box_blank_grey"
+            android:src="@drawable/status_checkbox_off"
             android:layout_gravity="center"
             />
         <FrameLayout

@@ -44,7 +44,7 @@ public class BurstConvert {
         burstMap.put(ICH_CAM_BURST_NUMBER_30, 30);
     }
 
-    public int getBurstConverFromFw(int fwValue) {
+    public int getBurstConvertFromFw(int fwValue) {
         if (fwValue >= 0 && fwValue <= 7) {
             return burstMap.get(fwValue);
         }

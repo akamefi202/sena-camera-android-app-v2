@@ -24,7 +24,7 @@ import java.util.List;
  */
 
 public class LocalMultiPbWallListAdapter extends BaseAdapter {
-    private String TAG = "LocalMultiPbWallListAdapter";
+    private static final String TAG = LocalMultiPbWallListAdapter.class.getSimpleName();
     private Context context;
     private List<LocalMediaItemInfo> list;
     private OperationMode curMode = OperationMode.MODE_BROWSE;
@@ -86,9 +86,9 @@ public class LocalMultiPbWallListAdapter extends BaseAdapter {
         if (curMode == OperationMode.MODE_EDIT) {
             mCheckImageView.setVisibility(View.VISIBLE);
             if (list.get(position).isItemChecked) {
-                mCheckImageView.setImageResource(R.drawable.ic_check_box_blue);
+                mCheckImageView.setImageResource(R.drawable.status_checkbox_on);
             } else {
-                mCheckImageView.setImageResource(R.drawable.ic_check_box_blank_grey);
+                mCheckImageView.setImageResource(R.drawable.status_checkbox_off);
             }
         } else {
             mCheckImageView.setVisibility(View.GONE);

@@ -8,9 +8,9 @@ import android.content.SharedPreferences;
  * Created by zhang yanhu C001012 on 2016/11/24 15:43.
  */
 public class AppSharedPreferences {
-    private final static String FILE_NAME = "storeInfo";
-    public final static String OBJECT_NAME_LIVE_URL = "liveUrl";
-    public final static String OBJECT_NAME_INPUT_IP = "inputIp";
+    private static final String FILE_NAME = "storeInfo";
+    public static final String OBJECT_NAME_LIVE_URL = "liveUrl";
+    public static final String OBJECT_NAME_INPUT_IP = "inputIp";
 
     public static void writeDataByName(Context context, String name, String value) {
         //实例化SharedPreferences对象（第一步）

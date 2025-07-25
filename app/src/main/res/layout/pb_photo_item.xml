@@ -19,7 +19,7 @@
         android:orientation="vertical"
         android:visibility="gone"/>
 
-    <com.sena.senacamera.ui.ExtendComponent.ProgressWheel
+    <com.sena.senacamera.ui.component.ProgressWheel
         android:id="@+id/progress_wheel"
         android:layout_width="80dp"
         android:layout_height="80dp"

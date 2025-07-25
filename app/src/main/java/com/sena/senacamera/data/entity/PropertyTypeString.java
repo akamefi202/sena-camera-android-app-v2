@@ -33,7 +33,7 @@ public class PropertyTypeString {
         if (hashMap == null) {
             hashMap = PropertyHashMapDynamic.getInstance().getDynamicHashString(cameraProperties, propertyId);
         }
-        if(hashMap == null){
+        if (hashMap == null) {
             return;
         }
         if (propertyId == PropertyId.IMAGE_SIZE) {
@@ -43,7 +43,7 @@ public class PropertyTypeString {
             valueListString = cameraProperties.getSupportedVideoSizes();
         }
         for (int ii = 0; ii < valueListString.size(); ii++) {
-            if (hashMap.containsKey(valueListString.get(ii)) == false) {
+            if (!hashMap.containsKey(valueListString.get(ii))) {
                 valueListString.remove(ii);
                 ii--;
             }
@@ -65,7 +65,7 @@ public class PropertyTypeString {
     }
 
     public String getCurrentUiStringInSetting() {
-        if(hashMap == null){
+        if (hashMap == null) {
             return "Unknown";
         }
         ItemInfo itemInfo = hashMap.get(getCurrentValue());
@@ -80,7 +80,7 @@ public class PropertyTypeString {
 
     public String getCurrentUiStringInPreview() {
         // TODO Auto-generated method stub
-        if(hashMap == null){
+        if (hashMap == null) {
            return "Unknown";
         }
         ItemInfo itemInfo = hashMap.get(getCurrentValue());
@@ -127,9 +127,8 @@ public class PropertyTypeString {
         switch (propertyId) {
             case PropertyId.IMAGE_SIZE:
                 //retValue = cameraProperties.setWhiteBalance(valueListInt.get(position));
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE)) {
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE)) {
                     if (previewMode == PreviewMode.APP_STATE_STILL_PREVIEW ||
-                            previewMode == PreviewMode.APP_STATE_STILL_CAPTURE ||
                             previewMode == PreviewMode.APP_STATE_STILL_CAPTURE ||
                             previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
                             previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_CAPTURE) {
@@ -139,9 +138,8 @@ public class PropertyTypeString {
                 }
                 break;
             case PropertyId.VIDEO_SIZE:
-                if (cameraProperties.hasFuction(ICatchCamProperty.ICH_CAM_CAP_VIDEO_SIZE)) {
+                if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_VIDEO_SIZE)) {
                     if (previewMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
-                            previewMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||
                             previewMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||
                             previewMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
                             previewMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE) {

@@ -2,10 +2,10 @@ package com.sena.senacamera.data.Hash;
 
 import android.content.Context;
 
-import com.sena.senacamera.Application.PanoramaApp;
+import com.sena.senacamera.application.PanoramaApp;
 import com.sena.senacamera.R;
 import com.sena.senacamera.data.entity.ItemInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.PropertyId.PropertyId;
 import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.utils.ConvertTools;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PropertyHashMapDynamic {
-    private final String TAG = "PropertyHashMapDynamic";
+    private static final String TAG = PropertyHashMapDynamic.class.getSimpleName();
     private static PropertyHashMapDynamic propertyHashMap;
 
     public static PropertyHashMapDynamic getInstance() {
@@ -68,14 +68,14 @@ public class PropertyHashMapDynamic {
         HashMap<Integer, ItemInfo> screenSaverMap = new HashMap<Integer, ItemInfo>();
         List<Integer> screenSaverList = cameraProperties.getSupportedPropertyValues(PropertyId.SCREEN_SAVER);
         String temp;
-        for (int ii = 0; ii < screenSaverList.size(); ii++) {
-            int value = screenSaverList.get(ii);
+        for (int i = 0; i < screenSaverList.size(); i++) {
+            int value = screenSaverList.get(i);
             if (value == 0) {
                 temp = PanoramaApp.getContext().getString(R.string.off);
             } else {
                 temp = value + "s";
             }
-            AppLog.d(TAG, "screenSaverList ii=" + ii + " value=" + value);
+            AppLog.d(TAG, "screenSaverList ii=" + i + " value=" + value);
             screenSaverMap.put(value, new ItemInfo(temp, temp, 0));
         }
         return screenSaverMap;
@@ -148,15 +148,15 @@ public class PropertyHashMapDynamic {
             int value = videoFileLengthList.get(ii);
             if (value == 0) {
                 temp = context.getString(R.string.text_file_length_unlimited);
-            } else if(value < 1000){
+            } else if (value < 1000) {
                 temp = value/60 + context.getString(R.string.time_minutes);
             } else {
                 //AIBSP-1934 for CVR 20200701
                 String fileSize = value/1000  + "MB";
                 String fileLength;
-                if(value%1000 == 0){
+                if (value%1000 == 0) {
                     fileLength =  fileSize;
-                }else {
+                } else {
                     fileLength =  (value%1000) /60+ context.getString(R.string.time_minutes);
                 }
                 temp =fileLength + " + " + fileSize;
@@ -274,7 +274,7 @@ public class PropertyHashMapDynamic {
         } else if (size.equals("848x480")) {
             abbreviationSize = "WVGA";
             return abbreviationSize;
-        }else if (size.equals("2560x1440")) {
+        } else if (size.equals("2560x1440")) {
             abbreviationSize = "1440P";
             return abbreviationSize;
         }

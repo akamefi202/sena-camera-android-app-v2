@@ -1,44 +1,62 @@
 package com.sena.senacamera.ui.activity;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
-import com.sena.senacamera.ui.ExtendComponent.ProgressWheel;
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.Presenter.VideoDetailPresenter;
+import com.sena.senacamera.ui.component.ProgressWheel;
+import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.presenter.VideoDetailPresenter;
 import com.sena.senacamera.R;
 import com.sena.senacamera.ui.Interface.VideoDetailView;
 import com.icatchtek.pancam.customer.type.ICatchGLPanoramaType;
 
 public class MediaVideoDetailActivity extends AppCompatActivity implements VideoDetailView {
-    private String TAG = MediaVideoDetailActivity.class.getSimpleName();
+    private static final String TAG = MediaVideoDetailActivity.class.getSimpleName();
+
     private TextView timeLapsed, timeDuration;
     private SeekBar seekBar;
     private ImageButton playButton, expandButton, backbutton, playDetailButton;
-    private LinearLayout deleteButton, downloadButton;
+    private LinearLayout deleteButton, downloadButton, shareButton;
     private LinearLayout topBar, bottomBar;
     private TextView titleText;
     private ProgressWheel progressWheel;
     private VideoDetailPresenter presenter;
-    private SurfaceView mSurfaceView;
+    private SurfaceView surfaceView;
+    private FrameLayout topBarView, bottomControlView;
+
+    private Handler playDetailButtonHandler;
+    private Runnable fadeOutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            playDetailButton.animate().alpha(0f).setDuration(1000)
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            playDetailButton.setVisibility(View.GONE);
+                        }
+                    }).start();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +72,27 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
         topBar = (LinearLayout) findViewById(R.id.top_bar);
         bottomBar = (LinearLayout) findViewById(R.id.bottom_bar);
-        mSurfaceView = (SurfaceView) findViewById(R.id.surface_view);
+        surfaceView = (SurfaceView) findViewById(R.id.surface_view);
         titleText = (TextView) findViewById(R.id.title_text);
         deleteButton = (LinearLayout) findViewById(R.id.delete_button);
         downloadButton = (LinearLayout) findViewById(R.id.save_button);
+        shareButton = (LinearLayout) findViewById(R.id.share_button);
+        topBarView = (FrameLayout) findViewById(R.id.top_bar_view);
+        bottomControlView = (FrameLayout) findViewById(R.id.bottom_control_view);
 
         presenter = new VideoDetailPresenter(this);
         presenter.setView(this);
+
+        // initialize view
+        if (presenter.isCurrentItemLocal()) {
+            // local
+            downloadButton.setVisibility(View.GONE);
+            shareButton.setVisibility(View.VISIBLE);
+        } else {
+            // remote
+            shareButton.setVisibility(View.GONE);
+            downloadButton.setVisibility(View.VISIBLE);
+        }
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // do not display menu bar
@@ -84,6 +116,7 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
             @Override
             public void onClick(View v) {
                 presenter.play();
+                playDetailButton.setVisibility(View.VISIBLE);
             }
         });
 
@@ -100,6 +133,28 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
                 presenter.download();
             }
         });
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        expandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    // current orientation mode is portrait, change to landscape
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                } else {
+                    // current orientation mode is landscape, change to portrait
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                }
+            }
+        });
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -118,30 +173,31 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
             }
         });
 
-        mSurfaceView.setOnClickListener(new View.OnClickListener() {
+        surfaceView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AppLog.d(TAG,"mSurfaceViewImage ClickListener");
-                presenter.showBar(topBar.getVisibility() == View.VISIBLE ? false : true);
+//                presenter.play();
+//                playDetailButton.setVisibility(View.VISIBLE);
             }
         });
 
-        mSurfaceView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+        surfaceView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
-            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-                View parentView = (View) mSurfaceView.getParent();
-                int heigth = parentView.getHeight();
+            public void onLayoutChange(View view, int left, int top, int right, int bottom, int previousLeft, int previousTop, int previousRight, int previousBottom) {
+                View parentView = (View) surfaceView.getParent();
+                int height = parentView.getHeight();
                 int width = parentView.getWidth();
-                AppLog.d(TAG, "onLayoutChange heigth=" + heigth + " width=" + width);
+                AppLog.d(TAG, "onLayoutChange height=" + height + " width=" + width);
                 presenter.redrawSurface();
             }
         });
 
-        mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 AppLog.d(TAG, "surfaceCreated");
-                presenter.initSurface(mSurfaceView.getHolder());
+                presenter.initSurface(surfaceView.getHolder());
                 presenter.play();
             }
 
@@ -156,29 +212,45 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
             }
         });
 
-        mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+        surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
-
                     case MotionEvent.ACTION_DOWN:
                         presenter.onSurfaceViewTouchDown(event);
                         break;
                     case MotionEvent.ACTION_POINTER_DOWN:
                         presenter.onSurfaceViewPointerDown(event);
                         break;
-
                     case MotionEvent.ACTION_MOVE:
                         presenter.onSurfaceViewTouchMove(event);
                         break;
                     case MotionEvent.ACTION_UP:
                         presenter.onSurfaceViewTouchUp();
-                        break;
 
+                        // show play detail button
+                        presenter.play();
+                        playDetailButton.setVisibility(View.VISIBLE);
+                        break;
                     case MotionEvent.ACTION_POINTER_UP:
                         presenter.onSurfaceViewTouchPointerUp();
                         break;
                 }
+                return true;
+            }
+        });
+
+        // define empty onTouchListeners to prevent unnecessary click of surface view
+        topBarView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return true;
+            }
+        });
+
+        bottomControlView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
                 return true;
             }
         });
@@ -203,16 +275,53 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
         super.onDestroy();
         presenter.removeActivity();
         presenter.destroyVideo(ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE);
+
+        playDetailButtonHandler.removeCallbacks(fadeOutRunnable);
+    }
+
+
+    public void adjustSurfaceViewAspectRatio(int videoWidth, int videoHeight) {
+        // get screen width & height
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        // get aspect ratio
+        float videoAspectRatio = (float) videoWidth / videoHeight;
+        float screenAspectRatio = (float) screenWidth / screenHeight;
+
+        ViewGroup.LayoutParams layoutParams = surfaceView.getLayoutParams();
+
+        if (videoAspectRatio > screenAspectRatio) {
+            layoutParams.width = screenWidth;
+            layoutParams.height = (int) (screenWidth / videoAspectRatio);
+        } else {
+            layoutParams.height = screenHeight;
+            layoutParams.width = (int) (screenHeight * videoAspectRatio);
+        }
+
+        surfaceView.setLayoutParams(layoutParams);
+    }
+
+    private void cancelPlayDetailButtonFadeOut() {
+        if (playDetailButtonHandler != null) {
+            playDetailButtonHandler.removeCallbacks(fadeOutRunnable);
+        }
+    }
+
+    private void startPlayDetailButtonFadeOut() {
+        // start fade out after 3 seconds
+        playDetailButtonHandler = new Handler(Looper.getMainLooper());
+        playDetailButtonHandler.postDelayed(fadeOutRunnable, 3000);
     }
 
     @Override
     public void setTopBarVisibility(int visibility) {
-        topBar.setVisibility(visibility);
+//        topBar.setVisibility(visibility);
     }
 
     @Override
     public void setBottomBarVisibility(int visibility) {
-        bottomBar.setVisibility(visibility);
+//        bottomBar.setVisibility(visibility);
     }
 
     @Override
@@ -255,6 +364,10 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
         } else {
             playDetailButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.selector_button_pause_media_detail, (Resources.Theme) null));
         }
+        playDetailButton.setAlpha(1.0f);
+
+        cancelPlayDetailButtonFadeOut();
+        startPlayDetailButtonFadeOut();
     }
 
     @Override
@@ -273,7 +386,7 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public void setLoadPercent(int value) {
-        if (value >=0) {
+        if (value >= 0) {
             String temp = value + "%";
             //progressWheel.setText(temp);
         }
@@ -308,16 +421,16 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public int getSurfaceViewWidth() {
-        View parentView = (View) mSurfaceView.getParent();
+        View parentView = (View) surfaceView.getParent();
         int width = parentView.getWidth();
         return width;
     }
 
     @Override
     public int getSurfaceViewHeight() {
-        View parentView = (View) mSurfaceView.getParent();
-        int heigth = parentView.getHeight();
-        return heigth;
+        View parentView = (View) surfaceView.getParent();
+        int height = parentView.getHeight();
+        return height;
     }
 
     @Override
@@ -338,7 +451,7 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public void setSeekbarEnabled(boolean enabled) {
-        if(seekBar.isEnabled() != enabled){
+        if (seekBar.isEnabled() != enabled) {
             AppLog.d(TAG,"setSeekbarEnabled enabled:" + enabled);
             seekBar.setEnabled(enabled);
         }
@@ -358,6 +471,17 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
                 presenter.redrawSurface();
             }
         }, 50);
+
+        // initialize view
+        if (presenter.isCurrentItemLocal()) {
+            // local
+            downloadButton.setVisibility(View.GONE);
+            shareButton.setVisibility(View.VISIBLE);
+        } else {
+            // remote
+            shareButton.setVisibility(View.GONE);
+            downloadButton.setVisibility(View.VISIBLE);
+        }
         AppLog.d(TAG, "onConfigurationChanged newConfig Orientation=" + newConfig.orientation);
     }
 }

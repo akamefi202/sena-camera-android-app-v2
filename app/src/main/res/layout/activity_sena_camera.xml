@@ -1,121 +1,214 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black" >
+    android:fitsSystemWindows="true"
+    android:background="@color/background_primary_color"
+    tools:context=".ui.activity.SenaCameraActivity">
     <!--
     android:scaleType="fitXY"
     -->
-    <ImageView
-        android:id="@+id/intro"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/intro"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/intro_alt"
-        android:visibility="visible"
-        />
+
     <LinearLayout
-        android:id="@+id/ll_tupp"
+        android:id="@+id/connect_camera_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="48dp"
+        android:background="@color/background_primary_color"
         android:orientation="vertical"
-        android:visibility="gone">
-        <LinearLayout
-            android:layout_width="match_parent"
+        android:gravity="center">
+        <View
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="93"
-            android:orientation="horizontal"
-            android:background="@color/background_list"
-            >
-            <TextView
-                android:id="@+id/tv_tupp_agreed_terms_of_use"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/title_terms_of_use"
-                android:scrollHorizontally="true"
-                android:gravity="center_vertical|center_horizontal"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/selector_tupp_color"
-                android:textSize="@dimen/font_size_small_heading"
-                />
-            <TextView
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@color/background_line"
-                />
-            <TextView
-                android:id="@+id/tv_tupp_agreed_privacy_policy"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/title_privacy_policy"
-                android:gravity="center_vertical|center_horizontal"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/selector_tupp_color"
-                android:textSize="@dimen/font_size_small_heading"
-                />
-        </LinearLayout>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/background_line"
+            android:layout_weight="0.4" />
+        <ImageView
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:src="@drawable/splash_prism"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/intro_alt"
             />
-        <LinearLayout
-            android:id="@+id/ll_privacy_policy_content"
-            android:layout_width="match_parent"
+        <View
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="812"
-            android:orientation="horizontal"
-            >
-            <WebView
-                android:id="@+id/wv_tupp"
+            android:layout_weight="0.45" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/logo_sena_camera"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/intro_alt"
+            />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.25" />
+        <android.widget.Button
+            android:id="@+id/connect_camera_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:background="@drawable/rounded_yellow_button"
+            android:textColor="@color/selector_button_text_black_color"
+            android:textSize="@dimen/button_text_size"
+            android:textStyle="bold"
+            android:text="@string/action_connect_camera"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/terms_policy_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="48dp"
+        android:background="@color/background_secondary_color"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="8dp">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="48dp"
+                android:src="@drawable/icon_privacy" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:text="@string/respect_privacy" />
+            <TextView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/background_list"
-                />
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_gray"
+                android:textSize="18sp"
+                android:text="@string/respect_privacy_desc" />
         </LinearLayout>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/background_line"
-            />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="93"
-            android:orientation="horizontal"
-            android:background="@android:color/black"
-            >
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:layout_marginBottom="32dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <ImageView
+                android:id="@+id/terms_agree_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/status_checkbox_off" />
             <TextView
-                android:id="@+id/tv_tupp_agreed_disagreed"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="不同意"
-                android:scrollHorizontally="true"
-                android:gravity="center_vertical|center_horizontal"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/selector_tupp_color"
-                android:textSize="@dimen/font_size_small_heading"
-                />
-            <TextView
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@color/background_line"
-                />
-            <TextView
-                android:id="@+id/tv_tupp_agreed_agreed"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="同意"
-                android:gravity="center_vertical|center_horizontal"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/selector_tupp_color"
-                android:textSize="@dimen/font_size_small_heading"
-                />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/agree_terms_policy" />
         </LinearLayout>
+        <android.widget.Button
+            android:id="@+id/agree_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:enabled="false"
+            android:background="@drawable/rounded_yellow_button"
+            android:textColor="@color/selector_button_text_black_color"
+            android:text="@string/label_agree"
+            android:textSize="@dimen/button_text_size"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+    <!-- allow app permissions -->
+    <LinearLayout
+        android:id="@+id/allow_permissions_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="48dp"
+        android:background="@color/background_secondary_color"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="8dp">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="48dp"
+                android:src="@drawable/icon_bluetooth" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:text="@string/allow_app_permissions" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_gray"
+                android:textSize="18sp"
+                android:text="@string/allow_app_permissions_desc" />
+        </LinearLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        <LinearLayout
+            android:id="@+id/allow_permissions_warning_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:paddingRight="8dp"
+            android:layout_marginBottom="32dp"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/icon_info" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_gray"
+                android:text="@string/warning_allow_permissions" />
+        </LinearLayout>
+        <android.widget.Button
+            android:id="@+id/ok_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:visibility="visible"
+            android:background="@drawable/rounded_yellow_button"
+            android:textColor="@color/selector_button_text_black_color"
+            android:text="@string/action_ok"
+            android:textSize="@dimen/button_text_size"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+        <android.widget.Button
+            android:id="@+id/settings_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:visibility="gone"
+            android:background="@drawable/rounded_yellow_button"
+            android:textColor="@color/selector_button_text_black_color"
+            android:text="@string/action_go_to_settings"
+            android:textSize="@dimen/button_text_size"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
     </LinearLayout>
 </RelativeLayout>

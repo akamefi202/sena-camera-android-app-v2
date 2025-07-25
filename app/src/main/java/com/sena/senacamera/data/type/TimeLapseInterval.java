@@ -3,10 +3,11 @@
  */
 package com.sena.senacamera.data.type;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.SdkApi.CameraProperties;
 import com.icatchtek.control.customer.type.ICatchCamMode;
+import com.sena.senacamera.db.CameraSlotSQLite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,8 @@ import java.util.List;
  * Added by zhangyanhu C01012,2014-8-29
  */
 public class TimeLapseInterval {
-    private final String tag = "TimeLapseInterval";
+    private static final String TAG = CameraSlotSQLite.class.getSimpleName();
+
     public static final int TIME_LAPSE_INTERVAL_OFF = 0;
 //	public static final int TIME_LAPSE_INTERVAL_2S = 2;
 //	public static final int TIME_LAPSE_INTERVAL_5S = 5;
@@ -42,7 +44,7 @@ public class TimeLapseInterval {
     }
 
     public String[] getValueStringList() {
-        //if(valueListString == null){
+        //if (valueListString == null) {
             initTimeLapseInterval();
         //}
         return valueListString;
@@ -59,7 +61,7 @@ public class TimeLapseInterval {
     }
 
     public void initTimeLapseInterval() {
-        AppLog.i(tag, "begin initTimeLapseInterval");
+        AppLog.i(TAG, "begin initTimeLapseInterval");
         if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE) == false) {
             return;
         }
@@ -77,15 +79,15 @@ public class TimeLapseInterval {
         for (int ii = 0; ii < tempArrayList.size(); ii++) {
             valueListString[ii] = tempArrayList.get(ii);
         }
-        AppLog.i(tag, "end initTimeLapseInterval timeLapseInterval =" + valueListString.length);
+        AppLog.i(TAG, "end initTimeLapseInterval timeLapseInterval =" + valueListString.length);
     }
 
     public Boolean needDisplayByMode(int previewMode) {
         if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE)) {
-            if(previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
+            if (previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_PREVIEW ||
                     previewMode == PreviewMode.APP_STATE_TIMELAPSE_STILL_CAPTURE ||
                     previewMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
-                    previewMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE){
+                    previewMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE) {
                 return true;
             }
         }
@@ -93,23 +95,23 @@ public class TimeLapseInterval {
     }
 
     public static String convertTimeLapseInterval(int value) {
-        if(value == 0){
+        if (value == 0) {
             return "OFF";
         }
         String time = "";
-        if(value == -2){
+        if (value == -2) {
             return "0.5 Sec";
         }
         int h = value / 3600;
         int m = (value % 3600) / 60;
         int s = value % 60;
-        if(h > 0){
+        if (h > 0) {
             time = time + h+" HR ";
         }
-        if(m > 0){
+        if (m > 0) {
             time = time + m + " Min ";
         }
-        if(s > 0){
+        if (s > 0) {
             time = time + s + " Sec";
         }
         return time;

@@ -16,28 +16,46 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.Presenter.PreviewPresenter;
+import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.presenter.PreviewPresenter;
 import com.sena.senacamera.R;
 import com.sena.senacamera.ui.adapter.SettingListAdapter;
 import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.ui.Interface.PreviewView;
+import com.sena.senacamera.ui.adapter.ShootModeAdapter;
+import com.sena.senacamera.ui.decoration.CenterSnapHelper;
 import com.sena.senacamera.utils.ClickUtils;
 
-public class PreviewActivity extends AppCompatActivity implements View.OnClickListener,  PreviewView {
+import java.util.ArrayList;
+import java.util.List;
 
+public class PreviewActivity extends AppCompatActivity implements View.OnClickListener,  PreviewView {
     private static final String TAG = PreviewActivity.class.getSimpleName();
-    private ImageButton closeButton, settingButton, mediaButton, preferenceButton, cameraModeButton, shutterButton;
+
+    private ImageButton closeButton, settingsButton, mediaButton, preferenceButton, cameraModeButton, shutterButton;
     private SurfaceView mSurfaceView;
     private PreviewPresenter presenter;
-    private LinearLayout cameraPhotoStatus, cameraVideoStatus, photoModeLayout, videoModeLayout, recordingTimeLayout, topBarLayout, cameraZoomLayout, cameraModeLayout, cameraStatusLayout;
-    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, photoModeSingleButton, photoModeBurstButton, photoModeTimelapseButton, photoModeSelfTimerButton, videoModeVideoButton, videoModeSlowMotionButton, videoModeTimelapseButton, videoModeLoopButton, batteryPercentText;
+    private LinearLayout cameraPhotoStatus, cameraVideoStatus, recordingTimeLayout, topBarLayout, cameraZoomLayout, shootModeLayout, cameraStatusLayout;
+    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, batteryPercentText;
     private ImageView batteryStatusIcon, sdCardStatusIcon;
+    private List<TextView> cameraZoomButtonList;
+    private RecyclerView shootModeRecyclerView;
+
     private float zoomRate = 1.0f, maxZoomRate = 3.0f, minZoomRate = 1.0f;
+    private boolean isZoomBarExpanded = false;
+    private List<String> shootModeList;
+    private String currentShootMode;
+    private LinearSnapHelper shootModeSnapHelper;
+    private ShootModeAdapter shootModeAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +67,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         presenter.setView(this);
 
         closeButton = findViewById(R.id.close_button);
-        settingButton = findViewById(R.id.setting_button);
+        settingsButton = findViewById(R.id.settings_button);
         mediaButton = findViewById(R.id.media_button);
         preferenceButton = findViewById(R.id.preference_button);
         cameraModeButton = findViewById(R.id.camera_mode_button);
@@ -59,33 +77,24 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         cameraVideoStatus = findViewById(R.id.camera_video_status);
         photoLimitText = findViewById(R.id.photo_limit_text);
         videoLimitText = findViewById(R.id.video_limit_text);
-        photoModeLayout = findViewById(R.id.photo_mode_layout);
-        videoModeLayout = findViewById(R.id.video_mode_layout);
         recordingTimeLayout = findViewById(R.id.recording_time_layout);
         recordingTimeText = findViewById(R.id.recording_time_text);
         topBarLayout = findViewById(R.id.top_bar_layout);
         cameraStatusLayout = findViewById(R.id.camera_status_layout);
         cameraZoomLayout = findViewById(R.id.camera_zoom_layout);
-        cameraModeLayout = findViewById(R.id.camera_mode_layout);
+        shootModeLayout = findViewById(R.id.shoot_mode_layout);
+        shootModeRecyclerView = findViewById(R.id.shoot_mode_recycler_view);
         cameraZoomOneButton = findViewById(R.id.camera_zoom_1_0_button);
         cameraZoomOneHalfButton = findViewById(R.id.camera_zoom_1_5_button);
         cameraZoomTwoButton = findViewById(R.id.camera_zoom_2_0_button);
         cameraZoomTwoHalfButton = findViewById(R.id.camera_zoom_2_5_button);
         cameraZoomThreeButton = findViewById(R.id.camera_zoom_3_0_button);
-        photoModeSingleButton = findViewById(R.id.photo_mode_single_button);
-        photoModeBurstButton = findViewById(R.id.photo_mode_burst_button);
-        photoModeTimelapseButton = findViewById(R.id.photo_mode_timelapse_button);
-        photoModeSelfTimerButton = findViewById(R.id.photo_mode_self_timer_button);
-        videoModeVideoButton = findViewById(R.id.video_mode_video_button);
-        videoModeSlowMotionButton = findViewById(R.id.video_mode_slow_motion_button);
-        videoModeTimelapseButton = findViewById(R.id.video_mode_timelapse_button);
-        videoModeLoopButton = findViewById(R.id.video_mode_loop_button);
         batteryPercentText = findViewById(R.id.camera_battery_percent);
         batteryStatusIcon = findViewById(R.id.camera_battery_status);
         sdCardStatusIcon = findViewById(R.id.camera_sd_card_status);
 
         closeButton.setOnClickListener(this);
-        settingButton.setOnClickListener(this);
+        settingsButton.setOnClickListener(this);
         mediaButton.setOnClickListener(this);
         preferenceButton.setOnClickListener(this);
         cameraZoomOneButton.setOnClickListener(this);
@@ -93,14 +102,14 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         cameraZoomTwoButton.setOnClickListener(this);
         cameraZoomTwoHalfButton.setOnClickListener(this);
         cameraZoomThreeButton.setOnClickListener(this);
-        photoModeSingleButton.setOnClickListener(this);
-        photoModeBurstButton.setOnClickListener(this);
-        photoModeTimelapseButton.setOnClickListener(this);
-        photoModeSelfTimerButton.setOnClickListener(this);
-        videoModeVideoButton.setOnClickListener(this);
-        videoModeSlowMotionButton.setOnClickListener(this);
-        videoModeTimelapseButton.setOnClickListener(this);
-        videoModeLoopButton.setOnClickListener(this);
+
+        // zoom tag list
+        cameraZoomButtonList = new ArrayList<>();
+        cameraZoomButtonList.add(cameraZoomOneButton);
+        cameraZoomButtonList.add(cameraZoomOneHalfButton);
+        cameraZoomButtonList.add(cameraZoomTwoButton);
+        cameraZoomButtonList.add(cameraZoomTwoHalfButton);
+        cameraZoomButtonList.add(cameraZoomThreeButton);
 
         cameraModeButton.setOnClickListener(v -> toggleCameraMode());
         shutterButton.setOnClickListener(v -> onShutterPressed());
@@ -136,14 +145,12 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
                     case MotionEvent.ACTION_POINTER_DOWN:
                         presenter.onSurfaceViewPointerDown(event);
                         break;
-
                     case MotionEvent.ACTION_MOVE:
                         presenter.onSurfaceViewTouchMove(event);
                         break;
                     case MotionEvent.ACTION_UP:
                         presenter.onSurfaceViewTouchUp();
                         break;
-
                     // 多点松开
                     case MotionEvent.ACTION_POINTER_UP:
                         presenter.onSurfaceViewTouchPointerUp();
@@ -152,6 +159,30 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
                 return true;
             }
         });
+
+        // initialize zoom bar
+        presenter.zoomBySeekBar();
+        updateZoomBarUI();
+
+        // initialize shoot mode recycler view
+        updateShootModeList();
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        shootModeRecyclerView.setLayoutManager(layoutManager);
+//        shootModeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+//            @Override
+//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+//                super.onScrollStateChanged(recyclerView, newState);
+//
+//                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+//                    View centerView = snapHelper.findSnapView(layoutManager);
+//                    if (centerView != null) {
+//                        int pos = layoutManager.getPosition(centerView);
+//                        selectShootMode(pos);
+//                    }
+//                }
+//            }
+//        });
     }
 
     private void toggleCameraMode() {
@@ -186,9 +217,9 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         } else if (id == R.id.close_button) {
             // back to main activity
             presenter.finishActivity();
-        } else if (id == R.id.setting_button) {
+        } else if (id == R.id.settings_button) {
             AppLog.i(TAG, "setting button is pressed");
-            if (!ClickUtils.isFastDoubleClick(R.id.setting_button)) {
+            if (!ClickUtils.isFastDoubleClick(R.id.settings_button)) {
                 presenter.redirectToAnotherActivity(PreviewActivity.this, SettingActivity.class);
             }
         } else if (id == R.id.preference_button) {
@@ -197,73 +228,140 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
                 presenter.redirectToAnotherActivity(PreviewActivity.this, PreferenceActivity.class);
             }
         } else if (id == R.id.camera_zoom_1_0_button || id == R.id.camera_zoom_1_5_button || id == R.id.camera_zoom_2_0_button || id == R.id.camera_zoom_2_5_button || id == R.id.camera_zoom_3_0_button) {
-            // set style of zoom buttons
-            cameraZoomOneButton.setTextColor(getResources().getColor(R.color.white));
-            cameraZoomOneButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
-            cameraZoomOneHalfButton.setTextColor(getResources().getColor(R.color.white));
-            cameraZoomOneHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
-            cameraZoomTwoButton.setTextColor(getResources().getColor(R.color.white));
-            cameraZoomTwoButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
-            cameraZoomTwoHalfButton.setTextColor(getResources().getColor(R.color.white));
-            cameraZoomTwoHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
-            cameraZoomThreeButton.setTextColor(getResources().getColor(R.color.white));
-            cameraZoomThreeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
+            if (isZoomBarExpanded) {
+                int tagIndex = getZoomTagIndex();
+                if ((id == R.id.camera_zoom_1_0_button && tagIndex == 0)
+                        || (id == R.id.camera_zoom_1_5_button && tagIndex == 1)
+                        || (id == R.id.camera_zoom_2_0_button && tagIndex == 2)
+                        || (id == R.id.camera_zoom_2_5_button && tagIndex == 3)
+                        || (id == R.id.camera_zoom_3_0_button && tagIndex == 4)) {
+                    isZoomBarExpanded = false;
+                } else {
+                    if (id == R.id.camera_zoom_1_0_button) {
+                        this.zoomRate = 1.0f;
+                    } else if (id == R.id.camera_zoom_1_5_button) {
+                        this.zoomRate = 1.5f;
+                    } else if (id == R.id.camera_zoom_2_0_button) {
+                        this.zoomRate = 2.0f;
+                    } else if (id == R.id.camera_zoom_2_5_button) {
+                        this.zoomRate = 2.5f;
+                    } else {
+                        // camera_zoom_3_0_button
+                        this.zoomRate = 3.0f;
+                    }
 
-            if (id == R.id.camera_zoom_1_0_button) {
-                cameraZoomOneButton.setTextColor(getResources().getColor(R.color.black));
-                cameraZoomOneButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
-                this.zoomRate = 1.0f;
-            } else if (id == R.id.camera_zoom_1_5_button) {
-                cameraZoomOneHalfButton.setTextColor(getResources().getColor(R.color.black));
-                cameraZoomOneHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
-                this.zoomRate = 1.5f;
-            } else if (id == R.id.camera_zoom_2_0_button) {
-                cameraZoomTwoButton.setTextColor(getResources().getColor(R.color.black));
-                cameraZoomTwoButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
-                this.zoomRate = 2.0f;
-            } else if (id == R.id.camera_zoom_2_5_button) {
-                cameraZoomTwoHalfButton.setTextColor(getResources().getColor(R.color.black));
-                cameraZoomTwoHalfButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
-                this.zoomRate = 2.5f;
-            } else if (id == R.id.camera_zoom_3_0_button) {
-                cameraZoomThreeButton.setTextColor(getResources().getColor(R.color.black));
-                cameraZoomThreeButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
-                this.zoomRate = 3.0f;
+                    this.presenter.zoomBySeekBar();
+                }
+            } else {
+                // expand the zoom bar
+                isZoomBarExpanded = true;
             }
 
-            this.presenter.zoomBySeekBar();
-        } else if (id == R.id.photo_mode_single_button || id == R.id.photo_mode_burst_button || id == R.id.photo_mode_timelapse_button || id == R.id.photo_mode_self_timer_button) {
-            // set style of photo mode buttons
-            photoModeSingleButton.setTextColor(getResources().getColor(R.color.white));
-            photoModeBurstButton.setTextColor(getResources().getColor(R.color.white));
-            photoModeTimelapseButton.setTextColor(getResources().getColor(R.color.white));
-            photoModeSelfTimerButton.setTextColor(getResources().getColor(R.color.white));
+            this.updateZoomBarUI();
+        }
+    }
 
-            if (id == R.id.photo_mode_single_button) {
-                photoModeSingleButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.photo_mode_burst_button) {
-                photoModeBurstButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.photo_mode_timelapse_button) {
-                photoModeTimelapseButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.photo_mode_self_timer_button) {
-                photoModeSelfTimerButton.setTextColor(getResources().getColor(R.color.yellow));
-            }
-        } else if (id == R.id.video_mode_video_button || id == R.id.video_mode_slow_motion_button || id == R.id.video_mode_timelapse_button || id == R.id.video_mode_loop_button) {
-            // set style of video mode buttons
-            videoModeVideoButton.setTextColor(getResources().getColor(R.color.white));
-            videoModeSlowMotionButton.setTextColor(getResources().getColor(R.color.white));
-            videoModeTimelapseButton.setTextColor(getResources().getColor(R.color.white));
-            videoModeLoopButton.setTextColor(getResources().getColor(R.color.white));
+    private void updateZoomBarUI() {
+        AppLog.i(TAG, "updateZoomBarUI zoomRate: " + zoomRate);
 
-            if (id == R.id.video_mode_video_button) {
-                videoModeVideoButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.video_mode_slow_motion_button) {
-                videoModeSlowMotionButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.video_mode_timelapse_button) {
-                videoModeTimelapseButton.setTextColor(getResources().getColor(R.color.yellow));
-            } else if (id == R.id.video_mode_loop_button) {
-                videoModeLoopButton.setTextColor(getResources().getColor(R.color.yellow));
+        // set style of zoom buttons
+        for (TextView item: cameraZoomButtonList) {
+            item.setTextColor(getResources().getColor(R.color.white));
+            item.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag, (Resources.Theme) null));
+        }
+
+        if (isZoomBarExpanded) {
+            // show all zoom tags and highlight the selected tag
+            for (TextView item: cameraZoomButtonList) {
+                item.setVisibility(View.VISIBLE);
             }
+
+            int tagIndex = getZoomTagIndex();
+            cameraZoomButtonList.get(tagIndex).setTextColor(getResources().getColor(R.color.black));
+            cameraZoomButtonList.get(tagIndex).setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_zoom_tag_selected, (Resources.Theme) null));
+
+        } else {
+            // show only selected zoom tag
+            for (TextView item: cameraZoomButtonList) {
+                item.setVisibility(View.GONE);
+            }
+
+            cameraZoomButtonList.get(getZoomTagIndex()).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private int getZoomTagIndex() {
+        if (this.zoomRate <= 1.2f) {
+            // 1.0 tag
+            return 0;
+        } else if (this.zoomRate > 1.2f && this.zoomRate <= 1.8f) {
+            // 1.5 tag
+            return 1;
+        } else if (this.zoomRate > 1.8f && this.zoomRate <= 2.2f) {
+            // 2.0 tag
+            return 2;
+        } else if (this.zoomRate > 2.2f && this.zoomRate <= 2.8f) {
+            // 2.5 tag
+            return 3;
+        } else {
+            // 3.0 tag
+            return 4;
+        }
+    }
+
+    private void updateShootModeList() {
+        if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+            this.shootModeList = new ArrayList<>();
+            this.shootModeList.add(getResources().getString(R.string.photo_mode_single));
+            this.shootModeList.add(getResources().getString(R.string.photo_mode_burst));
+            this.shootModeList.add(getResources().getString(R.string.photo_mode_timelapse));
+            this.shootModeList.add(getResources().getString(R.string.photo_mode_self_timer));
+            this.currentShootMode = this.shootModeList.get(0);
+        } else {
+            this.shootModeList = new ArrayList<>();
+            this.shootModeList.add(getResources().getString(R.string.video_mode_video));
+            this.shootModeList.add(getResources().getString(R.string.video_mode_slow_motion));
+            this.shootModeList.add(getResources().getString(R.string.video_mode_timelapse));
+            this.shootModeList.add(getResources().getString(R.string.video_mode_loop_recording));
+            this.currentShootMode = this.shootModeList.get(0);
+        }
+
+        shootModeAdapter = new ShootModeAdapter(this, this.shootModeList);
+        shootModeRecyclerView.setAdapter(shootModeAdapter);
+
+        if (shootModeSnapHelper == null) {
+            shootModeSnapHelper = new LinearSnapHelper();
+            shootModeSnapHelper.attachToRecyclerView(shootModeRecyclerView);
+        }
+
+        scrollToSelectedShootMode(0);
+    }
+
+    public void scrollToSelectedShootMode(int position) {
+//        AppLog.i(TAG, "scrollToSelectedShootMode position: " + position);
+//        shootModeRecyclerView.smoothScrollToPosition(position);
+        RecyclerView.ViewHolder vh = shootModeRecyclerView.findViewHolderForAdapterPosition(position);
+
+        if (vh != null) {
+            int itemCenterX = vh.itemView.getLeft() + (vh.itemView.getWidth() / 2);
+            int recyclerCenterX = shootModeRecyclerView.getWidth() / 2;
+            int scrollByX = itemCenterX - recyclerCenterX;
+
+            shootModeRecyclerView.smoothScrollBy(scrollByX, 0);
+        } else {
+            shootModeRecyclerView.scrollToPosition(position);
+            shootModeRecyclerView.post(() -> scrollToSelectedShootMode(position));
+        }
+    }
+
+    public String getCurrentShootMode() {
+        return this.currentShootMode;
+    }
+
+    public void selectShootMode(int position) {
+        if (!this.shootModeList.get(position).equals(this.currentShootMode)) {
+            this.currentShootMode = this.shootModeList.get(position);
+            this.shootModeAdapter.notifyDataSetChanged();
         }
     }
 
@@ -295,10 +393,10 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_HOME:
-                AppLog.d("AppStart", "home");
+                AppLog.d(TAG, "home");
                 break;
             case KeyEvent.KEYCODE_BACK:
-                AppLog.d("AppStart", "back");
+                AppLog.d(TAG, "back");
                 presenter.finishActivity();
                 break;
             default:
@@ -359,10 +457,10 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
         photoLimitText.setVisibility(View.VISIBLE);
         cameraPhotoStatus.setVisibility(View.VISIBLE);
-        photoModeLayout.setVisibility(View.VISIBLE);
         videoLimitText.setVisibility(View.GONE);
         cameraVideoStatus.setVisibility(View.GONE);
-        videoModeLayout.setVisibility(View.GONE);
+
+        updateShootModeList();
     }
 
     @Override
@@ -376,10 +474,10 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
         photoLimitText.setVisibility(View.GONE);
         cameraPhotoStatus.setVisibility(View.GONE);
-        photoModeLayout.setVisibility(View.GONE);
         videoLimitText.setVisibility(View.VISIBLE);
         cameraVideoStatus.setVisibility(View.VISIBLE);
-        videoModeLayout.setVisibility(View.VISIBLE);
+
+        updateShootModeList();
     }
 
     @Override
@@ -466,7 +564,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             topBarLayout.setVisibility(View.INVISIBLE);
             cameraStatusLayout.setVisibility(View.INVISIBLE);
             cameraZoomLayout.setVisibility(View.INVISIBLE);
-            cameraModeLayout.setVisibility(View.INVISIBLE);
+            shootModeLayout.setVisibility(View.INVISIBLE);
             mediaButton.setVisibility(View.INVISIBLE);
             preferenceButton.setVisibility(View.INVISIBLE);
         } else {
@@ -475,7 +573,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             topBarLayout.setVisibility(View.VISIBLE);
             cameraStatusLayout.setVisibility(View.VISIBLE);
             cameraZoomLayout.setVisibility(View.VISIBLE);
-            cameraModeLayout.setVisibility(View.VISIBLE);
+            shootModeLayout.setVisibility(View.VISIBLE);
             mediaButton.setVisibility(View.VISIBLE);
             preferenceButton.setVisibility(View.VISIBLE);
         }
@@ -583,7 +681,8 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void updateZoomViewProgress(float currentZoomRatio) {
-        this.zoomRate = currentZoomRatio;
+        //this.zoomRate = currentZoomRatio;
+        //updateZoomBarUI();
     }
 
     @Override

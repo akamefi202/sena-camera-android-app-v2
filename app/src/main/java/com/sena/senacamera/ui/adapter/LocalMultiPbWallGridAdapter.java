@@ -26,7 +26,7 @@ import java.util.List;
 
 
 public class LocalMultiPbWallGridAdapter extends BaseAdapter implements StickyGridHeadersSimpleAdapter {
-    private String TAG = "LocalMultiPbWallGridAdapter";
+    private static final String TAG = LocalMultiPbWallGridAdapter.class.getSimpleName();
     private Context context;
     private List<LocalMediaItemInfo> list;
     private LayoutInflater mInflater;
@@ -95,9 +95,9 @@ public class LocalMultiPbWallGridAdapter extends BaseAdapter implements StickyGr
             mViewHolder.mCheckImageView.setVisibility(View.VISIBLE);
 //            mViewHolder.mImageView.showBorder(true);
             if (list.get(position).isItemChecked) {
-                mViewHolder.mCheckImageView.setImageResource(R.drawable.ic_check_box_blue);
+                mViewHolder.mCheckImageView.setImageResource(R.drawable.status_checkbox_on);
             } else {
-                mViewHolder.mCheckImageView.setImageResource(R.drawable.ic_check_box_blank_grey);
+                mViewHolder.mCheckImageView.setImageResource(R.drawable.status_checkbox_off);
             }
         } else {
             mViewHolder.mCheckImageView.setVisibility(View.GONE);

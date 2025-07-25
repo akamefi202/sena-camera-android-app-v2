@@ -1,6 +1,6 @@
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.exception.IchGLNotInitedException;
 import com.icatchtek.pancam.customer.stream.ICatchIStreamStablization;
 
@@ -11,13 +11,13 @@ import com.icatchtek.pancam.customer.stream.ICatchIStreamStablization;
 public class StreamStablization {
     private final String TAG =StreamStablization.class.getSimpleName();
     private ICatchIStreamStablization streamStablization;
-    public StreamStablization(ICatchIStreamStablization streamStablization){
+    public StreamStablization(ICatchIStreamStablization streamStablization) {
         this.streamStablization = streamStablization;
     }
 
-    public  boolean enableStablization(){
+    public  boolean enableStablization() {
         AppLog.d(TAG,"enableStablization ");
-        if(streamStablization == null){
+        if (streamStablization == null) {
             return false;
         }
 
@@ -31,9 +31,9 @@ public class StreamStablization {
         return ret;
     }
 
-    public boolean disableStablization(){
+    public boolean disableStablization() {
         AppLog.d(TAG,"disableStablization ");
-        if(streamStablization == null){
+        if (streamStablization == null) {
             return false;
         }
         boolean ret = false;

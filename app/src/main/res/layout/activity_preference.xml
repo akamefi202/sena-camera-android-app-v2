@@ -3,13 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fitsSystemWindows="true"
     android:background="@color/background_primary_color"
     tools:context=".ui.activity.PreferenceActivity">
 
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <LinearLayout
         android:orientation="vertical"
-        android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -18,29 +23,64 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="start"
-            android:layout_marginBottom="24dp">
+            android:gravity="center"
+            android:padding="16dp">
 
             <ImageButton
                 android:id="@+id/back_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="40dp"
                 android:contentDescription="@string/action_back"
                 android:background="@drawable/selector_button_back" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center">
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_white"
+                android:textSize="20sp"
                 android:text="@string/title_preference" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
         </LinearLayout>
+
+        <!-- preference tab view -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/preference_tab_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/background_primary_color"
+            app:tabTextColor="@color/text_gray"
+            app:tabSelectedTextColor="@color/yellow"
+            app:tabIndicatorColor="@color/yellow"
+            app:tabIndicatorHeight="1dp"
+            app:tabIndicatorFullWidth="true">
+            <com.google.android.material.tabs.TabItem
+                android:text="@string/title_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <com.google.android.material.tabs.TabItem
+                android:text="@string/title_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/preference_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
     </LinearLayout>
+
+    <!-- fragment container -->
+    <FrameLayout
+        android:id="@+id/fragment_container_preference"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

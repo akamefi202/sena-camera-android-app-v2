@@ -3,7 +3,7 @@ package com.sena.senacamera.MyCamera;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.ICatchPancamSession;
 import com.icatchtek.pancam.customer.type.ICatchGLColor;
 import com.icatchtek.pancam.customer.type.ICatchGLDisplayPPI;

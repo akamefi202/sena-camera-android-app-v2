@@ -7,7 +7,8 @@ import android.hardware.usb.UsbDevice;
  */
 
 public class CameraManager {
-    private final String TAG = CameraManager.class.getSimpleName();
+    private static final String TAG = CameraManager.class.getSimpleName();
+
     private MyCamera curCamera;
     private static CameraManager instance;
 

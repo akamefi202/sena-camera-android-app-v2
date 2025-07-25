@@ -5,7 +5,7 @@ package com.sena.senacamera.SdkApi;
 
 import android.util.Log;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.CommandSession;
 import com.icatchtek.control.customer.ICatchCameraAssist;
@@ -24,7 +24,7 @@ import com.icatchtek.reliant.customer.exception.IchSocketException;
 import com.icatchtek.reliant.customer.exception.IchTimeOutException;
 
 public class CameraAction {
-    private static final String TAG = "CameraAction";
+    private static final String TAG = CameraAction.class.getSimpleName();
     private ICatchCameraControl cameraControl;
     public ICatchCameraAssist cameraAssist;
 
@@ -79,7 +79,7 @@ public class CameraAction {
 
         try {
             int ret = cameraControl.startMovieRecord();
-            if(ret >= 0){
+            if (ret >= 0) {
                 retVal = true;
             }
         } catch (IchSocketException e) {
@@ -143,7 +143,7 @@ public class CameraAction {
 
         try {
             int ret = cameraControl.stopMovieRecord();
-            if(ret == 0){
+            if (ret == 0) {
                 retVal = true;
             }
         } catch (IchSocketException e) {
@@ -170,7 +170,7 @@ public class CameraAction {
 
         try {
             int ret = cameraControl.formatStorage();
-            if(ret == 0){
+            if (ret == 0) {
                 retVal = true;
             }
         } catch (IchSocketException e) {
@@ -235,7 +235,7 @@ public class CameraAction {
 
     public boolean delCustomEventListener(int eventID, ICatchCameraListener listener) {
         AppLog.i(TAG, "begin delEventListener eventID=" + eventID);
-        if(cameraControl == null){
+        if (cameraControl == null) {
             return false;
         }
         boolean retValue = false;
@@ -272,7 +272,7 @@ public class CameraAction {
 
     public boolean delEventListener(int eventID, ICatchCameraListener listener) {
         AppLog.i(TAG, "begin delEventListener eventID=" + eventID);
-        if(cameraControl == null){
+        if (cameraControl == null) {
             return false;
         }
         boolean retValue = false;
@@ -425,7 +425,7 @@ public class CameraAction {
         //return true;
     }
 
-    public boolean changePreviewMode(int mode){
+    public boolean changePreviewMode(int mode) {
         AppLog.i(TAG, "begin changePreviewMode mode:" + mode);
         boolean ret = false;
         try {
@@ -437,7 +437,7 @@ public class CameraAction {
         return ret;
     }
 
-    public int getCurrentCameraMode(){
+    public int getCurrentCameraMode() {
         AppLog.i(TAG, "begin getCurrentCameraMode");
         int ret = cameraControl.getCurrentCameraMode();
         AppLog.i(TAG, "end getCurrentCameraMode ret = " + ret);

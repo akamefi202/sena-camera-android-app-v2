@@ -5,16 +5,17 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ThumbnailUtils;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 /**
  * Created by zhang yanhu C001012 on 2015/11/18 19:54.
  */
 public class BitmapTools {
-    private static String TAG = BitmapTools.class.getSimpleName();
-    public final static int THUMBNAIL_WIDTH = 100;
-    public final static int THUMBNAIL_HEIGHT = 100;
-    private final static long LIMITED_IMGAE_SIZE = 1024 * 1024 * 10;//byte
+    private static final String TAG = BitmapTools.class.getSimpleName();
+
+    public static final int THUMBNAIL_WIDTH = 100;
+    public static final int THUMBNAIL_HEIGHT = 100;
+    private static final long LIMITED_IMGAE_SIZE = 1024 * 1024 * 10;//byte
 
     /**
      * 根据指定的图像路径和大小来获取缩略图

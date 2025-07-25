@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/background_primary_color"
+    tools:context=".ui.fragment.FragmentHelpGuide">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_back"
+                android:background="@drawable/selector_button_back" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="@string/help_guide" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+        </LinearLayout>
+
+        <!-- settings scroll view -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- guide -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- user guide -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/user_guide_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_title="@string/user_guide" />
+
+                    <!-- quick guide -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/quick_guide_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_title="@string/quick_guide" />
+
+                    <!-- video guide -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/video_guide_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_underline="false"
+                        app:menu_link_title="@string/video_guide" />
+
+                </LinearLayout>
+
+                <!-- support & forum & contact -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- auto power off -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/support_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_title="@string/support" />
+
+                    <!-- forum -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/forum_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_title="@string/forum" />
+
+                    <!-- mailing list -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/mailing_list_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_underline="false"
+                        app:menu_link_title="@string/mailing_list" />
+
+                </LinearLayout>
+
+                <!-- terms of use & privacy policy -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- terms of use -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/terms_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_title="@string/terms_of_use" />
+
+                    <!-- privacy policy -->
+                    <com.sena.senacamera.ui.component.MenuLink
+                        android:id="@+id/privacy_policy_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_link_underline="false"
+                        app:menu_link_title="@string/privacy_policy" />
+
+                </LinearLayout>
+
+                <!-- app version -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- app version -->
+                    <com.sena.senacamera.ui.component.MenuInfo
+                        android:id="@+id/app_version_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_info_underline="false"
+                        app:menu_info_title="@string/setting_app_version"
+                        app:menu_info_value="v1.0.0" />
+
+                </LinearLayout>
+
+                <!-- bottom gap -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="32dp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

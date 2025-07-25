@@ -15,9 +15,9 @@ public class Md5FileNameGeneratorMatchFaceName implements FileNameGenerator {
     @Override
     public String generate(String imageUri) {
         String invariantUri;
-        if(TutkUriUtil.isTutkUri(imageUri)){
+        if (TutkUriUtil.isTutkUri(imageUri)) {
             invariantUri = TutkUriUtil.getKey(imageUri);
-        }else {
+        } else {
             invariantUri = imageUri;
         }
 

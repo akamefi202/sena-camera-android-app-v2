@@ -1,14 +1,18 @@
 package com.sena.senacamera.utils;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class ConvertTools {
-    private static String TAG = "ConvertTools";
+    private static final String TAG = ConvertTools.class.getSimpleName();
+
     private static String timeFormatFromFw = "yyyyMMdd'T'HHmmss";
     private static String timeFormatFromApp = "yyyy-MM-dd HH:mm:ss";
     public static String secondsToMinuteOrHours(int remainTime) {
@@ -153,7 +157,7 @@ public class ConvertTools {
     }
 
 
-    public static String getTimeByfileDate(String fileDate) {
+    public static String getTimeByFileDate(String fileDate) {
         //20161010T144422-->20161010
         SimpleDateFormat formatter = new SimpleDateFormat(timeFormatFromFw);
         Date currentTime = null;
@@ -163,7 +167,7 @@ public class ConvertTools {
             e.printStackTrace();
         }
         SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
-        if(currentTime != null){
+        if (currentTime != null) {
             String date = formatter2.format(currentTime);
             return date;
         }
@@ -202,7 +206,7 @@ public class ConvertTools {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        if(currentTime != null){
+        if (currentTime != null) {
             return currentTime.getTime();
         }
         return 0;
@@ -218,11 +222,75 @@ public class ConvertTools {
             e.printStackTrace();
         }
         SimpleDateFormat formatter2 = new SimpleDateFormat(timeFormatFromApp);
-        if(currentTime != null){
+        if (currentTime != null) {
             String date = formatter2.format(currentTime);
             return date;
         }
         return "formatError";
     }
 
+    public static String getHexStringFromByteArray(byte[] param) {
+        StringBuilder result = new StringBuilder();
+        for (byte b: param) {
+            result.append(String.format("%02x", b));
+        }
+        return result.toString();
+    }
+
+    public static String getStringFromByteArray(byte[] param) {
+        // get the end index by skipping 00 bytes
+        int endIndex = 0;
+        for (int i = 0; i < param.length; i ++) {
+            if (param[i] == 0) {
+                endIndex = i;
+                break;
+            }
+        }
+        return new String(Arrays.copyOfRange(param, 0, endIndex), StandardCharsets.UTF_8);
+    }
+
+    public static byte getHiByte(byte[] param) {
+        return param[0];
+    }
+
+    public static byte getLoByte(byte[] param) {
+        return param[1];
+    }
+
+    public static byte[] addByteToByteArray(byte[] orgArray, byte newByte) {
+        ByteBuffer buffer = ByteBuffer.allocate(orgArray.length + 1);
+        buffer.put(orgArray);
+        buffer.put(newByte);
+        return buffer.array();
+    }
+
+    public static byte[] addByteArrayToByteArray(byte[] orgArray, byte[] newArray) {
+        ByteBuffer buffer = ByteBuffer.allocate(orgArray.length + newArray.length);
+        buffer.put(orgArray);
+        buffer.put(newArray);
+        return buffer.array();
+    }
+
+    public static byte[] getByteArrayFromHexString(String param) {
+        String hexString = param.replaceAll("[^0-9a-fA-F]", "");
+        int length = hexString.length();
+        byte[] array = new byte[length / 2];
+
+        for (int i = 0; i < array.length * 2; i += 2) {
+            array[i / 2] = (byte)  ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
+        }
+
+        return array;
+    }
+
+    public static byte[] getByteArrayFromString(String param, int length) {
+        byte[] result = new byte[length];
+        if (param.length() > length) {
+            param = param.substring(0, length);
+        }
+
+        System.arraycopy(param.getBytes(StandardCharsets.UTF_8), 0, result, 0, param.length());
+        return result;
+    }
 }

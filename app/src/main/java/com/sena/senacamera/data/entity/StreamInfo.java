@@ -10,7 +10,7 @@ public class StreamInfo {
     public int bitrate;
     public int fps;
 
-    public StreamInfo(String mediaCodecType,int width,int height,int bitrate,int fps){
+    public StreamInfo(String mediaCodecType,int width,int height,int bitrate,int fps) {
         this.mediaCodecType = mediaCodecType;
         this.width = width;
         this.height =height;
@@ -18,7 +18,7 @@ public class StreamInfo {
         this.fps = fps;
     }
 
-    public StreamInfo(){
+    public StreamInfo() {
 
     }
 }

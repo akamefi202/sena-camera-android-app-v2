@@ -1,48 +1,64 @@
 package com.sena.senacamera.ui.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.graphics.Color;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.content.res.Resources;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Handler;
-import android.util.Log;
+import android.os.Looper;
+import android.provider.Settings;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.LinearLayout;
 
+import com.sena.senacamera.bluetooth.BluetoothCommandManager;
+import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
+import com.sena.senacamera.data.SystemInfo.MWifiManager;
+import com.sena.senacamera.data.entity.CameraDeviceInfo;
+import com.sena.senacamera.listener.BluetoothConnectCallback;
+import com.sena.senacamera.listener.DialogButtonListener;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
-import com.sena.senacamera.Presenter.LaunchPresenter;
+import com.sena.senacamera.presenter.LaunchPresenter;
 import com.sena.senacamera.R;
 import com.sena.senacamera.SdkApi.CameraProperties;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
+import com.sena.senacamera.ui.component.MyToast;
+import com.sena.senacamera.ui.fragment.FragmentFirmwareUpdate;
+import com.sena.senacamera.utils.ClickUtils;
+import com.sena.senacamera.utils.SenaXmlParser;
+import com.sena.senacamera.utils.WifiCheck;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = MainActivity.class.getSimpleName();
+
     private ImageButton deviceListButton, settingsButton;
-    private LinearLayout mediaButton, preferenceButton;
+    private LinearLayout mediaButton, preferenceButton, connectedStatusLayout, disconnectedStatusLayout;
     private Button previewButton, connectButton;
     private ImageView batteryStatusIcon, sdCardStatusIcon;
-    private TextView batteryPercentText, firmwareVersionText;
+    private TextView batteryPercentText, firmwareVersionText, deviceNameText;
+
 
     public LaunchPresenter presenter;
+    public BluetoothCommandManager bleCommandManager = BluetoothCommandManager.getInstance();
+    public BluetoothDeviceManager bleDeviceManager = BluetoothDeviceManager.getInstance();
+    public SenaXmlParser senaXmlParser = SenaXmlParser.getInstance();
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -55,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         //getWindow().setStatusBarColor(getResources().getColor(R.color.black));
 
         deviceListButton = findViewById(R.id.device_list_button);
-        settingsButton = findViewById(R.id.setting_button);
+        settingsButton = findViewById(R.id.settings_button);
         previewButton = findViewById(R.id.preview_button);
         connectButton = findViewById(R.id.connect_button);
         mediaButton = findViewById(R.id.media_button);
@@ -64,20 +80,35 @@ public class MainActivity extends AppCompatActivity {
         batteryStatusIcon = findViewById(R.id.camera_battery_status);
         sdCardStatusIcon = findViewById(R.id.camera_sd_card_status);
         firmwareVersionText = findViewById(R.id.firmware_version_status);
+        connectedStatusLayout = findViewById(R.id.connected_status_layout);
+        disconnectedStatusLayout = findViewById(R.id.disconnected_status_layout);
+        deviceNameText = findViewById(R.id.device_name_text);
+
+        // akamefi202: set LaunchPresenter
+        presenter = new LaunchPresenter(MainActivity.this);
+        presenter.setViewSena();
 
         deviceListButton.setOnClickListener(v -> showDeviceList());
         settingsButton.setOnClickListener(v -> showSettings());
-        previewButton.setOnClickListener(v -> startCameraPreview());
-        connectButton.setOnClickListener(v -> connectCamera());
+        previewButton.setOnClickListener(v -> onPreview());
+        connectButton.setOnClickListener(v -> onConnect());
         mediaButton.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                startActivity(new Intent(v.getContext(), MediaActivity.class));
+                presenter.redirectToAnotherActivity(this, MediaActivity.class);
+                //startActivity(new Intent(v.getContext(), MediaActivity.class));
                 return false;
             }
 
             return true;
         });
         preferenceButton.setOnTouchListener((v, event) -> {
+            // check if the camera is connected
+            MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+            if (curCamera == null || !curCamera.isConnected()) {
+                WifiCheck.showCameraDisconnectedDialog(this, null);
+                return false;
+            }
+
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 startActivity(new Intent(v.getContext(), PreferenceActivity.class));
                 return false;
@@ -86,9 +117,22 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // akamefi202: set LaunchPresenter
-        presenter = new LaunchPresenter(MainActivity.this);
-        presenter.setViewSena();
+        // initialize bluetooth command manager
+        bleCommandManager.setContext(this);
+
+        // initialize sena xml parser
+        senaXmlParser.setContext(this);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            senaXmlParser.execute();
+        }, 1000);
+    }
+
+    private void onMedia() {
+
+    }
+
+    private void onPreferences() {
+
     }
 
     private void showDeviceList() {
@@ -99,43 +143,112 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, SettingActivity.class));
     }
 
-    private void startCameraPreview() {
+    private void onPreview() {
         //this.presenter.launchCameraSena();
-        if (checkCameraConnectionStatus()) {
-            startActivity(new Intent(this, PreviewActivity.class));
+        if (bleDeviceManager.isCurrentDeviceConnected(getApplicationContext())) {
+            this.presenter.redirectToAnotherActivity(this);
         } else {
-            Log.e(TAG, "camera is not connected");
+            AppLog.e(TAG, "camera is not connected");
             updateUI();
         }
     }
 
-    private void connectCamera() {
-        this.startWifiSetting();
-    }
-
-    public String getWifiSSID() {
-        WifiInfo connectionInfo;
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (!wifiManager.isWifiEnabled() || (connectionInfo = wifiManager.getConnectionInfo()) == null) {
-            return null;
-        }
-        NetworkInfo.DetailedState detailedStateOf = WifiInfo.getDetailedStateOf(connectionInfo.getSupplicantState());
-        if (detailedStateOf == NetworkInfo.DetailedState.CONNECTED || detailedStateOf == NetworkInfo.DetailedState.OBTAINING_IPADDR) {
-            return connectionInfo.getSSID();
-        }
-        return null;
-    }
-
-    public boolean checkCameraConnectionStatus() {
-        String wifiSsid = getWifiSSID();
-        if (wifiSsid == null || wifiSsid.length() <= 2) {
-            return false;
+    @SuppressLint({"MissingPermission"})
+    private void onConnect() {
+        if (ClickUtils.isFastClick()) {
+            return;
         }
 
-        // akamefi202: remove double quoatation marks from wifiSsid
-        wifiSsid = wifiSsid.substring(1, wifiSsid.length() - 1).toLowerCase();
-        Log.e("MainActivity - checkCameraConnectionStatus", wifiSsid);
-        return wifiSsid.startsWith(getResources().getString(R.string.prism2).toLowerCase());
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Activity activity = this;
+
+        // check if bluetooth is turned on
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+            AppLog.i(TAG, "connectCamera bluetooth is turned off");
+            // turn on bluetooth if it is off currently
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, 1);
+            return;
+        }
+
+        // get current device info (bluetooth name & address)
+        CameraDeviceInfo currentDevice = bleDeviceManager.getCurrentDevice();
+        if (currentDevice == null) {
+            // no device is registered
+            return;
+        }
+        // get bluetooth device object from address
+        BluetoothDevice bleDevice = bluetoothAdapter.getRemoteDevice(currentDevice.bleAddress);
+        if (bleDevice == null) {
+            AppLog.i(TAG, "connectCamera bleDevice is null");
+            return;
+        }
+
+        // wifi connection callback
+//        ConnectivityManager.NetworkCallback wifiConnectCallback = new ConnectivityManager.NetworkCallback() {
+//            @SuppressLint("MissingPermission")
+//            @Override
+//            public void onAvailable(Network network) {
+//                super.onAvailable(network);
+//
+//                // successful connection
+//                AppLog.i(TAG, "connectCamera wifi connection is succeeded");
+//                updateUI();
+//                MyProgressDialog.closeProgressDialog();
+//            }
+//
+//            @Override
+//            public void onUnavailable() {
+//                super.onUnavailable();
+//
+//                // failed to connect
+//                AppLog.i(TAG, "connectCamera wifi connection is failed");
+//                MyProgressDialog.closeProgressDialog();
+//            }
+//        };
+
+        // bluetooth connection callback
+        BluetoothConnectCallback bluetoothConnectCallback = new BluetoothConnectCallback() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onConnected() {
+                AppLog.i(TAG, "connectCamera bluetooth connection is succeeded");
+
+                // check if wifi of phone is turned on
+                if (!MWifiManager.isWifiEnabled(getApplicationContext())) {
+                    MyToast.show(activity, R.string.wifi_turned_off);
+                    return;
+                }
+
+                // update current device with wifi ssid & password
+                currentDevice.wifiSsid = bleCommandManager.getCurrentWifiSsid();
+                currentDevice.wifiPassword = bleCommandManager.getCurrentWifiPassword();
+                currentDevice.firmwareVerison = bleCommandManager.getCurrentFirmwareVersion();
+                bleDeviceManager.updateCurrentDevice(currentDevice);
+                bleDeviceManager.writeToSharedPref(getApplicationContext());
+
+                // connect to the camera device via wifi
+                // add wifi connect suggestion
+                MWifiManager.connect(getApplicationContext(), bleCommandManager.getCurrentWifiSsid(), bleCommandManager.getCurrentWifiPassword(), null);
+
+                // open wifi settings
+                //MyProgressDialog.showProgressDialog(activity, null);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                    activity.startActivity(intent);
+                    //MyProgressDialog.closeProgressDialog();
+                }, 1000);
+            }
+
+            @Override
+            public void onFailed() {
+                AppLog.i(TAG, "connectCamera bluetooth connection is failed");
+            }
+        };
+
+        // connect to the current device via bluetooth
+        // wifi of camera device will be turned on
+        bleCommandManager.connectDevice(bleDevice, bluetoothConnectCallback, true);
     }
 
     public void onResume() {
@@ -145,7 +258,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateUI() {
-        if (checkCameraConnectionStatus()) {
+        // check camera wifi connection status and update ui (preview/connect button)
+        // initialize sdk if it is connected
+        if (bleDeviceManager.isCurrentDeviceConnected(this)) {
             previewButton.setVisibility(View.VISIBLE);
             connectButton.setVisibility(View.GONE);
 
@@ -153,15 +268,44 @@ public class MainActivity extends AppCompatActivity {
         } else {
             previewButton.setVisibility(View.GONE);
             connectButton.setVisibility(View.VISIBLE);
+
+            updateCameraStatusInfo();
         }
+
+        // show current device name if current device exists
+        // disable preview, connect button if no device is registered
+        if (bleDeviceManager.getCurrentDevice() != null) {
+            deviceNameText.setText(bleDeviceManager.getCurrentDevice().wifiSsid);
+            connectButton.setEnabled(true);
+            previewButton.setEnabled(true);
+        } else {
+            deviceNameText.setText("");
+            connectButton.setEnabled(false);
+            previewButton.setEnabled(false);
+        }
+
+        // initialize bluetooth command manager
+        bleCommandManager.setContext(this);
     }
 
     public void updateCameraStatusInfo() {
-        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
-        if(curCamera == null || !curCamera.isConnected()) {
+        // camera is not connected
+        if (!bleDeviceManager.isCurrentDeviceConnected(this)) {
+            connectedStatusLayout.setVisibility(View.GONE);
+            disconnectedStatusLayout.setVisibility(View.VISIBLE);
             return;
         }
 
+        // show status info if camera is connected
+        disconnectedStatusLayout.setVisibility(View.GONE);
+        connectedStatusLayout.setVisibility(View.VISIBLE);
+
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        if (curCamera == null || !curCamera.isConnected()) {
+            return;
+        }
+
+        // update camera status info
         CameraProperties properties = curCamera.getCameraProperties();
         int batteryLevel = properties.getBatteryElectric();
         boolean isSdCardExist = properties.isSDCardExist();
@@ -169,17 +313,17 @@ public class MainActivity extends AppCompatActivity {
 
         // update battery icon
         if (batteryLevel > 100) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_charge_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_charge);
         } else if (batteryLevel == 100) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_100_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_100);
         } else if (batteryLevel >= 80) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_80_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_80);
         } else if (batteryLevel >= 60) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_60_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_60);
         } else if (batteryLevel >= 40) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_40_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_40);
         } else if (batteryLevel >= 20) {
-            batteryStatusIcon.setImageResource(R.drawable.camera_battery_20_white);
+            batteryStatusIcon.setImageResource(R.drawable.camera_battery_20);
         } else {
             batteryStatusIcon.setImageResource(R.drawable.camera_battery_10);
         }
@@ -188,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         this.batteryPercentText.setText(batteryLevel + "%");
 
         // update firmware version text
-        this.firmwareVersionText.setText("v" + firmwareVersion);
+        this.firmwareVersionText.setText(String.format("v%s", bleDeviceManager.getCurrentDevice().firmwareVerison));
 
         // update sd card icon
         if (isSdCardExist) {
@@ -198,7 +342,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void startWifiSetting() {
-        startActivityForResult(new Intent("android.settings.WIFI_SETTINGS"), 1001);
+    public void compareFirmwareVersion() {
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        if (curCamera == null || !curCamera.isConnected()) {
+            return;
+        }
+
+        String currentFirmwareVersion = bleDeviceManager.getCurrentDevice().firmwareVerison;
+        if (!senaXmlParser.latestFirmwareVersion.equals(currentFirmwareVersion)) {
+            firmwareVersionText.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_version_tag_update_available, null));
+            AppDialogManager.getInstance().showNewFirmwareAvailableDialog(this, new DialogButtonListener() {
+                @Override
+                public void onUpdate() {
+                    Fragment fragment = new FragmentFirmwareUpdate();
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    transaction.add(R.id.fragment_container, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
+            });
+        } else {
+            firmwareVersionText.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_version_tag, null));
+        }
     }
 }

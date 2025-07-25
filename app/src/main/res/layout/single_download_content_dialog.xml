@@ -13,7 +13,7 @@
         android:layout_marginLeft="10dp"
         android:text="filename"
         android:textSize="@dimen/first_title_size"
-        android:textColor="@color/primary_text"/>
+        android:textColor="@color/text_primary"/>
     <TextView
         android:id="@+id/download_status"
         android:layout_width="match_parent"
@@ -21,8 +21,8 @@
         android:text="Status"
         android:layout_marginLeft="10dp"
         android:textSize="@dimen/second_title_size"
-        android:textColor="@color/secondary_text"/>
-    <com.sena.senacamera.ui.ExtendComponent.NumberProgressBar
+        android:textColor="@color/text_secondary"/>
+    <com.sena.senacamera.ui.component.NumberProgressBar
         android:id="@+id/number_bar"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

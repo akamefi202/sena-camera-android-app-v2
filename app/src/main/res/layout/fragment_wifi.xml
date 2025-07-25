@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/background_primary_color"
+    tools:context=".ui.fragment.FragmentWifi">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_back"
+                android:background="@drawable/selector_button_back" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="@string/wifi" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+        </LinearLayout>
+
+        <!-- settings scroll view -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- wifi -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- wifi frequency -->
+                    <com.sena.senacamera.ui.component.MenuSelection
+                        android:id="@+id/wifi_frequency_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_selection_underline="false"
+                        app:menu_selection_title="@string/wifi_frequency"
+                        app:menu_selection_value="5GHz" />
+
+                </LinearLayout>
+
+                <!-- ssid & password -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="24dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- ssid -->
+                    <com.sena.senacamera.ui.component.MenuInfo
+                        android:id="@+id/ssid_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_info_title="@string/ssid"
+                        app:menu_info_value="@string/prism2" />
+
+                    <!-- password -->
+                    <com.sena.senacamera.ui.component.MenuInfo
+                        android:id="@+id/password_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_info_underline="false"
+                        app:menu_info_title="@string/password"
+                        app:menu_info_value="sena0000" />
+
+                </LinearLayout>
+
+                <!-- bottom gap -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="32dp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+    <!-- fragment container -->
+    <FrameLayout
+        android:id="@+id/fragment_container_wifi"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

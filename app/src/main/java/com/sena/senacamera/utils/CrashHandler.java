@@ -13,8 +13,8 @@ import android.os.Looper;
 import android.widget.Toast;
 
 
-import com.sena.senacamera.Application.PanoramaApp;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.application.PanoramaApp;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public class CrashHandler implements UncaughtExceptionHandler {
 
-    public static final String TAG = "CrashHandler";
+    public static final String TAG = CrashHandler.class.getSimpleName();
 
     // 系统默认的UncaughtException处理类
     private UncaughtExceptionHandler mDefaultHandler;
@@ -121,6 +121,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
                 Looper.loop();
             }
         }.start();
+
         String localizedMessage = ex.getLocalizedMessage();
         AppLog.e(TAG, "localizedMessage" + (localizedMessage==null ? "null" : localizedMessage));
         String message = ex.getMessage();
@@ -135,19 +136,16 @@ public class CrashHandler implements UncaughtExceptionHandler {
         return true;
     }
 
-    private void getThreadStackTrace(Thread thread){
-        if(thread == null){
+    private void getThreadStackTrace(Thread thread) {
+        if (thread == null) {
             return;
         }
         AppLog.e(TAG,"thread id:" + thread.getId() + " name:" + thread.getName());
         StackTraceElement[] traceElements = thread.getStackTrace();
-        if(traceElements != null && traceElements.length > 0){
-            for (StackTraceElement temp:traceElements
-            ) {
-                if(temp != null){
-                    String stackString = temp.toString();
-                    AppLog.e(TAG, stackString);
-                }
+        for (StackTraceElement temp : traceElements) {
+            if (temp != null) {
+                String stackString = temp.toString();
+                AppLog.e(TAG, stackString);
             }
         }
     }
@@ -156,15 +154,12 @@ public class CrashHandler implements UncaughtExceptionHandler {
      * 调用栈信息
      * @param ex
      */
-    private void getStackTrace(Throwable ex){
+    private void getStackTrace(Throwable ex) {
         StackTraceElement[] traceElements = ex.getStackTrace();
-        if(traceElements != null && traceElements.length > 0){
-            for (StackTraceElement temp:traceElements
-                 ) {
-                if(temp != null){
-                    String stackString = temp.toString();
-                    AppLog.e(TAG, stackString);
-                }
+        for (StackTraceElement temp : traceElements) {
+            if (temp != null) {
+                String stackString = temp.toString();
+                AppLog.e(TAG, stackString);
             }
         }
     }

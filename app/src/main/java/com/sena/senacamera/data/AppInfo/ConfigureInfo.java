@@ -4,8 +4,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.Log.SdkLog;
+import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.log.SdkLog;
 import com.sena.senacamera.utils.StorageUtil;
 import com.sena.senacamera.utils.fileutils.FileOper;
 import com.icatchtek.pancam.customer.ICatchPancamConfig;
@@ -19,8 +19,9 @@ import java.io.IOException;
  * Created by zhang yanhu C001012 on 2015/11/17 14:01.
  */
 public class ConfigureInfo {
+    private static final String TAG = ConfigureInfo.class.getSimpleName();
     private static ConfigureInfo configureInfo;
-    private static final String TAG = "ConfigureInfo";
+
     private final String[] cfgTopic = {
             "AppVersion=" + AppInfo.APP_VERSION,
             "SupportAutoReconnection=false",

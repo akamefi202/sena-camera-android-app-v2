@@ -2,10 +2,10 @@ package com.sena.senacamera.MyCamera;
 
 import android.hardware.usb.UsbDevice;
 
-import com.sena.senacamera.Application.PanoramaApp;
-import com.sena.senacamera.Function.BaseProperties;
-import com.sena.senacamera.Function.USB.USBHost_Feature;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.application.PanoramaApp;
+import com.sena.senacamera.function.BaseProperties;
+import com.sena.senacamera.function.USB.USBHost_Feature;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.SdkApi.CameraAction;
 import com.sena.senacamera.SdkApi.CameraFixedInfo;
 import com.sena.senacamera.SdkApi.CameraProperties;
@@ -30,7 +30,8 @@ import com.icatchtek.reliant.customer.transport.ICatchUVCBulkTransport;
  * Created by zhang yanhu C001012 on 2015/11/18 11:43.
  */
 public class MyCamera {
-    private final String TAG = MyCamera.class.getSimpleName();
+    private static final String TAG = MyCamera.class.getSimpleName();
+
     private CommandSession commandSession;
     private PanoramaSession panoramaSession;
     private CameraAction cameraAction;
@@ -119,7 +120,7 @@ public class MyCamera {
                 AppLog.i(TAG, "ICatchUVCBulkTransport IchTransportException");
                 e.printStackTrace();
             }
-            ret = commandSession.prepareSession(transport,enablePTPIP);
+            ret = commandSession.prepareSession(transport, enablePTPIP);
             if (!ret) {
                 return false;
             }
@@ -145,7 +146,7 @@ public class MyCamera {
 
     public synchronized boolean disconnect() {
         if (isConnected) {
-            if(transport != null){
+            if (transport != null) {
                 try {
                     transport.destroyTransport();
                 } catch (IchTransportException e) {
@@ -241,11 +242,11 @@ public class MyCamera {
         return position;
     }
 
-    public UsbDevice getUsbDevice(){
+    public UsbDevice getUsbDevice() {
         return usbDevice;
     }
 
-    public int getCameraType(){
+    public int getCameraType() {
         return cameraType;
     }
 

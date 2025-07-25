@@ -7,10 +7,10 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
-import com.sena.senacamera.ui.ExtendComponent.ProgressWheel;
+import com.sena.senacamera.ui.component.ProgressWheel;
 import com.sena.senacamera.utils.imageloader.ImageLoaderUtil;
 import com.sena.senacamera.utils.imageloader.TutkUriUtil;
 
@@ -20,7 +20,7 @@ import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class PhotoViewPagerAdapter extends PagerAdapter {
-    private static final String TAG = "PhotoPbViewPagerAdapter";
+    private static final String TAG = PhotoViewPagerAdapter.class.getSimpleName();
     private List<RemoteMediaItemInfo> filesList;
     private Context context;
     private OnPhotoTapListener onPhotoTapListener;
@@ -49,7 +49,7 @@ public class PhotoViewPagerAdapter extends PagerAdapter {
 //        photoSurfaceView.setVisibility(itemInfo.isPanorama() ? View.VISIBLE:View.GONE);
 //        photoView.setVisibility(itemInfo.isPanorama() ? View.GONE:View.VISIBLE);
         final ProgressWheel progressBar = (ProgressWheel) v.findViewById(R.id.progress_wheel);
-        if(photoView != null && !itemInfo.isPanorama()){
+        if (photoView != null && !itemInfo.isPanorama()) {
             String url = TutkUriUtil.getTutkOriginalUri(itemInfo.iCatchFile);
             ImageLoaderUtil.loadImageView(url, photoView, new ImageLoaderUtil.OnLoadListener() {
                 @Override
@@ -73,7 +73,7 @@ public class PhotoViewPagerAdapter extends PagerAdapter {
             photoView.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
                 @Override
                 public void onPhotoTap(View view, float v, float v1) {
-                    if(onPhotoTapListener != null){
+                    if (onPhotoTapListener != null) {
                         onPhotoTapListener.onPhotoTap();
                     }
                 }
@@ -102,7 +102,7 @@ public class PhotoViewPagerAdapter extends PagerAdapter {
         void onPhotoTap();
     }
 
-    public void setOnPhotoTapListener(OnPhotoTapListener onPhotoTapListener){
+    public void setOnPhotoTapListener(OnPhotoTapListener onPhotoTapListener) {
         this.onPhotoTapListener = onPhotoTapListener;
     }
 

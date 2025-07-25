@@ -3,7 +3,8 @@ package com.sena.senacamera.data.SystemInfo;
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.util.Log;
+
+import com.sena.senacamera.log.AppLog;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,10 +28,10 @@ public class HotSpot
         try {
             Method method = wifiManager.getClass().getMethod("getWifiApState");
             int i = (Integer) method.invoke(wifiManager);
-            Log.i(TAG,"wifi state:  " + i);
+            AppLog.i(TAG,"wifi state:  " + i);
             return i;
         } catch (Exception e) {
-            Log.e(TAG,"Cannot get WiFi AP state" + e);
+            AppLog.e(TAG,"Cannot get WiFi AP state" + e);
             return WIFI_AP_STATE_FAILED;
         }
     }
@@ -65,7 +66,7 @@ public class HotSpot
     //获取第一个连入的设备ip
     public static String getFirstConnectedHotIP() {
         ArrayList<String> connectedIP = getConnectedHotIP();
-        if(connectedIP == null || connectedIP.isEmpty()){
+        if (connectedIP == null || connectedIP.isEmpty()) {
             return null;
         }
         return connectedIP.get( 1 );
@@ -81,7 +82,7 @@ public class HotSpot
             resultList.append("\n");
         }
         System.out.print(resultList);
-        Log.d(TAG,"---->>heww resultList="+resultList);
+        AppLog.d(TAG,"---->>heww resultList="+resultList);
     }
 
     //获取WLAN　密码
@@ -104,7 +105,7 @@ public class HotSpot
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d(TAG,"SharedKey="+SharedKey);
+        AppLog.d(TAG,"SharedKey="+SharedKey);
         return SharedKey;
     }
 
@@ -128,7 +129,7 @@ public class HotSpot
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.i(TAG, "getWifiApSSID -> " + SSID);
+        AppLog.i(TAG, "getWifiApSSID -> " + SSID);
         return SSID;
     }
 
@@ -138,7 +139,7 @@ public class HotSpot
         Method method = null, configMethod = null;
         boolean result = false;
         if (mWifiManager == null) {
-            Log.i(TAG, "mWifiManager is null  -> " + result);
+            AppLog.i(TAG, "mWifiManager is null  -> " + result);
             return result;
         }
         try {
@@ -155,7 +156,7 @@ public class HotSpot
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        Log.i(TAG, "setWifiApEnabled -> " + result);
+        AppLog.i(TAG, "setWifiApEnabled -> " + result);
         return result;
     }
 

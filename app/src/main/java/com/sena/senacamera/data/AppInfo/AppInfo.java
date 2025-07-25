@@ -3,9 +3,9 @@ package com.sena.senacamera.data.AppInfo;
 import android.app.ActivityManager;
 import android.content.Context;
 
-import com.sena.senacamera.Listener.MyOrientoinListener;
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.data.entity.BluetoothAppDevice;
+import com.sena.senacamera.listener.MyOrientationListener;
+import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.data.type.PhotoWallLayoutType;
 import com.icatchtek.bluetooth.customer.client.ICatchBluetoothClient;
 
@@ -51,7 +51,7 @@ public class AppInfo {
     public static boolean enableSoftwareDecoder = false;
     public static boolean isBLE = false;
     public static ICatchBluetoothClient iCatchBluetoothClient;
-    public static BluetoothAppDevice curBtDevice;
+    public static CameraDeviceInfo curBtDevice;
     public static boolean isReleaseBTClient = true;
     public static int videoCacheNum = 0;
     public static int curFps = 30;
@@ -61,13 +61,13 @@ public class AppInfo {
     public static String inputIp = "192.168.1.1";
     public static boolean isNeedReconnect = true;
     public static boolean enableDumpVideo = false;
-    public static MyOrientoinListener.ScreenOrientation curScreenOrientation = MyOrientoinListener.ScreenOrientation.SCREEN_ORIENTATION_PORTRAIT;
+    public static MyOrientationListener.ScreenOrientation curScreenOrientation = MyOrientationListener.ScreenOrientation.SCREEN_ORIENTATION_PORTRAIT;
     public static boolean enableRender = false;
 
     public static boolean isAppSentToBackground(final Context context) {
         ActivityManager activityManager = (ActivityManager) context.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
-        if(appProcesses != null) {
+        if (appProcesses != null) {
             for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
                 if (appProcess.processName.equals(context.getPackageName())) {
                     /*

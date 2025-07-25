@@ -4,7 +4,7 @@
 package com.sena.senacamera.SdkApi;
 
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.control.customer.ICatchCameraState;
 import com.icatchtek.reliant.customer.exception.IchInvalidSessionException;
 
@@ -12,7 +12,7 @@ import com.icatchtek.reliant.customer.exception.IchInvalidSessionException;
  * Added by zhangyanhu C01012,2014-7-2
  */
 public class CameraState {
-    private final String tag = "CameraState";
+    private static final String TAG = CameraState.class.getSimpleName();
     private ICatchCameraState cameraState;
 
     public CameraState(ICatchCameraState cameraState) {
@@ -20,58 +20,58 @@ public class CameraState {
     }
 
     public boolean isMovieRecording() {
-        AppLog.i(tag, "begin isMovieRecording");
+        AppLog.i(TAG, "begin isMovieRecording");
         boolean retValue = false;
         try {
             retValue = cameraState.isMovieRecording();
         } catch (IchInvalidSessionException e) {
             // TODO Auto-generated catch block
-            AppLog.e(tag, "IchInvalidSessionException");
+            AppLog.e(TAG, "IchInvalidSessionException");
             e.printStackTrace();
         }
-        AppLog.i(tag, "end isMovieRecording retValue=" + retValue);
+        AppLog.i(TAG, "end isMovieRecording retValue=" + retValue);
         return retValue;
     }
 
     public boolean isTimeLapseVideoOn() {
-        AppLog.i(tag, "begin isTimeLapseVideoOn");
+        AppLog.i(TAG, "begin isTimeLapseVideoOn");
         boolean retValue = false;
         try {
             retValue = cameraState.isTimeLapseVideoOn();
         } catch (IchInvalidSessionException e) {
             // TODO Auto-generated catch block
-            AppLog.e(tag, "IchInvalidSessionException");
+            AppLog.e(TAG, "IchInvalidSessionException");
             e.printStackTrace();
         }
-        AppLog.i(tag, "end isTimeLapseVideoOn retValue=" + retValue);
+        AppLog.i(TAG, "end isTimeLapseVideoOn retValue=" + retValue);
         return retValue;
     }
 
     public boolean isTimeLapseStillOn() {
-        AppLog.i(tag, "begin isTimeLapseStillOn");
+        AppLog.i(TAG, "begin isTimeLapseStillOn");
         boolean retValue = false;
         try {
             retValue = cameraState.isTimeLapseStillOn();
         } catch (IchInvalidSessionException e) {
             // TODO Auto-generated catch block
-            AppLog.e(tag, "IchInvalidSessionException");
+            AppLog.e(TAG, "IchInvalidSessionException");
             e.printStackTrace();
         }
-        AppLog.i(tag, "end isTimeLapseStillOn retValue=" + retValue);
+        AppLog.i(TAG, "end isTimeLapseStillOn retValue=" + retValue);
         return retValue;
     }
 
     public boolean isSupportImageAutoDownload() {
-        AppLog.i(tag, "begin isSupportImageAutoDownload");
+        AppLog.i(TAG, "begin isSupportImageAutoDownload");
         boolean retValue = false;
         try {
             retValue = cameraState.supportImageAutoDownload();
         } catch (IchInvalidSessionException e) {
-            AppLog.e(tag, "IchInvalidSessionException");
+            AppLog.e(TAG, "IchInvalidSessionException");
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        AppLog.i(tag, "end isSupportImageAutoDownload = " + retValue);
+        AppLog.i(TAG, "end isSupportImageAutoDownload = " + retValue);
         return retValue;
     }
 }

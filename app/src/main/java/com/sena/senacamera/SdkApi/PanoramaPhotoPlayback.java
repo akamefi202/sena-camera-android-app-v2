@@ -1,6 +1,6 @@
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.ICatchIPancamImage;
 import com.icatchtek.pancam.customer.ICatchPancamSession;
 import com.icatchtek.pancam.customer.exception.IchGLAlreadyInitedException;
@@ -42,12 +42,12 @@ public class PanoramaPhotoPlayback {
 //    ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_SPHERE 1 全景
 //    ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_ASTEROID 4 小行星
 //    ICatchGLPanoramaType.ICH_GL_PANORAMA_TYPE_VIRTUAL_R 6 VR效果
-    public ICatchIPancamGL enableGLRender(int panoramaType){
+    public ICatchIPancamGL enableGLRender(int panoramaType) {
         AppLog.d(TAG,"start enableGLRender panoramaType:" + panoramaType);
         try {
             pancamGL = photoPlayback.enableGLRender(panoramaType);
         } catch (Exception e) {
-            AppLog.e(TAG,"Exception e:" + e.getClass().getSimpleName());
+            AppLog.e(TAG,"Exception:" + e.getClass().getSimpleName());
             e.printStackTrace();
         }
         AppLog.d(TAG,"end enableGLRender pancamGL:" + pancamGL);
@@ -134,7 +134,7 @@ public class PanoramaPhotoPlayback {
         return pancamGL;
     }
 
-    public  boolean changePanoramaType(int panoramaType){
+    public  boolean changePanoramaType(int panoramaType) {
         AppLog.d(TAG, "start changePanoramaType");
         boolean ret = false;
         if (pancamGL == null) {

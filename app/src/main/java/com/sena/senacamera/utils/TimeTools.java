@@ -9,16 +9,6 @@ import java.util.Date;
  */
 
 public class TimeTools {
-    private static long lastClickTime;
-    public synchronized static boolean isFastClick() {
-        long time = System.currentTimeMillis();
-        if ( time - lastClickTime < 1000) {
-            return true;
-        }
-        lastClickTime = time;
-        return false;
-    }
-
     public static long stringToLong(String strTime, String formatType) throws ParseException {
         Date date = stringToDate(strTime, formatType); // String类型转成date类型
         if (date == null) {

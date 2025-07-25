@@ -84,10 +84,10 @@ public class FileFilter {
     }
 
 
-    private long getEndTime(){
-        if(timeFilterType == TIME_TYPE_CUSTOMIZE){
+    private long getEndTime() {
+        if (timeFilterType == TIME_TYPE_CUSTOMIZE) {
             return endTime;
-        }else {
+        } else {
             Calendar curCalendar = Calendar.getInstance();
             curCalendar.set(Calendar.HOUR_OF_DAY, 23);
             curCalendar.set(Calendar.MINUTE, 59);
@@ -97,8 +97,8 @@ public class FileFilter {
         }
     }
 
-    private long getStartTime(){
-        if(timeFilterType == TIME_TYPE_CUSTOMIZE){
+    private long getStartTime() {
+        if (timeFilterType == TIME_TYPE_CUSTOMIZE) {
             return startTime;
         }
 

@@ -5,9 +5,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
-import com.sena.senacamera.Function.SDKEvent;
-import com.sena.senacamera.Listener.ScreenListener;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.function.SDKEvent;
+import com.sena.senacamera.listener.ScreenListener;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.AppInfo.AppInfo;
 import com.sena.senacamera.data.entity.LocalMediaItemInfo;
 import com.sena.senacamera.utils.WifiCheck;
@@ -18,7 +18,7 @@ import java.util.List;
  * Created by zhang yanhu C001012 on 2015/11/13 10:55.
  */
 public class GlobalInfo {
-    private final static String TAG = "GlobalInfo";
+    private static final String TAG = GlobalInfo.class.getSimpleName();
     private static GlobalInfo instance;
     private Activity activity;
     private SDKEvent sdkEvent;
@@ -97,13 +97,13 @@ public class GlobalInfo {
                     AppLog.i( TAG, "receive EVENT_CONNECTION_FAILURE" );
                     //JIAR IC-534 begin ADD by b.jiang 2016-06-20
                     wifiCheck = new WifiCheck( activity );
-                    if(!AppInfo.isNeedReconnect){
+                    if (!AppInfo.isNeedReconnect) {
                         return;
                     }
                     if (AppInfo.isSupportAutoReconnection) {
                         wifiCheck.showAutoReconnectDialog();
                     } else {
-                        wifiCheck.showConectFailureWarningDlg( activity );
+                        wifiCheck.showConnectFailureWarningDlg( activity );
                     }
                     //JIAR IC-534 end ADD by b.jiang 2016-06-20
 //                    AppDialog.showConectFailureWarning(activity);
@@ -111,14 +111,14 @@ public class GlobalInfo {
                 case SDKEvent.EVENT_SDCARD_REMOVED:
                     AppLog.i( TAG, "receive EVENT_SDCARD_REMOVED" );
                     //AppDialog.showDialogWarn( activity, R.string.dialog_card_removed );
-                    if(onEventListener!=null){
+                    if (onEventListener!=null) {
                         onEventListener.eventListener(SDKEvent.EVENT_SDCARD_REMOVED);
                     }
                     break;
                 case SDKEvent.EVENT_SDCARD_INSERT:
                     AppLog.i( TAG, "receive EVENT_SDCARD_INSERT" );
                     //AppDialog.showDialogWarn( activity, R.string.dialog_card_removed );
-                    if(onEventListener!=null){
+                    if (onEventListener!=null) {
                         onEventListener.eventListener(SDKEvent.EVENT_SDCARD_INSERT);
                     }
                     break;
@@ -129,19 +129,19 @@ public class GlobalInfo {
         }
     };
 
-    public void addEventListener(int eventId){
+    public void addEventListener(int eventId) {
         if (sdkEvent == null) {
             sdkEvent = new SDKEvent(globalHandler);
         }
         sdkEvent.addEventListener(eventId);
     }
 
-    public void delEventListener(int eventId){
+    public void delEventListener(int eventId) {
         if (sdkEvent != null) {
             sdkEvent.delEventListener(eventId);
         }
     }
-    public void delete(){
+    public void delete() {
         sdkEvent = null;
     }
 

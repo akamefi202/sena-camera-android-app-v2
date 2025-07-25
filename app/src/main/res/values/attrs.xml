@@ -38,4 +38,27 @@
         <attr name="numberProgressBarStyle" format="reference"/>
     </declare-styleable>
 
+    <declare-styleable name="MenuInfo">
+        <attr name="menu_info_title" format="string"/>
+        <attr name="menu_info_value" format="string"/>
+        <attr name="menu_info_underline" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="MenuLink">
+        <attr name="menu_link_title" format="string"/>
+        <attr name="menu_link_underline" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="MenuSelection">
+        <attr name="menu_selection_title" format="string"/>
+        <attr name="menu_selection_value" format="string"/>
+        <attr name="menu_selection_underline" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="MenuSwitch">
+        <attr name="menu_switch_title" format="string"/>
+        <attr name="menu_switch_value" format="boolean"/>
+        <attr name="menu_switch_underline" format="boolean"/>
+    </declare-styleable>
+
 </resources>

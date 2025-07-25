@@ -7,7 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
 import com.sena.senacamera.data.GlobalApp.ExitApp;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 
 /**
@@ -15,15 +15,16 @@ import com.sena.senacamera.R;
  * Fucntion:
  */
 public class AppDialog {
-    private final static String tag="AppDialog";
+    private static final String TAG = AppDialog.class.getSimpleName();
+
     private static boolean needShown = true;
     private static AlertDialog dialog;
 
-    public void showDialog(String title,String message,boolean cancelable){
+    public void showDialog(String title,String message,boolean cancelable) {
         //show a dialog
     }
 
-    public static void showDialogQuit(final Context context, final int messageID){
+    public static void showDialogQuit(final Context context, final int messageID) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setIcon(R.drawable.warning).setTitle(R.string.title_warning).setMessage(messageID);
         builder.setCancelable(false);
@@ -31,14 +32,14 @@ public class AppDialog {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                AppLog.i(tag, "ExitApp because of "+context.getResources().getString(messageID));
+                AppLog.i(TAG, "ExitApp because of "+context.getResources().getString(messageID));
                 ExitApp.getInstance().exit();
             }
         });
         builder.create().show();
     }
 
-    public static void showDialogQuit(final Context context, final String message){
+    public static void showDialogQuit(final Context context, final String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setIcon(R.drawable.warning).setTitle(R.string.title_warning).setMessage(message);
         builder.setCancelable(false);
@@ -46,15 +47,15 @@ public class AppDialog {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                AppLog.i(tag, "ExitApp because of "+message);
+                AppLog.i(TAG, "ExitApp because of "+message);
                 ExitApp.getInstance().exit();
             }
         });
         builder.create().show();
     }
 
-    public static void showDialogWarn(final Context context, String message){
-        if(dialog != null){
+    public static void showDialogWarn(final Context context, String message) {
+        if (dialog != null) {
             dialog.dismiss();
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -71,8 +72,8 @@ public class AppDialog {
         dialog.show();
     }
 
-    public static void showDialogWarn(final Context context, int messageID){
-        if(dialog != null){
+    public static void showDialogWarn(final Context context, int messageID) {
+        if (dialog != null) {
             dialog.dismiss();
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -89,8 +90,8 @@ public class AppDialog {
         dialog.show();
     }
 
-    public static void showDialogWarn(final Context context, int messageID,boolean canelable,final OnDialogSureClickListener listener){
-        if(dialog != null){
+    public static void showDialogWarn(final Context context, int messageID,boolean canelable,final OnDialogSureClickListener listener) {
+        if (dialog != null) {
             dialog.dismiss();
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -101,7 +102,7 @@ public class AppDialog {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                if(listener != null){
+                if (listener != null) {
                     listener.onSure();
                 }
             }
@@ -110,8 +111,8 @@ public class AppDialog {
         dialog.show();
     }
 
-    public static void showConectFailureWarning(final Context context){
-        if(needShown == false){
+    public static void showConnectFailureWarning(final Context context) {
+        if (!needShown) {
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -138,7 +139,6 @@ public class AppDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setIcon(R.drawable.warning).setTitle(R.string.title_warning).setMessage(R.string.low_battery);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

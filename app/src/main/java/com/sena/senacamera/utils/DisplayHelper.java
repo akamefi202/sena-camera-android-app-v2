@@ -26,13 +26,13 @@ import java.lang.reflect.Field;
  */
 public class DisplayHelper {
 
-    private static final String TAG = "Devices";
+    private static final String TAG = DisplayHelper.class.getSimpleName();
 
     /**
      * DisplayMetrics
      * @return
      */
-    public static DisplayMetrics getDisplayMetrics(Context context){
+    public static DisplayMetrics getDisplayMetrics(Context context) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE))
                 .getDefaultDisplay().getMetrics(displayMetrics);
@@ -71,8 +71,8 @@ public class DisplayHelper {
      * 屏幕密度
      */
     public static float sDensity = 0f;
-    public static float getDensity(Context context){
-        if(sDensity == 0f){
+    public static float getDensity(Context context) {
+        if (sDensity == 0f) {
             sDensity = getDisplayMetrics(context).density;
         }
         return sDensity;
@@ -82,7 +82,7 @@ public class DisplayHelper {
      * 屏幕宽度
      * @return
      */
-    public static int getScreenWidth(Context context){
+    public static int getScreenWidth(Context context) {
         return getDisplayMetrics(context).widthPixels;
     }
 
@@ -90,7 +90,7 @@ public class DisplayHelper {
      * 屏幕高度
      * @return
      */
-    public static int getScreenHeight(Context context){
+    public static int getScreenHeight(Context context) {
         return getDisplayMetrics(context).heightPixels;
     }
 
@@ -99,7 +99,7 @@ public class DisplayHelper {
      * @param context
      * @return
      */
-    public static int[] getRealScreenSize(Context context){
+    public static int[] getRealScreenSize(Context context) {
         int[] size = new int[2];
         int widthPixels =0,heightPixels = 0;
         WindowManager w = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -136,7 +136,7 @@ public class DisplayHelper {
      * @param dp
      * @return
      */
-    public static int dp2px(Context context, int dp){
+    public static int dp2px(Context context, int dp) {
         return (int) (getDensity(context) * dp + 0.5);
     }
 
@@ -145,7 +145,7 @@ public class DisplayHelper {
      * @param px
      * @return
      */
-    public static int px2dp(Context context, int px){
+    public static int px2dp(Context context, int px) {
         return (int) (px/getDensity(context) + 0.5);
     }
 
@@ -155,7 +155,7 @@ public class DisplayHelper {
      * @return
      */
     public static boolean hasStatusBar(Context context) {
-        if(context instanceof Activity){
+        if (context instanceof Activity) {
             Activity activity = (Activity) context;
             WindowManager.LayoutParams attrs = activity.getWindow().getAttributes();
             return (attrs.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != WindowManager.LayoutParams.FLAG_FULLSCREEN;
@@ -171,7 +171,7 @@ public class DisplayHelper {
     public static int getActionBarHeight(Context context) {
         int actionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize,tv, true)){
+        if (context.getTheme().resolveAttribute(android.R.attr.actionBarSize,tv, true)) {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,
                     context.getResources().getDisplayMetrics());
         }
@@ -207,7 +207,7 @@ public class DisplayHelper {
      * @param context
      * @return
      */
-    public static int getNavMenuHeight(Context context){
+    public static int getNavMenuHeight(Context context) {
         return getRealScreenSize(context)[1] - getScreenHeight(context);
     }
 
@@ -277,7 +277,7 @@ public class DisplayHelper {
      * SD Card是否ready
      * @return
      */
-    public static boolean isSdcardReady() {
+    public static boolean isSdCardReady() {
         return Environment.MEDIA_MOUNTED.equals(Environment
                 .getExternalStorageState());
     }
@@ -311,7 +311,7 @@ public class DisplayHelper {
      * @param context
      */
     public static void setFullScreen(Context context) {
-        if(context instanceof Activity){
+        if (context instanceof Activity) {
             Activity activity = (Activity) context;
             WindowManager.LayoutParams params = activity.getWindow().getAttributes();
             params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
@@ -326,7 +326,7 @@ public class DisplayHelper {
      * @param context
      */
     public static void cancelFullScreen(Context context) {
-        if(context instanceof Activity){
+        if (context instanceof Activity) {
             Activity activity = (Activity) context;
             WindowManager.LayoutParams params = activity.getWindow().getAttributes();
             params.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -340,7 +340,7 @@ public class DisplayHelper {
      * @param activity
      * @return
      */
-    public static boolean isFullScreen(Activity activity){
+    public static boolean isFullScreen(Activity activity) {
         WindowManager.LayoutParams params = activity.getWindow().getAttributes();
         return (params.flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) == WindowManager.LayoutParams.FLAG_FULLSCREEN;
     }

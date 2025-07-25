@@ -1,29 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_color">#141414</color>
-    <color name="secondary_color">#ffffff</color>
-
-    <color name="black_overlay">#ffffff</color>
-    <color name="setting_overlay">#aaffffff</color>
-    <color name="setting_menu_overlay">#55ffffff</color>
-
     <color name="test">#3F51B5</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="gray">#808080</color>
-    <color name="red">#FF0000</color>
+    <color name="gray">#A6A6A6</color>
+    <color name="red">#FF2F2F</color>
     <color name="gold">#FFD700</color>
     <color name="yellow">#E7FE00</color>
     <color name="green">#008000</color>
     <color name="blue">#0000FF</color>
     <color name="purple">#800080</color>
     <color name="pink">#FFC0CB</color>
-    <color name="orange">#FFA500</color>
-
+    <color name="orange">#FF4800</color>
     <color name="full_transparent">#00000000</color>
     <color name="half_transparent">#aa000000</color>
-    <color name="half_transparent_grey">#aa202020</color>
+    <color name="quarter_transparent">#40000000</color>
+    <color name="half_transparent_gray">#aa202020</color>
 
+    <color name="primary_color">#141414</color>
+    <color name="secondary_color">#ffffff</color>
+    <color name="background_primary_color">#141414</color>
+    <color name="background_secondary_color">#1f1f1f</color>
+    <color name="overlay_gray_color">#1A1A1A</color>
+    <color name="divider_gray_color">#262626</color>
+    <color name="black_overlay">#ffffff</color>
+    <color name="primary_idle">#FFFFFF</color>
+    <color name="primary_checked">#FFDCDCDC</color>
+    <color name="text_input_underline">#777777</color>
+    <color name="text_input_underline_focused">#ff4800</color>
+    <color name="text_input_underline_disabled">#2c2c2c</color>
+    <color name="text_input_disabled">#2c2c2c</color>
+
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#727272</color>
     <color name="text_white">#FFFFFFFF</color>
     <color name="text_pressed">#FF6D6D6D</color>
     <color name="text_disabled">#FF666666</color>
@@ -35,33 +44,47 @@
     <color name="text_progress">#FFFF9900</color>
     <color name="text_link">#FF90FF00</color>
     <color name="text_yellow">#E7FE00</color>
-    <color name="text_grey">#CCCCCC</color>
-
-
-    <color name="background_primary_color">#141414</color>
-    <color name="overlay_gray_color">#1A1A1A</color>
-    <color name="divider_gray_color">#1f1f1f</color>
-    <color name="disconnected_status_color">#626262</color>
-    <color name="zoom_tag_color">#80333333</color>
-    <color name="versin_tag_color">#2c2c2c</color>
+    <color name="text_dark_gray">#777777</color>
+    <color name="text_gray">#a6a6a6</color>
+    <color name="text_gray_pressed">#80a6a6a6</color>
+    <color name="text_group_status">#cccccc</color>
+    <color name="text_hint">#626262</color>
 
     <color name="button_primary_color">#E7FE00</color>
-    <color name="button_red_color">#FF4800</color>
-    <color name="button_connect_color">#232323</color>
+    <color name="button_orange_color">#FF4800</color>
     <color name="button_disabled_color">#626262</color>
-    <color name="button_pressed_color">#a6a6a6</color>
-    <color name="button_confirm_color">#101010</color>
+    <color name="button_pressed_color">#A6A6A6</color>
+    <color name="button_yellow_color">#E7FE00</color>
+    <color name="button_yellow_pressed_color">#80E7FE00</color>
+    <color name="button_yellow_disabled_color">#80232323</color>
+    <color name="button_light_gray_color">#cccccc</color>
+    <color name="button_light_gray_pressed_color">#80cccccc</color>
+    <color name="button_light_gray_disabled_color">#80626262</color>
+    <color name="button_gray_color">#232323</color>
+    <color name="button_gray_pressed_color">#80232323</color>
+    <color name="button_gray_disabled_color">#80232323</color>
+    <color name="button_white_color">#ffffff</color>
+    <color name="button_white_color_pressed">#80ffffff</color>
+    <color name="button_white_color_disabled">#80232323</color>
+    <color name="button_text_white_color">#ffffff</color>
+    <color name="button_text_white_color_pressed">#80ffffff</color>
+    <color name="button_text_white_color_disabled">#80626262</color>
+    <color name="button_text_black_color">#101010</color>
+    <color name="button_text_black_color_pressed">#80101010</color>
+    <color name="button_text_black_color_disabled">#80626262</color>
+    <color name="button_text_yellow_color">#E7FE00</color>
+    <color name="button_text_yellow_color_pressed">#80E7FE00</color>
+    <color name="button_text_yellow_color_disabled">#80626262</color>
 
+    <color name="disconnected_status_color">#626262</color>
+    <color name="zoom_tag_color">#80333333</color>
+    <color name="version_tag_color">#2c2c2c</color>
+    <color name="progress_back_color">#1AE7FE00</color>
+    <color name="setting_overlay">#aaffffff</color>
+    <color name="setting_menu_overlay">#55ffffff</color>
     <color name="background_list">#FF2D2D2D</color>
     <color name="background_line">#FF6D6D6D</color>
-    <color name="text_tupp_selected">#FFC5584F</color>
-    <color name="text_tupp">#FFFEFEFE</color>
-    <color name="primary_idle">#FFFFFF</color>
-    <color name="primary_checked">#FFDCDCDC</color>
-    <color name="divider">#4d4d4d</color>
-    <color name="primary_text">#212121</color>
-    <color name="secondary_text">#727272</color>
-    <color name="primary_light">#CFD8DC</color>
-    <color name="primary_dark">#37474F</color>
+    <color name="password_input_border_color">#383838</color>
+    <color name="password_input_hint_color">#626262</color>
 
 </resources>

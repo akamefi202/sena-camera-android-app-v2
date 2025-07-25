@@ -4,33 +4,85 @@ import android.animation.Animator;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.sena.senacamera.R;
+import com.sena.senacamera.ui.BuildConfig;
+import com.sena.senacamera.utils.SharedPreferencesUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SenaCameraActivity extends Activity {
-    private static final int REQUEST_CODE_ASK_PERMISSIONS = 1;
-    private static final int SUBACTIVITY_WRITE_SETTINGS = 2;
-    private static final long introTimeLimit = 2000;
-    ImageView intro;
-    /* access modifiers changed from: private */
-    public long introTimeElapsed = 0;
-    /* access modifiers changed from: private */
-    public List<String> missingPermissions = new ArrayList();
+public class SenaCameraActivity extends Activity implements View.OnClickListener {
+    private static final String TAG = SenaCameraActivity.class.getSimpleName();
 
-    /* access modifiers changed from: protected */
-    public boolean checkPermission() {
+    private static final int REQUEST_CODE_ASK_PERMISSIONS = 1;
+    private static final int SUB_ACTIVITY_WRITE_SETTINGS = 2;
+    private boolean termsPolicyAgreed = false;
+
+    LinearLayout connectCameraLayout, termsPolicyLayout, allowPermissionsLayout, allowPermissionsWarningLayout;
+    Button connectCameraButton, agreeButton, okButton, settingsButton;
+    ImageView termsPolicyCheckbox;
+    /* access modifiers changed from: private */
+    public List<String> missingPermissions = new ArrayList<>();
+
+    @Override
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+
+        requestWindowFeature(1);
+        setContentView(R.layout.activity_sena_camera);
+        getResources().getDisplayMetrics();
+
+        this.connectCameraLayout = (LinearLayout) findViewById(R.id.connect_camera_layout);
+        this.termsPolicyLayout = (LinearLayout) findViewById(R.id.terms_policy_layout);
+        this.allowPermissionsLayout = (LinearLayout) findViewById(R.id.allow_permissions_layout);
+        this.allowPermissionsWarningLayout = (LinearLayout) findViewById(R.id.allow_permissions_warning_layout);
+        this.connectCameraButton = (Button) findViewById(R.id.connect_camera_button);
+        this.agreeButton = (Button) findViewById(R.id.agree_button);
+        this.okButton = (Button) findViewById(R.id.ok_button);
+        this.settingsButton = (Button) findViewById(R.id.settings_button);
+        this.termsPolicyCheckbox = (ImageView) findViewById(R.id.terms_agree_checkbox);
+
+        this.connectCameraButton.setOnClickListener(this);
+        this.agreeButton.setOnClickListener(this);
+        this.okButton.setOnClickListener(this);
+        this.settingsButton.setOnClickListener(this);
+        this.termsPolicyCheckbox.setOnClickListener(this);
+
+        // check if terms & policy is agreed
+        termsPolicyAgreed = (boolean) SharedPreferencesUtils.get(getApplicationContext(), SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.TERMS_AGREED, false);
+        if (!termsPolicyAgreed) {
+            // show the terms policy layout if terms & policy is not agreed
+            this.termsPolicyLayout.setVisibility(View.VISIBLE);
+        }
+
+        // check permissions & terms agreement
+        if (termsPolicyAgreed && !this.checkPermissions()) {
+            // show the permissions layout if all necessary permissions are not granted & terms is agreed
+            this.allowPermissionsLayout.setVisibility(View.VISIBLE);
+
+            // request permissions
+            if (!this.missingPermissions.isEmpty()) {
+                this.getPermissions();
+            }
+        }
+    }
+
+    public boolean checkPermissions() {
         boolean z = true;
         if (Build.VERSION.SDK_INT < 23) {
             return true;
@@ -63,14 +115,26 @@ public class SenaCameraActivity extends Activity {
             this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
             z = false;
         }
-        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") != 0) {
-            this.missingPermissions.add("android.permission.READ_EXTERNAL_STORAGE");
-            z = false;
-        }
-        if (ContextCompat.checkSelfPermission(this, "android.permission.WRITE_EXTERNAL_STORAGE") != 0) {
-            this.missingPermissions.add("android.permission.WRITE_EXTERNAL_STORAGE");
-            z = false;
-        }
+//        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_SCAN") != 0) {
+//            this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
+//            z = false;
+//        }
+//        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_CONNECT") != 0) {
+//            this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
+//            z = false;
+//        }
+//        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") != 0) {
+//            this.missingPermissions.add("android.permission.READ_EXTERNAL_STORAGE");
+//            z = false;
+//        }
+//        if (ContextCompat.checkSelfPermission(this, "android.permission.WRITE_EXTERNAL_STORAGE") != 0) {
+//            this.missingPermissions.add("android.permission.WRITE_EXTERNAL_STORAGE");
+//            z = false;
+//        }
+//        if (ContextCompat.checkSelfPermission(this, "android.permission.MANAGE_EXTERNAL_STORAGE") != 0) {
+//            this.missingPermissions.add("android.permission.MANAGE_EXTERNAL_STORAGE");
+//            z = false;
+//        }
         if (ContextCompat.checkSelfPermission(this, "android.permission.ACCESS_FINE_LOCATION") != 0) {
             this.missingPermissions.add("android.permission.ACCESS_FINE_LOCATION");
             z = false;
@@ -99,7 +163,7 @@ public class SenaCameraActivity extends Activity {
         return z;
     }
 
-    public void getPermission() {
+    public void getPermissions() {
         Log.e("SenaCameraActivity - getPermission", String.join(",", this.missingPermissions));
         String[] requestedPermission = {this.missingPermissions.get(0)};
         this.missingPermissions.remove(0);
@@ -112,96 +176,59 @@ public class SenaCameraActivity extends Activity {
         ActivityCompat.requestPermissions(this, requestedPermission, 1);
     }
 
-    public void startMainActivity() {
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
-    }
-
-    /* access modifiers changed from: protected */
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-
-        requestWindowFeature(1);
-        setContentView(R.layout.activity_sena_camera);
-        this.intro = (ImageView) findViewById(R.id.intro);
-        getResources().getDisplayMetrics();
-        this.intro.setAlpha(0.0f);
-        this.intro.animate().alpha(1.0f).setDuration(introTimeLimit).setListener((Animator.AnimatorListener) null);
-
-        new Thread() {
-            public void run() {
-                try {
-                    // Initialization: Set introTimeElapsed to 0
-                    SenaCameraActivity activity = SenaCameraActivity.this;
-                    activity.introTimeElapsed = 0;
-
-                    // Loop until introTimeElapsed reaches 2000ms
-                    while (activity.introTimeElapsed < 2000) {
-                        // Add 100ms to introTimeElapsed and wait
-                        activity.introTimeElapsed += 100;
-                        Thread.sleep(100); // Wait for 100ms
-                    }
-
-                    // Get the width and height of the intro ImageView and set screen size
-                    ImageView introImage = activity.intro;
-                    //MainActivity.screenWidth = introImage.getWidth();
-                    //MainActivity.screenHeight = introImage.getHeight();
-
-                    // Calculate the screen size and status bar height
-                    WindowManager windowManager = activity.getWindowManager();
-                    Display display = windowManager.getDefaultDisplay();
-                    Point size = new Point();
-                    display.getSize(size);
-                    int screenHeight = size.y;
-                    //MainActivity.statusBarHeight = screenHeight - MainActivity.screenHeight;
-
-                    // Check permissions
-                    if (!activity.checkPermission()) {
-                        List<String> missingPermissions = activity.missingPermissions;
-                        if (!missingPermissions.isEmpty()) {
-                            activity.getPermission(); // Request permissions
-                        }
-                        return;
-                    }
-
-                    // If permissions are granted, start the main activity
-                    activity.startMainActivity();
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-    }
-
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 1) {
             for (int length = permissions.length - 1; length >= 0; length--) {
-                //int i2 = grantResults[length];
                 if (!this.missingPermissions.isEmpty()) {
-                    getPermission();
-                } else {
-                    startMainActivity();
+                    getPermissions();
                 }
             }
         }
     }
 
-    /* access modifiers changed from: protected */
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 2) {
-            if (!this.missingPermissions.isEmpty()) {
-                getPermission();
-            } else {
-                startMainActivity();
-            }
-        }
-    }
+    @Override
+    public void onClick(View v) {
+        // combination of onclick listeners of buttons
+        int id = v.getId();
 
-    public void onDestroy() {
-        super.onDestroy();
-        this.intro = null;
+        if (id == R.id.connect_camera_button) {
+            // go to connect device screen
+            startActivity(new Intent(v.getContext(), ConnectDeviceActivity.class));
+            finish();
+        } else if (id == R.id.agree_button) {
+            // terms & policy agree button is clicked
+            this.termsPolicyLayout.setVisibility(View.GONE);
+
+            // check & request checkPermissions
+            if (!this.checkPermissions()) {
+                // show the allow permissions layout if all permissions are not granted
+                this.allowPermissionsLayout.setVisibility(View.VISIBLE);
+
+                // request permissions
+                if (!this.missingPermissions.isEmpty()) {
+                    this.getPermissions();
+                }
+            }
+        } else if (id == R.id.ok_button) {
+            // hide the allow permissions layout
+            this.allowPermissionsLayout.setVisibility(View.GONE);
+        } else if (id == R.id.settings_button) {
+            // go to app permission settings
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+        } else if (id == R.id.terms_agree_checkbox) {
+            if (this.termsPolicyAgreed) {
+                return;
+            }
+
+            SharedPreferencesUtils.put(this, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.TERMS_AGREED, true);
+            this.termsPolicyAgreed = true;
+
+            this.agreeButton.setEnabled(true);
+            this.termsPolicyCheckbox.setImageResource(R.drawable.status_checkbox_on);
+        }
     }
 }

@@ -1,11 +1,10 @@
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.ICatchIPancamControl;
 import com.icatchtek.pancam.customer.ICatchIPancamListener;
 import com.icatchtek.pancam.customer.ICatchPancamSession;
 import com.icatchtek.reliant.customer.exception.IchInvalidSessionException;
-import com.icatchtek.reliant.customer.exception.IchListenerExistsException;
 import com.icatchtek.reliant.customer.exception.IchListenerNotExistsException;
 
 /**
@@ -13,8 +12,9 @@ import com.icatchtek.reliant.customer.exception.IchListenerNotExistsException;
  */
 
 public class PanoramaControl {
+    private static final String TAG = PanoramaControl.class.getSimpleName();
     private ICatchIPancamControl iCatchIPancamControl;
-    private String TAG = PanoramaControl.class.getSimpleName();
+
     public PanoramaControl(ICatchPancamSession iCatchPancamSession) {
         this.iCatchIPancamControl = iCatchPancamSession.getControl();
 

@@ -1,6 +1,6 @@
 package com.sena.senacamera.utils.fileutils;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -10,7 +10,7 @@ import java.util.List;
  * Created by zhang yanhu C001012 on 2015/11/19 10:50.
  */
 public class MFileTools extends FileTools {
-    private final static String TAG = MFileTools.class.getSimpleName();
+    private static final String TAG = MFileTools.class.getSimpleName();
 
     public static String getNewestPhotoFromDirectory(String directoryPath) {
         List<File> files = getPhotosOrderByDate(directoryPath);

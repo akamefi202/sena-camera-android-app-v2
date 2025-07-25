@@ -1,6 +1,6 @@
 package com.sena.senacamera.MyCamera;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.SdkApi.PanoramaControl;
 import com.sena.senacamera.SdkApi.PanoramaPhotoPlayback;
 import com.sena.senacamera.SdkApi.PanoramaVideoPlayback;
@@ -14,7 +14,7 @@ import com.icatchtek.reliant.customer.transport.ICatchITransport;
  */
 
 public class LocalSession {
-    private final static String TAG = LocalSession.class.getSimpleName();
+    private static final String TAG = LocalSession.class.getSimpleName();
     private static LocalSession instance;
     private PanoramaPhotoPlayback panoramaPhotoPlayback;
     private PanoramaVideoPlayback panoramaVideoPlayback;

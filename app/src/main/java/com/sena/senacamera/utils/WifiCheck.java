@@ -11,11 +11,16 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.data.GlobalApp.ExitApp;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 
 import java.util.Timer;
@@ -24,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 
 public class WifiCheck {
 
-    private String TAG = "WifiCheck";
+    private static final String TAG = WifiCheck.class.getSimpleName();
     private static final int CONNECT_FAILED = 0x02;
     private static final int IN_BACKGROUND = 0x03;
     private static final int RECONNECT_SUCCESS = 0x04;
@@ -149,8 +154,8 @@ public class WifiCheck {
         return false;
     }
 
-    public void showConectFailureWarningDlg(Context context) {
-        if (isShowed == true) {
+    public void showConnectFailureWarningDlg(Context context) {
+        if (isShowed) {
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -180,6 +185,30 @@ public class WifiCheck {
             dialog.setCancelable(false);
             dialog.show();
         }
+    }
+
+    public static void showCameraDisconnectedDialog(Context context, Callback callback) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_device_is_not_connected, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (callback != null) {
+                    callback.processSucceed();
+                }
+            }
+        });
+
+        Button okButton = dialogLayout.findViewById(R.id.ok_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
     }
 
     private void showReconnectDialog() {

@@ -31,9 +31,10 @@
                 android:background="@drawable/selector_button_back" />
 
             <TextView
+                android:id="@+id/title_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/title_size"
+                android:textSize="@dimen/title_text_size"
                 android:text="@string/title_my_devices"
                 android:textAlignment="center"
                 android:textColor="@color/text_white"
@@ -44,201 +45,35 @@
                 android:layout_width="80dp"
                 android:layout_height="40dp"
                 android:padding="0dp"
+                android:textAllCaps="false"
                 android:text="@string/action_edit"/>
+            <Button
+                android:id="@+id/delete_all_button"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:visibility="gone"
+                android:padding="0dp"
+                android:textAllCaps="false"
+                android:textColor="@color/selector_button_text_yellow_color"
+                android:text="@string/action_delete_all"/>
         </LinearLayout>
 
         <!-- device list -->
         <LinearLayout
+            android:id="@+id/device_list_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:paddingHorizontal="32dp"
-            android:paddingVertical="24dp"
             android:orientation="vertical"
-            android:background="@drawable/rounded_grey_section">
+            android:background="@drawable/rounded_gray_section">
 
-            <!-- device item -->
-            <LinearLayout
+            <ListView
+                android:id="@+id/device_list"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="76dp"
-                    android:maxHeight="76dp"
-                    android:scaleType="centerInside"
-                    android:layout_marginEnd="12dp"
-                    android:src="@drawable/prism2_camera"
-                    android:adjustViewBounds="true" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:text="@string/prism2" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:src="@drawable/status_connected"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="2dp" />
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/connected"
-                            android:textColor="@color/text_yellow"
-                            android:layout_weight="1" />
-                    </LinearLayout>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- device list divider -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp" />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_gray_color" />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp" />
-            </LinearLayout>
-
-            <!-- device item -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="76dp"
-                    android:maxHeight="76dp"
-                    android:scaleType="centerInside"
-                    android:layout_marginEnd="12dp"
-                    android:src="@drawable/phantom_camera"
-                    android:adjustViewBounds="true" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:text="@string/phantom_cam" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:src="@drawable/status_disconnected"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="2dp" />
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/not_connected"
-                            android:textColor="@color/disconnected_status_color"
-                            android:layout_weight="1" />
-                    </LinearLayout>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- device list divider -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp" />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_gray_color" />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="24dp" />
-            </LinearLayout>
-
-            <!-- device item -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="76dp"
-                    android:maxHeight="76dp"
-                    android:scaleType="centerInside"
-                    android:layout_marginEnd="12dp"
-                    android:src="@drawable/sena_50c_camera"
-                    android:adjustViewBounds="true" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:text="@string/camera_50c" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-                        <ImageView
-                            android:src="@drawable/status_disconnected"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="2dp" />
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/not_connected"
-                            android:textColor="@color/disconnected_status_color"
-                            android:layout_weight="1" />
-                    </LinearLayout>
-                </LinearLayout>
-
-            </LinearLayout>
+                android:layout_height="match_parent"
+                android:divider="@color/divider_gray_color"
+                android:dividerHeight="1dp" />
 
         </LinearLayout>
 
@@ -246,12 +81,54 @@
         <android.widget.Button
             android:id="@+id/add_new_device_button"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:background="@drawable/rounded_grey_button"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/button_min_height"
+            android:background="@drawable/rounded_gray_button"
+            android:textColor="@color/selector_button_text_white_color"
             android:text="@string/action_add_new_device"
-            android:textColor="@color/selector_button_text_color"
             android:textAllCaps="false"
+            android:textSize="@dimen/button_text_size"
+            android:textStyle="bold"
             android:layout_marginTop="16dp" />
+
+        <!-- bottom button layout -->
+        <LinearLayout
+            android:id="@+id/bottom_button_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="horizontal">
+            <android.widget.Button
+                android:id="@+id/cancel_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/button_min_height"
+                android:background="@drawable/rounded_gray_small_button"
+                android:layout_weight="1"
+                android:layout_marginEnd="10dp"
+                android:textAllCaps="false"
+                android:textSize="@dimen/button_text_size"
+                android:textStyle="bold"
+                android:text="@string/action_cancel" />
+            <android.widget.Button
+                android:id="@+id/save_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="@dimen/button_min_height"
+                android:textColor="@color/selector_button_text_black_color"
+                android:background="@drawable/rounded_white_button"
+                android:layout_weight="1"
+                android:textAllCaps="false"
+                android:textSize="@dimen/button_text_size"
+                android:textStyle="bold"
+                android:text="@string/action_save" />
+        </LinearLayout>
+
+        <!-- bottom gap -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="32dp" />
+
     </LinearLayout>
 
 

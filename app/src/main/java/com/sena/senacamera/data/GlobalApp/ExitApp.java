@@ -2,19 +2,17 @@ package com.sena.senacamera.data.GlobalApp;
 
 import android.app.Activity;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
-import com.sena.senacamera.SdkApi.FileOperation;
 
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by zhang yanhu C001012 on 2015/11/18 11:30.
  */
 public class ExitApp {
-    private final static String TAG = "ExitApp";
+    private static final String TAG = ExitApp.class.getSimpleName();
     private LinkedList<Activity> activityList = new LinkedList<Activity>();
     private static ExitApp instance;
 
@@ -41,7 +39,7 @@ public class ExitApp {
 
     public void exit() {
 //        List<MyCamera> cameraList = GlobalInfo.getInstance().getCameraList();
-//        if(cameraList != null && cameraList.isEmpty() == false){
+//        if (cameraList != null && cameraList.isEmpty() == false) {
 //            PreviewStream previewStream = PreviewStream.getInstance();
 //            FileOperation fileOperation = FileOperation.getInstance();
 //            VideoPlayback videoPlayback = VideoPlayback.getInstance();
@@ -63,7 +61,7 @@ public class ExitApp {
             activityList.clear();
         }
         MyCamera curCamera = CameraManager.getInstance().getCurCamera();
-        if(curCamera != null && curCamera.isConnected()){
+        if (curCamera != null && curCamera.isConnected()) {
             curCamera.disconnect();
         }
         AppLog.i(TAG, "end exit System.exit");
@@ -73,7 +71,7 @@ public class ExitApp {
 
     public void finishAllActivity() {
         MyCamera curCamera = CameraManager.getInstance().getCurCamera();
-        if(curCamera != null && curCamera.isConnected()){
+        if (curCamera != null && curCamera.isConnected()) {
             curCamera.disconnect();
         }
         AppLog.i(TAG, "start finsh activity");

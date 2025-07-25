@@ -1,13 +1,12 @@
 package com.sena.senacamera.db;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraType;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
 import com.sena.senacamera.data.SystemInfo.MWifiManager;
@@ -16,8 +15,9 @@ import com.sena.senacamera.data.entity.CameraSlot;
 import java.util.ArrayList;
 
 public class CameraSlotSQLite {
+    private static final String TAG = CameraSlotSQLite.class.getSimpleName();
+
     private SQLiteDatabase db;
-    private String TAG = "CameraSlotSQLite";
     private static CameraSlotSQLite instance;
     private ArrayList<CameraSlot> camSlotList;
     private Context context;
@@ -30,15 +30,15 @@ public class CameraSlotSQLite {
     }
 
     private CameraSlotSQLite() {
-        creatTable(GlobalInfo.getInstance().getAppContext());
+        createTable(GlobalInfo.getInstance().getAppContext());
     }
 
-    private void creatTable(Context context) {
-        AppLog.i(TAG, "start creatTable");
+    private void createTable(Context context) {
+        AppLog.i(TAG, "start createTable");
         this.context = context;
         CameraSlotSQLiteHelper dbHelper = new CameraSlotSQLiteHelper(context);
         this.db = dbHelper.getWritableDatabase();
-        AppLog.i(TAG, "end creatTable");
+        AppLog.i(TAG, "end createTable");
 
     }
 
@@ -68,7 +68,7 @@ public class CameraSlotSQLite {
         ContentValues values = new ContentValues();
         //在values中添加内容
         values.put("isOccupied", camSlot.isOccupied);
-        if(camSlot.cameraPhoto != null && camSlot.cameraPhoto.length > 0) {
+        if (camSlot.cameraPhoto != null && camSlot.cameraPhoto.length > 0) {
             values.put("imageBuffer", camSlot.cameraPhoto);
         }
         values.put("cameraName", camSlot.cameraName);
@@ -141,7 +141,7 @@ public class CameraSlotSQLite {
 ////        for (CameraSlot temp : slotList
 ////                ) {
 ////            AppLog.d(TAG, "start updateImage temp.slotPosition=" +temp.slotPosition);
-////            if(temp.slotPosition == curSlotPosition){
+////            if (temp.slotPosition == curSlotPosition) {
 ////                camSlot = temp;
 ////            }
 ////        }
@@ -165,11 +165,7 @@ public class CameraSlotSQLite {
     }
 
     private Boolean switchIntToBool(int value) {
-        if (value == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return value == 1;
     }
 
 }

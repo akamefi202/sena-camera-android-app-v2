@@ -1,14 +1,9 @@
 package com.sena.senacamera.SdkApi;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
-import com.sena.senacamera.Log.AppLog;
-import com.sena.senacamera.MyCamera.CameraType;
-import com.sena.senacamera.data.entity.CameraSlot;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.type.Tristate;
-import com.sena.senacamera.db.CameraSlotSQLite;
-import com.sena.senacamera.test.test;
 import com.sena.senacamera.utils.BitmapTools;
 import com.icatchtek.pancam.customer.ICatchIPancamPreview;
 import com.icatchtek.pancam.customer.ICatchPancamConfig;
@@ -42,7 +37,6 @@ import com.icatchtek.reliant.customer.type.ICatchFrameBuffer;
 import com.icatchtek.reliant.customer.type.ICatchImageSize;
 import com.icatchtek.reliant.customer.type.ICatchStreamParam;
 
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 /**
@@ -71,7 +65,7 @@ public class PanoramaPreviewPlayback {
         try {
             ret = previewPlayback.enableRender(iCatchSurfaceContext);
         } catch (Exception e) {
-            AppLog.e(TAG, "Exception : " + e.getClass().getSimpleName());
+            AppLog.e(TAG, "Exception: " + e.getClass().getSimpleName());
             e.printStackTrace();
         }
         return ret;
@@ -83,14 +77,14 @@ public class PanoramaPreviewPlayback {
         try {
             pancamGL = previewPlayback.enableGLRender();
         } catch (Exception e) {
-            AppLog.e(TAG, "Exception : " + e.getClass().getSimpleName());
+            AppLog.e(TAG, "Exception: " + e.getClass().getSimpleName());
             e.printStackTrace();
         }
         AppLog.d(TAG, "end enableGLRender");
         return true;
     }
 
-    public  boolean changePanoramaType(int panoramaType){
+    public  boolean changePanoramaType(int panoramaType) {
         AppLog.d(TAG, "start changePanoramaType panoramaType=" + panoramaType);
         boolean ret = false;
         if (pancamGL == null) {
@@ -114,7 +108,7 @@ public class PanoramaPreviewPlayback {
         try {
             streamProvider = previewPlayback.disableRender();
         } catch (Exception e) {
-            AppLog.e(TAG, "Exception : " + e.getClass().getSimpleName());
+            AppLog.e(TAG, "Exception: " + e.getClass().getSimpleName());
             e.printStackTrace();
         }
         //默认输出codec为YUN_I420，需手动配置为RGBA
@@ -208,7 +202,7 @@ public class PanoramaPreviewPlayback {
 
     public boolean init(int panoramaType) {
         AppLog.d(TAG, "start init ");
-        if(pancamGL == null){
+        if (pancamGL == null) {
             return false;
         }
         boolean ret = false;
@@ -229,7 +223,7 @@ public class PanoramaPreviewPlayback {
 
     public boolean release() {
         AppLog.d(TAG, "start pancamGLRelease ");
-        if(pancamGL == null){
+        if (pancamGL == null) {
             return false;
         }
         boolean ret = false;
@@ -246,7 +240,7 @@ public class PanoramaPreviewPlayback {
 
     public boolean setSurface(int ichSurfaceIdSphere, ICatchSurfaceContext iCatchSurfaceContext) {
         AppLog.d(TAG, "start initSurface ");
-        if(pancamGL == null){
+        if (pancamGL == null) {
             return false;
         }
         boolean ret = false;
@@ -267,7 +261,7 @@ public class PanoramaPreviewPlayback {
 
     public boolean removeSurface(int iCatchSphereType, ICatchSurfaceContext iCatchSurfaceContext) {
         AppLog.d(TAG, "start removeSurface ");
-        if(pancamGL == null){
+        if (pancamGL == null) {
             return false;
         }
         boolean ret = false;
@@ -607,7 +601,7 @@ public class PanoramaPreviewPlayback {
         AppLog.d(TAG, "End stopLive");
     }
 
-    public Bitmap getPvThumbnail(){
+    public Bitmap getPvThumbnail() {
         AppLog.d(TAG, "start stop ");
         boolean retValue = false;
         int frameWidth = 1920;
@@ -629,7 +623,7 @@ public class PanoramaPreviewPlayback {
 //        test.saveImage(thumbnailBitmap,System.currentTimeMillis());
 
 
-//        if(bitmap != null) {
+//        if (bitmap != null) {
 //            DatabaseHelper.updateCameraPhoto(GlobalInfo.curSlotId, bitmap);
 //        }
 //        AppLog.d(TAG, "End savePvThumbnail=" + ret);

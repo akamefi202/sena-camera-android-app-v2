@@ -1,8 +1,12 @@
 package com.sena.senacamera.data.entity;
 
+import com.icatchtek.reliant.customer.type.ICatchFile;
 import com.sena.senacamera.data.type.MediaItemType;
 import com.sena.senacamera.data.type.MediaType;
 import com.sena.senacamera.utils.ConvertTools;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,6 +19,8 @@ import java.util.Date;
 
 
 public class LocalMediaItemInfo extends MediaItemInfo implements Serializable {
+    private static final String TAG = LocalMediaItemInfo.class.getSimpleName();
+
     public File file;
     public int section;
     public boolean isItemDownloaded = false;
@@ -41,35 +47,34 @@ public class LocalMediaItemInfo extends MediaItemInfo implements Serializable {
     }
 
     public LocalMediaItemInfo(File file) {
-        super();
         this.file = file;
         this.isItemChecked = false;
         this.mediaItemType = MediaItemType.LOCAL;
     }
 
-    public void setSection(int section){
+    public void setSection(int section) {
         this.section = section;
     }
 
-    public String getFilePath(){
+    public String getFilePath() {
         return file.getPath();
     }
 
-    public String getFileDate(){
+    public String getFileDate() {
         long time = file.lastModified();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         return format.format(new Date(time));
     }
 
-    public String getFileSize(){
+    public String getFileSize() {
         int size = (int)file.length();
         return  ConvertTools.ByteConversionGBMBKB(size);
     }
 
-    public String getFileName(){
+    public String getFileName() {
         return file.getName();
     }
-    public String getFileDateMMSS(){
+    public String getFileDateMMSS() {
         long time = file.lastModified();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return format.format(new Date(time));
@@ -83,7 +88,6 @@ public class LocalMediaItemInfo extends MediaItemInfo implements Serializable {
         isPanorama = panorama;
     }
 
-    //读取文件创建时间
     public void getCreateTime() {
         String filePath = file.getPath();
         String strTime = null;
@@ -101,7 +105,40 @@ public class LocalMediaItemInfo extends MediaItemInfo implements Serializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("创建时间    " + strTime);
     }
 
+    public static String serialize(LocalMediaItemInfo src) {
+        try {
+            JSONObject dest = new JSONObject();
+
+            dest.put("filePath", src.file.getPath());
+            dest.put("section", src.section);
+            dest.put("isItemDownloaded", src.isItemDownloaded);
+            dest.put("isPanorama", src.isPanorama);
+            dest.put("fileType", src.fileType);
+            dest.put("fileDuration", src.fileDuration);
+
+            return dest.toString();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static LocalMediaItemInfo deserialize(String src) {
+        try {
+            JSONObject jsonObject = new JSONObject(src);
+
+            String filePath = (String) jsonObject.get("filePath");
+            File file = new File(filePath);
+            int section = (int) jsonObject.get("section");
+            boolean isItemDownloaded = (boolean) jsonObject.get("isItemDownloaded");
+            boolean isPanorama = (boolean) jsonObject.get("isPanorama");
+            String fileType = (String) jsonObject.get("fileType");
+            String fileDuration = (String) jsonObject.get("fileDuration");
+
+            return new LocalMediaItemInfo(file, section, isPanorama, fileType, fileDuration);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -13,15 +13,15 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.util.Log;
 
-import com.sena.senacamera.Listener.WifiListener;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.listener.WifiListener;
+import com.sena.senacamera.log.AppLog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class WifiAPUtil {
-    private static final String TAG = "WifiAPUtil";
-    public final static boolean DEBUG = true;
+    private static final String TAG = WifiAPUtil.class.getSimpleName();
+    public static final boolean DEBUG = true;
 
     public static final int MESSAGE_AP_STATE_ENABLED = 1;
     public static final int MESSAGE_AP_STATE_FAILED = 2;
@@ -47,7 +47,7 @@ public class WifiAPUtil {
     }
 
     private WifiAPUtil(Context context) {
-        if (DEBUG) Log.d(TAG, "WifiAPUtils construct");
+        if (DEBUG) AppLog.d(TAG, "WifiAPUtils construct");
         mContext = context;
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
@@ -59,7 +59,7 @@ public class WifiAPUtil {
     }
 
     protected void finalize() {
-        if (DEBUG) Log.d(TAG, "finalize");
+        if (DEBUG) AppLog.d(TAG, "finalize");
         mContext.unregisterReceiver(mWifiStateBroadcastReceiver);
     }
 
@@ -82,13 +82,13 @@ public class WifiAPUtil {
         wcfg.allowedProtocols.clear();
 
         if (Type == WifiSecurityType.WIFICIPHER_NOPASS) {
-            if (DEBUG) Log.d(TAG, "wifi ap----no password");
+            if (DEBUG) AppLog.d(TAG, "wifi ap----no password");
             wcfg.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN, true);
             wcfg.wepKeys[0] = "";
             wcfg.allowedKeyManagement.set(KeyMgmt.NONE);
             wcfg.wepTxKeyIndex = 0;
         } else if (Type == WifiSecurityType.WIFICIPHER_WPA) {
-            if (DEBUG) Log.d(TAG, "wifi ap----wpa");
+            if (DEBUG) AppLog.d(TAG, "wifi ap----wpa");
             //密码至少8位，否则使用默认密码
             if (null != password && password.length() >= 8) {
                 wcfg.preSharedKey = password;
@@ -105,7 +105,7 @@ public class WifiAPUtil {
             wcfg.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
             wcfg.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
         } else if (Type == WifiSecurityType.WIFICIPHER_WPA2) {
-            if (DEBUG) Log.d(TAG, "wifi ap---- wpa2");
+            if (DEBUG) AppLog.d(TAG, "wifi ap---- wpa2");
             //密码至少8位，否则使用默认密码
             if (null != password && password.length() >= 8) {
                 wcfg.preSharedKey = password;
@@ -127,7 +127,7 @@ public class WifiAPUtil {
                     wcfg.getClass());
             Boolean rt = (Boolean) method.invoke(mWifiManager, wcfg);
             if (DEBUG) AppLog.d(TAG, " rt = " + rt);
-        } catch (Exception e){
+        } catch (Exception e) {
             AppLog.e(TAG, e.getClass().getSimpleName());
             return false;
         }
@@ -141,9 +141,9 @@ public class WifiAPUtil {
             Method method2 = mWifiManager.getClass().getMethod("getWifiApState");
             state = (Integer) method2.invoke(mWifiManager);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            AppLog.e(TAG, e.getMessage());
         }
-        if (DEBUG) Log.i("WifiAP", "getWifiAPState.state " + state);
+        if (DEBUG) AppLog.i("WifiAP", "getWifiAPState.state " + state);
         return state;
     }
 
@@ -154,7 +154,7 @@ public class WifiAPUtil {
             try {
                 Thread.sleep(200);
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
+                AppLog.e(TAG, e.getMessage());
                 return false;
             }
         }
@@ -167,7 +167,7 @@ public class WifiAPUtil {
 
                 Thread.sleep(200);
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
+                AppLog.e(TAG, e.getMessage());
                 return false;
             }
         }
@@ -179,7 +179,7 @@ public class WifiAPUtil {
             method1.invoke(mWifiManager, null, true);
             Thread.sleep(200);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            AppLog.e(TAG, e.getMessage());
             return false;
         }
         return true;
@@ -206,7 +206,7 @@ public class WifiAPUtil {
         }
     }
 
-    public void regitsterHandler(Handler handler) {
+    public void registerHandler(Handler handler) {
         mHandler = handler;
         IntentFilter filter = new IntentFilter();
         filter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
@@ -214,9 +214,9 @@ public class WifiAPUtil {
         mContext.registerReceiver(mWifiStateBroadcastReceiver, filter);
     }
 
-    public void unregitsterHandler() {
+    public void unregisterHandler() {
         mHandler = null;
-        if(mWifiStateBroadcastReceiver != null){
+        if (mWifiStateBroadcastReceiver != null) {
             mContext.unregisterReceiver(mWifiStateBroadcastReceiver);
             mWifiStateBroadcastReceiver = null;
         }
@@ -227,7 +227,7 @@ public class WifiAPUtil {
     private BroadcastReceiver mWifiStateBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (DEBUG) Log.i(TAG, "WifiAPUtils onReceive: " + intent.getAction());
+            if (DEBUG) AppLog.i(TAG, "WifiAPUtils onReceive: " + intent.getAction());
             if (WIFI_AP_STATE_CHANGED_ACTION.equals(intent.getAction())) {
                 int cstate = intent.getIntExtra(EXTRA_WIFI_AP_STATE, -1);
                 if (cstate == WIFI_AP_STATE_ENABLED) {
@@ -254,7 +254,7 @@ public class WifiAPUtil {
                 NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
                 if (info.getState().equals(NetworkInfo.State.DISCONNECTED)) {
                     Log.d(TAG, "网络连接断开");
-//                    if(!AppInfo.isReconnecting){
+//                    if (!AppInfo.isReconnecting) {
 //                        handler.obtainMessage(AppMessage.MESSAGE_DISCONNECTED,null).sendToTarget();
 //                        AppInfo.isReconnecting = true;
 //                    }
@@ -285,7 +285,7 @@ public class WifiAPUtil {
             WifiConfiguration configuration = (WifiConfiguration) method.invoke(mWifiManager);
             return configuration.SSID;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            AppLog.e(TAG, e.getMessage());
             return null;
         }
     }
@@ -297,7 +297,7 @@ public class WifiAPUtil {
             WifiConfiguration configuration = (WifiConfiguration) method.invoke(mWifiManager);
             return configuration.preSharedKey;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            AppLog.e(TAG, e.getMessage());
             return null;
         }
 
@@ -310,11 +310,11 @@ public class WifiAPUtil {
             Method method = mWifiManager.getClass().getMethod("getWifiApConfiguration");
             configuration = (WifiConfiguration) method.invoke(mWifiManager);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            AppLog.e(TAG, e.getMessage());
             return WifiSecurityType.WIFICIPHER_INVALID.ordinal();
         }
 
-        if (DEBUG) Log.i(TAG, "getSecurity security=" + configuration.allowedKeyManagement);
+        if (DEBUG) AppLog.i(TAG, "getSecurity security=" + configuration.allowedKeyManagement);
         if (configuration.allowedKeyManagement.get(KeyMgmt.NONE)) {
             return WifiSecurityType.WIFICIPHER_NOPASS.ordinal();
         } else if (configuration.allowedKeyManagement.get(KeyMgmt.WPA_PSK)) {
@@ -329,13 +329,13 @@ public class WifiAPUtil {
     public static String getLocalIPAddressFromWifiInfo(Context context)
     {
         WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
-        if(wifi != null){
+        if (wifi != null) {
             WifiInfo info = wifi.getConnectionInfo();
 //            String macAdress = info.getMacAddress(); //获取mac地址
             int ipAddress = info.getIpAddress();  //获取ip地址
             String ip = intIP2StringIP(ipAddress);
             return ip;
-        }else {
+        } else {
             return "";
         }
     }

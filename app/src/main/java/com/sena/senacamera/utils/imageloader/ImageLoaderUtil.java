@@ -23,21 +23,21 @@ public class ImageLoaderUtil {
         ImageLoader.getInstance().loadImage(path, new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri,null);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri,null);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri,null,loadedImage);
                 }
             }
@@ -54,21 +54,21 @@ public class ImageLoaderUtil {
         ImageLoader.getInstance().loadImage("file://" + uri.getPath(), new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri,null);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri,null);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri,null,loadedImage);
                 }
             }
@@ -83,7 +83,7 @@ public class ImageLoaderUtil {
     //默认加载
     public static void loadImageView(String path, ImageView mImageView) {
 //        Glide.with(mContext).load(path).into(mImageView);
-        ImageLoader.getInstance().displayImage(path,mImageView);
+        ImageLoader.getInstance().displayImage(path, mImageView);
     }
 
     public static void loadImageView(String path, ImageView mImageView, int defaultImg) {
@@ -102,26 +102,26 @@ public class ImageLoaderUtil {
         ImageLoader.getInstance().displayImage(path,mImageView,options);
     }
 
-    public static void loadImageView(String path, ImageView mImageView, final OnLoadListener listener){
+    public static void loadImageView(String path, ImageView mImageView, final OnLoadListener listener) {
         ImageLoader.getInstance().displayImage(path, mImageView, new ImageLoadingListener() {
 
             @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri, view,loadedImage);
                 }
             }
@@ -133,27 +133,27 @@ public class ImageLoaderUtil {
         });
     }
 
-    public static void loadLocalImageView(File file, ImageView mImageView, final OnLoadListener listener){
+    public static void loadLocalImageView(File file, ImageView mImageView, final OnLoadListener listener) {
         Uri uri = Uri.fromFile(file);
         ImageLoader.getInstance().displayImage("file://" + uri.getPath(), mImageView, new ImageLoadingListener() {
 
             @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri, view,loadedImage);
                 }
             }
@@ -168,24 +168,23 @@ public class ImageLoaderUtil {
 
     public static void loadImageView(String path, ImageView mImageView, int defaultImg, final OnLoadListener listener) {
         ImageLoader.getInstance().displayImage(path, mImageView, ImageLoaderConfig.getDefaultDisplayOptions(defaultImg), new ImageLoadingListener() {
-
-                        @Override
+            @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri, view,loadedImage);
                 }
             }
@@ -201,21 +200,21 @@ public class ImageLoaderUtil {
         ImageLoader.getInstance().displayImage(path, mImageView, getDelayDisplayOptions(defaultImg, delayInMillis), new ImageLoadingListener() {
             @Override
             public void onLoadingStarted(String imageUri, View view) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingStarted(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingFailed(imageUri, view);
                 }
             }
 
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                if(listener != null){
+                if (listener != null) {
                     listener.onLoadingComplete(imageUri, view,loadedImage);
                 }
             }
@@ -257,7 +256,7 @@ public class ImageLoaderUtil {
         void onLoadingComplete(String imageUri, View view, Bitmap loadedImage);
     }
 
-    public static void stopLoad(){
+    public static void stopLoad() {
         ImageLoader.getInstance().stop();
     }
 }

@@ -6,14 +6,13 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Environment;
 import android.os.StatFs;
 import android.text.format.Formatter;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.utils.StorageUtil;
 
 import java.io.File;
@@ -22,7 +21,7 @@ import java.io.File;
  * Created by zhang yanhu C001012 on 2015/11/13 10:40.
  */
 public class SystemInfo {
-    private static final String TAG = "SystemInfo";
+    private static final String TAG = SystemInfo.class.getSimpleName();
     private static SystemInfo instance;
 
     public static SystemInfo getInstance() {

@@ -4,7 +4,7 @@
 package com.sena.senacamera.data.type;
 
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.R;
 import com.sena.senacamera.SdkApi.CameraProperties;
@@ -17,7 +17,8 @@ import java.util.List;
  * Added by zhangyanhu C01012,2014-8-29
  */
 public class TimeLapseDuration {
-    private final String tag = "TimeLapseDuration";
+    private static final String TAG = TimeLapseDuration.class.getSimpleName();
+
     public static final int TIME_LAPSE_DURATION_2MIN = 2;
     public static final int TIME_LAPSE_DURATION_5MIN = 5;
     public static final int TIME_LAPSE_DURATION_10MIN = 10;
@@ -55,7 +56,7 @@ public class TimeLapseDuration {
     }
 
     public void initTimeLapseDuration() {
-        AppLog.i(tag, "begin initTimeLapseDuration");
+        AppLog.i(TAG, "begin initTimeLapseDuration");
         if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE) == false) {
             return;
         }
@@ -73,7 +74,7 @@ public class TimeLapseDuration {
         for (int ii = 0; ii < tempArrayList.size(); ii++) {
             valueListString[ii] = tempArrayList.get(ii);
         }
-        AppLog.i(tag, "end initTimeLapseDuration timeLapseDuration =" + valueListString.length);
+        AppLog.i(TAG, "end initTimeLapseDuration timeLapseDuration =" + valueListString.length);
     }
 
     public Boolean needDisplayByMode(int previewMode) {

@@ -5,25 +5,20 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.nostra13.universalimageloader.cache.disc.DiskCache;
-import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
 import com.nostra13.universalimageloader.cache.disc.naming.FileNameGenerator;
-import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
-import com.nostra13.universalimageloader.core.DefaultConfigurationFactory;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.nostra13.universalimageloader.core.download.ImageDownloader;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class ImageLoaderConfig {
 
-    private static final String TAG = "ImageLoaderConfig";
+    private static final String TAG = ImageLoaderConfig.class.getSimpleName();
     private static FileNameGenerator fileNameGenerator;
     private static DiskCache diskCache;
     private static DisplayImageOptions options;
@@ -34,7 +29,7 @@ public class ImageLoaderConfig {
         // or you can create default configuration by
         //  ImageLoaderConfiguration.createDefault(this);
         // method.
-        if(ImageLoader.getInstance().isInited()){
+        if (ImageLoader.getInstance().isInited()) {
             ImageLoader.getInstance().destroy();
         }
         fileNameGenerator = new Md5FileNameGeneratorMatchFaceName();
@@ -82,7 +77,7 @@ public class ImageLoaderConfig {
 
     public static void clearDiskCache() {
         if (diskCache == null) {
-            Log.e(TAG, "clearDiskCache: diskCache null");
+            AppLog.e(TAG, "clearDiskCache: diskCache null");
             return;
         }
         diskCache.clear();
@@ -109,9 +104,9 @@ public class ImageLoaderConfig {
         }
         try {
             boolean ret = diskCache.save(url, bitmap);
-            Log.d(TAG, "saveDiskCache ret:" + ret + " url:" + url);
+            AppLog.i(TAG, "saveDiskCache ret:" + ret + " url:" + url);
         } catch (IOException e) {
-            Log.e(TAG, "saveDiskCache IOException e:" + e.getMessage());
+            AppLog.e(TAG, "saveDiskCache IOException e:" + e.getMessage());
             e.printStackTrace();
         }
 
@@ -124,23 +119,23 @@ public class ImageLoaderConfig {
         }
         boolean ret = diskCache.remove(url);
 //        MemoryCache memoryCache = ImageLoader.getInstance().getMemoryCache();
-//        if(memoryCache != null){
+//        if (memoryCache != null) {
 //            memoryCache.remove(url);
 //        }
         Log.d(TAG, "removeDiskCache ret:" + ret + " url:" + url);
     }
 
-    public static void stopLoad(){
+    public static void stopLoad() {
         ImageLoader.getInstance().stop();
 //        try {
 //            Thread.sleep(300);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-//        if(taskExecutor != null){
+//        if (taskExecutor != null) {
 //            taskExecutor.shutdown();
-//            while (true){
-//                if(taskExecutor.isTerminated()){
+//            while (true) {
+//                if (taskExecutor.isTerminated()) {
 //                    break;
 //                }
 //                try {

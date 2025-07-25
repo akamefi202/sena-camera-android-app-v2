@@ -10,7 +10,7 @@
     tools:context=".ui.activity.MediaPhotoDetailActivity">
 
     <!-- progress wheel -->
-    <com.sena.senacamera.ui.ExtendComponent.ProgressWheel
+    <com.sena.senacamera.ui.component.ProgressWheel
         android:id="@+id/progress_wheel"
         android:layout_width="80dp"
         android:layout_height="80dp"
@@ -29,23 +29,33 @@
         android:layout_height="match_parent"
         android:layout_gravity="center">
 
-        <!-- photo & video view -->
+        <!-- remote photo view -->
+        <uk.co.senab.photoview.PhotoView
+            android:id="@+id/remote_photo_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:scaleType="fitCenter"
+            android:gravity="center"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
+
+        <!-- local photo view -->
+        <ImageView
+            android:id="@+id/local_photo_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:scaleType="fitCenter" />
+
         <SurfaceView
             android:id="@+id/surface_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
+            android:visibility="invisible"
             android:src="@drawable/camera_preview_portrait" />
-
-        <uk.co.senab.photoview.PhotoView
-            android:id="@+id/photo_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:gravity="center"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
 
     </FrameLayout>
 
@@ -122,10 +132,31 @@
                     android:contentDescription="@string/action_save"
                     android:background="@drawable/selector_button_download" />
                 <TextView
-                    android:textColor="@color/selector_button_text_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/selector_text_white_color"
                     android:text="@string/action_save" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/share_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:visibility="gone"
+                android:orientation="vertical">
+                <ImageButton
+                    android:clickable="false"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:contentDescription="@string/action_share"
+                    android:background="@drawable/selector_button_share" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/selector_text_white_color"
+                    android:text="@string/action_share" />
             </LinearLayout>
 
             <View
@@ -147,9 +178,9 @@
                     android:contentDescription="@string/action_delete"
                     android:background="@drawable/selector_button_delete_white" />
                 <TextView
-                    android:textColor="@color/selector_button_text_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/selector_text_white_color"
                     android:text="@string/action_delete" />
             </LinearLayout>
 

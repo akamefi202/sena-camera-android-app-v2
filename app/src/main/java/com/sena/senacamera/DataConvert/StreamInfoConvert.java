@@ -1,17 +1,17 @@
 package com.sena.senacamera.DataConvert;
 
 import com.sena.senacamera.data.entity.StreamInfo;
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 /**
  * Created by zhang yanhu C001012 on 2015/12/11 17:16.
  */
 public class StreamInfoConvert {
-    public static StreamInfo convertToStreamInfoBean(String cmd){
+    public static StreamInfo convertToStreamInfoBean(String cmd) {
         String[] temp;
         StreamInfo streamInfo = new StreamInfo();
         //JIRA IC-395
-        if(cmd.contains("FPS")){
+        if (cmd.contains("FPS")) {
             temp = cmd.split("\\?|&");
             streamInfo.mediaCodecType = temp[0];
             temp[1] = temp[1].replace("W=","");
@@ -22,7 +22,7 @@ public class StreamInfoConvert {
             streamInfo.height = Integer.parseInt(temp[2]);
             streamInfo.bitrate = Integer.parseInt(temp[3]);
             streamInfo.fps = Integer.parseInt(temp[4]);
-        }else {
+        } else {
             temp = cmd.split("\\?|&");
             streamInfo.mediaCodecType = temp[0];
             temp[1] = temp[1].replace("W=","");

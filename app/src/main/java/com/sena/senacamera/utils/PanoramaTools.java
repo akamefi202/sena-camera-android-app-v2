@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.io.IOException;
 public class PanoramaTools {
     private static final String TAG = PanoramaTools.class.getSimpleName();
 
-    public static boolean isPanorama(String imagePath){
+    public static boolean isPanorama(String imagePath) {
         BitmapFactory.Options options = new BitmapFactory.Options();
 
         /**
@@ -29,7 +29,7 @@ public class PanoramaTools {
          */
         AppLog.e(TAG, "Bitmap Height == " + options.outHeight);
         AppLog.e(TAG, "Bitmap Width == " + options.outWidth);
-        if(options.outHeight == options.outWidth || options.outHeight *2 == options.outWidth){
+        if (options.outHeight == options.outWidth || options.outHeight *2 == options.outWidth) {
             return true;
         }
         return false;
@@ -49,16 +49,16 @@ public class PanoramaTools {
 //         */
 //        AppLog.e(TAG, "Bitmap Height == " + options.outHeight);
 //        AppLog.e(TAG, "Bitmap Width == " + options.outWidth);
-//        if(options.outHeight == options.outWidth || options.outHeight *2 == options.outWidth){
+//        if (options.outHeight == options.outWidth || options.outHeight *2 == options.outWidth) {
 //            return true;
 //        }
 //        return false;
-        if(videoPath == null){
+        if (videoPath == null) {
             return false;
         }
 
         File file = new File(videoPath);
-        if(file == null || !file.exists()){
+        if (!file.exists()) {
             return false;
         }
 
@@ -80,14 +80,14 @@ public class PanoramaTools {
             String width = mmr.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);//宽
             String height = mmr.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);//高
             AppLog.d(TAG, "isPanoramaForVideo w="+width+" h="+height);
-            if(width == null || height == null){
+            if (width == null || height == null) {
                 isPanorama = false;
-            }else {
-                int widthInt = Integer.parseInt(width) ;
-                int heightInt = Integer.parseInt(height) ;
-                if(widthInt == 0 || heightInt == 0){
+            } else {
+                int widthInt = Integer.parseInt(width);
+                int heightInt = Integer.parseInt(height);
+                if (widthInt == 0 || heightInt == 0) {
                     isPanorama = false;
-                }else if(heightInt *2 == widthInt){
+                } else if (heightInt *2 == widthInt) {
                     isPanorama = true;
                 }
             }
@@ -101,12 +101,12 @@ public class PanoramaTools {
         return isPanorama;
     }
 
-    public static boolean isPanorama(long width, long height){
+    public static boolean isPanorama(long width, long height) {
 //        AppLog.e(TAG, "isPanorama width=" + width + " height=" + height);
-        if(width== 0 || height == 0){
+        if (width== 0 || height == 0) {
             return false;
         }
-        if(width >= height *2){
+        if (width >= height *2) {
             return true;
         }
         return false;

@@ -23,11 +23,12 @@ import java.util.List;
  * Created by zhang yanhu C001012 on 2015/11/17 09:20.
  */
 public class CameraSlotAdapter extends BaseAdapter {
+    private static final String TAG = CameraSlotAdapter.class.getSimpleName();
+
     private List<CameraSlot> camSlotList;
     private Context context;
     private int listViewHeight = 0;
     private Handler myHandler;
-    private String tag = "CameraSlotAdapter";
 
     public CameraSlotAdapter(Context context, List<CameraSlot> camSlotList, Handler handler,int height) {
         this.context = context;

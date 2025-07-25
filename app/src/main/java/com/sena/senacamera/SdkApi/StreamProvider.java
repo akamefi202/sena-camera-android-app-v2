@@ -1,6 +1,6 @@
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.Log.AppLog;
+import com.sena.senacamera.log.AppLog;
 import com.icatchtek.pancam.customer.stream.ICatchIStreamProvider;
 import com.icatchtek.reliant.customer.exception.IchAudioStreamClosedException;
 import com.icatchtek.reliant.customer.exception.IchBufferTooSmallException;
@@ -20,7 +20,7 @@ import com.icatchtek.reliant.customer.type.ICatchVideoFormat;
  */
 
 public class StreamProvider {
-    private String TAG = StreamProvider.class.getSimpleName();
+    private static final String TAG = StreamProvider.class.getSimpleName();
     private ICatchIStreamProvider iCatchIStreamProvider;
 
     public StreamProvider(ICatchIStreamProvider streamProvider) {
