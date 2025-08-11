@@ -12,6 +12,9 @@ import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.sena.senacamera.MyCamera.CameraManager;
+import com.sena.senacamera.data.type.MediaStorageType;
+import com.sena.senacamera.listener.Callback;
+import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.ui.adapter.DownloadManagerAdapter;
 import com.sena.senacamera.data.AppInfo.AppInfo;
 import com.sena.senacamera.data.entity.DownloadInfo;
@@ -19,6 +22,7 @@ import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.data.Message.AppMessage;
 import com.sena.senacamera.R;
 import com.sena.senacamera.SdkApi.FileOperation;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
 import com.sena.senacamera.ui.appdialog.CustomDownloadDialog;
 import com.sena.senacamera.utils.StorageUtil;
 import com.sena.senacamera.utils.fileutils.FileTools;
@@ -40,15 +44,12 @@ import java.util.concurrent.Executors;
 public class PbDownloadManager {
     private static final String TAG = PbDownloadManager.class.getSimpleName();
 
-    private ExecutorService executor;
     public long downloadProgress;
     public FileOperation fileOperation;
     private LinkedList<ICatchFile> downloadTaskList;
     private LinkedList<ICatchFile> downloadChooseList;
 //    private LinkedList<ICatchFile> downloadProgressList;
     private ICatchFile curDownloadFile;
-    private DownloadManagerAdapter downloadManagerAdapter;
-    private AlertDialog.Builder builder;
     private Context context;
     private HashMap<Integer, DownloadInfo> downloadInfoMap = new HashMap<Integer, DownloadInfo>();
     private ICatchFile currentDownloadFile;
@@ -57,7 +58,7 @@ public class PbDownloadManager {
     private int downloadSucceed = 0;
     private CustomDownloadDialog customDownloadDialog;
     private String curFilePath = "";
-    private AlertDialog cancelDownloadDialog;
+    private Callback callback;
 
     public PbDownloadManager(Context context, LinkedList<ICatchFile> downloadList) {
         this.context = context;
@@ -67,15 +68,15 @@ public class PbDownloadManager {
         downloadChooseList = new LinkedList<>();
 //        downloadProgressList = new LinkedList<ICatchFile>();
         downloadChooseList.addAll(downloadTaskList);
-        for (int ii = 0; ii < downloadChooseList.size(); ii++) {
-            DownloadInfo downloadInfo = new DownloadInfo(downloadChooseList.get(ii), downloadChooseList.get(ii).getFileSize(), 0, 0, false);
-            downloadInfoMap.put(downloadChooseList.get(ii).getFileHandle(), downloadInfo);
+        for (int i = 0; i < downloadChooseList.size(); i ++) {
+            DownloadInfo downloadInfo = new DownloadInfo(downloadChooseList.get(i), downloadChooseList.get(i).getFileSize(), 0, 0, false);
+            downloadInfoMap.put(downloadChooseList.get(i).getFileHandle(), downloadInfo);
         }
     }
 
     public void show() {
         showDownloadManagerDialog();
-        executor = Executors.newSingleThreadExecutor();
+
         if (!downloadTaskList.isEmpty()) {
             currentDownloadFile = downloadTaskList.getFirst();
             new DownloadAsyncTask(currentDownloadFile).execute();
@@ -84,6 +85,9 @@ public class PbDownloadManager {
         }
     }
 
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
 
     Handler downloadManagerHandler = new Handler() {
 
@@ -96,7 +100,6 @@ public class PbDownloadManager {
                 case AppMessage.UPDATE_LOADING_PROGRESS:
                     ICatchFile icatchFile = ((DownloadInfo) msg.obj).file;
                     downloadInfoMap.put(icatchFile.getFileHandle(), (DownloadInfo) msg.obj);
-                    downloadManagerAdapter.notifyDataSetChanged();
                     break;
                 case AppMessage.CANCEL_DOWNLOAD_ALL:
                     AppLog.d(TAG, "receive CANCEL_DOWNLOAD_ALL");
@@ -104,7 +107,7 @@ public class PbDownloadManager {
                     break;
                 case AppMessage.MESSAGE_CANCEL_DOWNLOAD_SINGLE:
                     ICatchFile temp = (ICatchFile) msg.obj;
-                    AppLog.d(TAG, "1122 receive MESSAGE_CANCEL_DOWNLOAD_SINGLE");
+                    AppLog.d(TAG, "receive MESSAGE_CANCEL_DOWNLOAD_SINGLE");
                     if (currentDownloadFile == temp) {
                         if (fileOperation.cancelDownload() == false) {
                             Toast.makeText(context, R.string.dialog_cancel_downloading_failed, Toast.LENGTH_SHORT).show();
@@ -127,7 +130,7 @@ public class PbDownloadManager {
                                 return;
                             }
                             if (file.delete()) {
-                                AppLog.d("2222", "delete file success == " + curFilePath);
+                                AppLog.d(TAG, "delete file success == " + curFilePath);
                             }
                         }
 
@@ -137,26 +140,24 @@ public class PbDownloadManager {
                     downloadInfoMap.remove(temp.getFileHandle());
                     downloadChooseList.remove(temp);
                     downloadTaskList.remove(temp);
-                    AppLog.d(TAG, "1122 receive MESSAGE_CANCEL_DOWNLOAD_SINGLE downloadChooseList size=" + downloadChooseList.size() + "downloadInfoMap size=" + downloadInfoMap.size());
-                    //downloadManagerAdapter = new DownloadManagerAdapter(context, downloadInfoMap, downloadChooseList, downloadManagerHandler);
-                    //customDownloadDialog.setAdapter(downloadManagerAdapter);
-                    downloadManagerAdapter.notifyDataSetChanged();
+                    AppLog.d(TAG, "receive MESSAGE_CANCEL_DOWNLOAD_SINGLE downloadChooseList size=" + downloadChooseList.size() + "downloadInfoMap size=" + downloadInfoMap.size());
 
-                    updateDownloadMessage();
+                    updateDownloadStatus();
                     if (downloadTaskList.size() <= 0) {
                         if (customDownloadDialog != null) {
                             customDownloadDialog.dismissDownloadDialog();
+                            customDownloadDialog = null;
                         }
                     }
                     break;
                 case AppMessage.DOWNLOAD_FAILURE:
                     AppLog.d(TAG, "receive DOWNLOAD_FAILURE downloadFailed=" + downloadFailed);
-                    downloadFailed++;
-                    updateDownloadMessage();
+                    downloadFailed ++;
+                    updateDownloadStatus();
                     break;
                 case AppMessage.DOWNLOAD_SUCCEED:
-                    downloadSucceed++;
-                    updateDownloadMessage();
+                    downloadSucceed ++;
+                    updateDownloadStatus();
                     break;
             }
         }
@@ -164,15 +165,8 @@ public class PbDownloadManager {
 
 
     public void showDownloadManagerDialog() {
-        downloadManagerAdapter = new DownloadManagerAdapter(context, downloadInfoMap, downloadChooseList, downloadManagerHandler);
-        downloadManagerAdapter.setOnCancelBtnClickListener(new DownloadManagerAdapter.OnCancelBtnClickListener() {
-            public void onClick(ICatchFile downloadFile) {
-                cancelDownload(downloadFile);
-            }
-        });
-
-        customDownloadDialog = new CustomDownloadDialog();
-        customDownloadDialog.showDownloadDialog(context, downloadManagerAdapter);
+        customDownloadDialog = new CustomDownloadDialog(context);
+        customDownloadDialog.showDownloadDialog();
         customDownloadDialog.setBackBtnOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -181,7 +175,7 @@ public class PbDownloadManager {
                 //downloadManagerHandler.obtainMessage(AppMessage.CANCEL_DOWNLOAD_ALL).sendToTarget();
             }
         });
-        updateDownloadMessage();
+        updateDownloadStatus();
     }
 
     public void cancelDownload(ICatchFile downloadFile) {
@@ -196,35 +190,30 @@ public class PbDownloadManager {
                     return;
                 }
                 if (file.delete()) {
-                    AppLog.d("2222", "delete file success == " + curFilePath);
+                    AppLog.d(TAG, "delete file success == " + curFilePath);
                 }
             }
         }
+
         Toast.makeText(context, R.string.dialog_cancel_downloading_succeeded, Toast.LENGTH_SHORT).show();
         downloadInfoMap.remove(downloadFile.getFileHandle());
         downloadChooseList.remove(downloadFile);
         downloadTaskList.remove(downloadFile);
-        //downloadManagerAdapter = new DownloadManagerAdapter(context, downloadInfoMap, downloadChooseList, downloadManagerHandler);
-        //customDownloadDialog.setAdapter(downloadManagerAdapter);
-        downloadManagerAdapter.notifyDataSetChanged();
-        updateDownloadMessage();
+        updateDownloadStatus();
+
         if (downloadTaskList.isEmpty()) {
             if (customDownloadDialog != null) {
                 customDownloadDialog.dismissDownloadDialog();
+                customDownloadDialog = null;
             }
         }
     }
 
 
     public void alertForQuitDownload() {
-        if (builder != null) {
-            return;
-        }
-        builder = new AlertDialog.Builder(context);
-        builder.setIcon(R.drawable.warning).setMessage(R.string.download_cancel_all_tips);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+        AppDialogManager.getInstance().showStopDownloadDialog(context, new DialogButtonListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onStop() {
                 downloadTaskList.clear();
                 //ICOM-4224 Begin modify by b.jiang 20170329
                 if (curFilePath != null) {
@@ -233,7 +222,7 @@ public class PbDownloadManager {
                         return;
                     }
                     if (file.delete()) {
-                        AppLog.d("2222", "alertForQuitDownload file success == " + curFilePath);
+                        AppLog.d(TAG, "alertForQuitDownload file delete success == " + curFilePath);
                     }
                 }
                 //ICOM-4224 End modify by b.jiang 20170329
@@ -242,7 +231,11 @@ public class PbDownloadManager {
                     Toast.makeText(context, R.string.dialog_cancel_downloading_failed, Toast.LENGTH_SHORT).show();
                     return;
                 } else {
-                    customDownloadDialog.dismissDownloadDialog();
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
+                    }
+
                     if (downloadProgressTimer != null) {
                         downloadProgressTimer.cancel();
                     }
@@ -251,17 +244,6 @@ public class PbDownloadManager {
                 AppLog.d(TAG, "cancel download task and quit download manager");
             }
         });
-
-        builder.setNegativeButton(R.string.gallery_cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                builder = null;
-            }
-        });
-
-        cancelDownloadDialog = builder.create();
-        cancelDownloadDialog.setCancelable(false);
-        cancelDownloadDialog.show();
     }
 
     /**
@@ -272,35 +254,32 @@ public class PbDownloadManager {
             DownloadInfo downloadInfo = downloadInfoMap.get(iCatchFile.getFileHandle());
             downloadInfo.setDone(true);
             downloadInfo.progress = 100;
-            downloadManagerAdapter.notifyDataSetChanged();
         }
     }
 
     public void downloadCompleted() {
-        if (cancelDownloadDialog != null) {
-            cancelDownloadDialog.dismiss();
-            cancelDownloadDialog = null;
-        }
         if (customDownloadDialog != null) {
             customDownloadDialog.dismissDownloadDialog();
             customDownloadDialog = null;
         }
-        curFilePath = null;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(context.getResources().getString(R.string.download_manager));
-        String message = context.getResources().getString(R.string.download_complete_result).replace("$1$", String.valueOf(downloadSucceed))
-                .replace("$2$", String.valueOf(downloadFailed));
-        builder.setMessage(message);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
 
-        AlertDialog dialog = builder.create();
-        dialog.setCancelable(false);
-        dialog.show();
+        curFilePath = null;
+        callback.processSucceed();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//        builder.setTitle(context.getResources().getString(R.string.download_manager));
+//        String message = context.getResources().getString(R.string.download_complete_result).replace("$1$", String.valueOf(downloadSucceed))
+//                .replace("$2$", String.valueOf(downloadFailed));
+//        builder.setMessage(message);
+//        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.dismiss();
+//            }
+//        });
+//
+//        AlertDialog dialog = builder.create();
+//        dialog.setCancelable(false);
+//        dialog.show();
     }
 
     class DownloadProgressTask extends TimerTask {
@@ -354,7 +333,8 @@ public class PbDownloadManager {
                 @Override
                 public void run() {
                     downloadInfoMap.put(iCatchFile.getFileHandle(), downloadInfo);
-                    downloadManagerAdapter.notifyDataSetChanged();
+                    updateDownloadStatus();
+//                    downloadManagerAdapter.notifyDataSetChanged();
                 }
             });
 //            downloadManagerHandler.obtainMessage(AppMessage.UPDATE_LOADING_PROGRESS, (int) downloadProgress, 0, downloadInfo).sendToTarget();
@@ -457,12 +437,13 @@ public class PbDownloadManager {
                 AppLog.d(TAG, "receive DOWNLOAD_FAILURE downloadFailed=" + downloadFailed);
                 //downloadProgressList.remove(downloadFile);
                 downloadFailed ++;
-                updateDownloadMessage();
+                updateDownloadStatus();
             } else {
                 downloadSucceed ++;
-                updateDownloadMessage();
+                updateDownloadStatus();
             }
-            singleDownloadComplete(result,downloadFile);
+
+            singleDownloadComplete(result, downloadFile);
             downloadTaskList.remove(downloadFile);
             if (!downloadTaskList.isEmpty()) {
                 currentDownloadFile = downloadTaskList.getFirst();
@@ -470,6 +451,7 @@ public class PbDownloadManager {
             } else {
                 if (customDownloadDialog != null) {
                     customDownloadDialog.dismissDownloadDialog();
+                    customDownloadDialog = null;
                 }
                 if (downloadProgressTimer != null) {
                     downloadProgressTimer.cancel();
@@ -494,11 +476,13 @@ public class PbDownloadManager {
         }
     }
 
-    private void updateDownloadMessage() {
-        //JIRA BUG ICOM-3525 Start modify by b.jiang 20160725
-        String message = context.getResources().getString(R.string.download_progress).replace("$1$", String.valueOf(downloadSucceed))
-                .replace("$2$", String.valueOf(downloadChooseList.size() - downloadSucceed)).replace("$3$", String.valueOf(downloadFailed));
-        //JIRA BUG ICOM-3525 End modify by b.jiang 20160725
-        customDownloadDialog.setMessage(message);
+    private void updateDownloadStatus() {
+        int progress = (int) downloadProgress;
+        String message = String.format("%d/%d %s(%d%%)", downloadSucceed, downloadChooseList.size(), context.getResources().getString(R.string.saving), progress);
+
+        if (customDownloadDialog != null) {
+            customDownloadDialog.setMessage(message);
+            customDownloadDialog.setProgress(progress);
+        }
     }
 }

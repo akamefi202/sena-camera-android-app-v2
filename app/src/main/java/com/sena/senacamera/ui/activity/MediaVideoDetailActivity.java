@@ -459,7 +459,7 @@ public class MediaVideoDetailActivity extends AppCompatActivity implements Video
 
     @Override
     public void setDownloadBtnEnabled(boolean enabled) {
-        downloadButton.setEnabled(enabled);
+//        downloadButton.setEnabled(enabled);
     }
 
     @Override

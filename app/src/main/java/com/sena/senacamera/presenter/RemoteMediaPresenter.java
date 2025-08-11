@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.util.Log;
 
 import com.sena.senacamera.function.CameraAction.PbDownloadManager;
+import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
@@ -21,6 +22,7 @@ import com.sena.senacamera.data.entity.MultiPbFileResult;
 import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.data.type.PhotoWallLayoutType;
+import com.sena.senacamera.ui.activity.MediaActivity;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.ui.Interface.RemoteMediaView;
@@ -63,7 +65,7 @@ public class RemoteMediaPresenter extends BasePresenter {
         }
         if (fileOperation == null) {
             AppLog.e(TAG, "RemoteMediaPresenter fileOperation is null");
-            finishActivity();
+            //finishActivity();
         }
     }
     public RemoteMediaPresenter(Activity activity, FileType fileType) {
@@ -78,7 +80,7 @@ public class RemoteMediaPresenter extends BasePresenter {
         }
         if (fileOperation == null) {
             AppLog.e(TAG, "RemoteMediaPresenter fileOperation is null");
-            finishActivity();
+            //finishActivity();
         }
     }
 
@@ -101,7 +103,7 @@ public class RemoteMediaPresenter extends BasePresenter {
 
     public synchronized List<RemoteMediaItemInfo> getRemotePhotoInfoList() {
         if (CameraManager.getInstance().getCurCamera() == null) {
-            Log.e(TAG, "Camera is not connected");
+            Log.e(TAG, "Camera is disconnected");
             return new ArrayList<>();
         }
 
@@ -445,7 +447,7 @@ public class RemoteMediaPresenter extends BasePresenter {
             return;
         }
 
-        for (RemoteMediaItemInfo temp : list) {
+        for (RemoteMediaItemInfo temp: list) {
             linkedList.add(temp.iCatchFile);
             fileSizeTotal += temp.getFileSizeInteger();
         }
@@ -455,6 +457,17 @@ public class RemoteMediaPresenter extends BasePresenter {
         } else {
             quitEditMode();
             PbDownloadManager downloadManager = new PbDownloadManager(activity, linkedList);
+            downloadManager.setCallback(new Callback() {
+                @Override
+                public void processSucceed() {
+                    ((MediaActivity) activity).updateData();
+                }
+
+                @Override
+                public void processFailed() {
+                    ((MediaActivity) activity).updateData();
+                }
+            });
             downloadManager.show();
         }
     }

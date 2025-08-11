@@ -15,15 +15,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.sena.senacamera.R;
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.ui.fragment.FragmentBluetoothSearch;
 import com.sena.senacamera.ui.fragment.FragmentOptions;
 
 import java.util.ArrayList;
 
-public class BluetoothDeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
+public class BluetoothDeviceListAdapter extends ArrayAdapter<BluetoothDeviceInfo> {
     private static final String TAG = CameraDeviceListAdapter.class.getSimpleName();
 
-    public ArrayList<BluetoothDevice> arrayList = null;
+    public ArrayList<BluetoothDeviceInfo> arrayList = null;
     private Context context;
     private FragmentBluetoothSearch parentFragment;
     private final View.OnClickListener buttonClickListener = view -> {
@@ -49,7 +50,7 @@ public class BluetoothDeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
         }
     }
 
-    public BluetoothDeviceListAdapter(@NonNull Context context, int resource, ArrayList<BluetoothDevice> arrayList, FragmentBluetoothSearch parentFragment) {
+    public BluetoothDeviceListAdapter(@NonNull Context context, int resource, ArrayList<BluetoothDeviceInfo> arrayList, FragmentBluetoothSearch parentFragment) {
         super(context, resource, arrayList);
 
         this.context = context;
@@ -64,8 +65,8 @@ public class BluetoothDeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
     }
 
     @Override
-    public BluetoothDevice getItem(int i) {
-        return (BluetoothDevice) super.getItem(i);
+    public BluetoothDeviceInfo getItem(int i) {
+        return (BluetoothDeviceInfo) super.getItem(i);
     }
 
     @SuppressLint("MissingPermission")
@@ -87,8 +88,8 @@ public class BluetoothDeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
         this.viewHolder.deviceLayout.setOnClickListener(this.buttonClickListener);
         this.viewHolder.deviceLayout.setFocusable(false);
 
-        this.viewHolder.deviceName.setText(this.arrayList.get(position).getName());
-        this.viewHolder.deviceAddress.setText(String.format("B/D: %s", this.arrayList.get(position).getAddress()));
+        this.viewHolder.deviceName.setText(this.arrayList.get(position).device.getName());
+        this.viewHolder.deviceAddress.setText(String.format("B/D: %s", this.arrayList.get(position).serialData));
 
         return view;
     }

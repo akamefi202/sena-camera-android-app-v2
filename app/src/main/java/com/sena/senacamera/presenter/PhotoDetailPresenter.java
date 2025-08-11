@@ -12,21 +12,20 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.viewpager.widget.ViewPager;
-import androidx.webkit.internal.ApiFeature;
 
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
-import android.widget.Button;
+import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.sena.senacamera.data.entity.DownloadInfo;
 import com.sena.senacamera.data.entity.LocalMediaItemInfo;
 import com.sena.senacamera.data.entity.MediaItemInfo;
 import com.sena.senacamera.data.type.MediaItemType;
-import com.sena.senacamera.data.type.MediaStorageType;
+import com.sena.senacamera.function.CameraAction.PbDownloadManager;
 import com.sena.senacamera.function.SDKEvent;
+import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.presenter.Interface.BasePresenter;
@@ -39,6 +38,8 @@ import com.sena.senacamera.data.Mode.TouchMode;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
 import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
+import com.sena.senacamera.ui.appdialog.CustomDownloadDialog;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.ui.Interface.PhotoDetailView;
@@ -59,6 +60,8 @@ import com.icatchtek.reliant.customer.type.ICatchCodec;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -79,10 +82,9 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     private static final int DIRECTION_UNKNOWN = 0x4;
 
     public String downloadingFilename;
-    public long downloadProcess;
+    public long downloadProgress;
     public long downloadingFileSize;
     private ExecutorService executor;
-    private Future<Object> future;
     private PanoramaPhotoPlayback panoramaPhotoPlayback = CameraManager.getInstance().getCurCamera().getPanoramaPhotoPlayback();
     private FileOperation fileOperation = CameraManager.getInstance().getCurCamera().getFileOperation();
 
@@ -108,6 +110,8 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     private boolean hasDeleted = false;
     private boolean surfaceCreated = false;
     private MediaItemInfo currentItemInfo;
+    private CustomDownloadDialog customDownloadDialog;
+    private Timer downloadProgressTimer;
 
     public PhotoDetailPresenter(Activity activity) {
         super(activity);
@@ -157,7 +161,79 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void download() {
-        showDownloadEnsureDialog();
+        if (isCurrentItemLocal()) {
+            AppLog.e(TAG, "download: currentItemInfo is not remote file");
+            return;
+        }
+
+        RemoteMediaItemInfo itemInfo = (RemoteMediaItemInfo) currentItemInfo;
+        downloadProgress = 0;
+        if (SystemInfo.getSDFreeSize(activity) < itemInfo.getFileSizeInteger()) {
+            MyToast.show(activity, R.string.text_sd_card_memory_shortage);
+        } else {
+            downloadProgressTimer = new Timer();
+            downloadProgressTimer.schedule(new PhotoDetailPresenter.DownloadProgressTask(), 500, 500);
+
+            showDownloadManagerDialog();
+
+            executor = Executors.newSingleThreadExecutor();
+            executor.submit(new DownloadThread(), null);
+        }
+    }
+
+    public void showDownloadManagerDialog() {
+        customDownloadDialog = new CustomDownloadDialog(activity);
+        customDownloadDialog.showDownloadDialog();
+        customDownloadDialog.setBackBtnOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                alertForQuitDownload();
+            }
+        });
+        updateDownloadStatus();
+    }
+
+    public void alertForQuitDownload() {
+        AppDialogManager.getInstance().showStopDownloadDialog(activity, new DialogButtonListener() {
+            @Override
+            public void onStop() {
+                if (curFilePath != null) {
+                    File file = new File(curFilePath);
+                    if (!file.exists()) {
+                        return;
+                    }
+                    if (file.delete()) {
+                        AppLog.d(TAG, "alertForQuitDownload file delete success == " + curFilePath);
+                    }
+                }
+
+                if (!fileOperation.cancelDownload()) {
+                    Toast.makeText(activity, R.string.dialog_cancel_downloading_failed, Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
+                    }
+                    if (downloadProgressTimer != null) {
+                        downloadProgressTimer.cancel();
+                    }
+                    Toast.makeText(activity, R.string.dialog_cancel_downloading_succeeded, Toast.LENGTH_SHORT).show();
+                }
+                AppLog.d(TAG, "cancel download");
+            }
+        });
+    }
+
+    private void updateDownloadStatus() {
+        int progress = (int) downloadProgress;
+        String message = String.format("%d/1 %s(%d%%)", downloadProgress == 100? 1: 0, activity.getResources().getString(R.string.saving), progress);
+
+        if (customDownloadDialog != null) {
+            customDownloadDialog.setMessage(message);
+            customDownloadDialog.setProgress(progress);
+        }
     }
 
     public void loadPreviousImage() {
@@ -245,7 +321,7 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
             String path = StorageUtil.getRootPath(activity) + AppInfo.DOWNLOAD_PATH_PHOTO;
             String fileName = itemInfo.getFileName();
 
-            AppLog.d(TAG, "------------fileName =" + fileName);
+            AppLog.d(TAG, "------------fileName = " + fileName);
             FileOper.createDirectory(path);
             downloadingFilename = path + fileName;
             downloadingFileSize = itemInfo.iCatchFile.getFileSize();
@@ -258,7 +334,13 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        MyProgressDialog.closeProgressDialog();
+                        if (customDownloadDialog != null) {
+                            customDownloadDialog.dismissDownloadDialog();
+                            customDownloadDialog = null;
+                        }
+                        if (downloadProgressTimer != null) {
+                            downloadProgressTimer.cancel();
+                        }
                         MyToast.show(activity, R.string.message_download_failed);
                     }
                 });
@@ -267,13 +349,17 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
             }
 
             MediaRefresh.scanFileAsync(activity, curFilePath);
-            AppLog.d(TAG, "end downloadFile temp =" + temp);
+            AppLog.d(TAG, "end downloadFile temp = " + temp);
             AppInfo.isDownloading = false;
             final String message = activity.getResources().getString(R.string.message_download_to).replace("$1$", curFilePath);
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    MyProgressDialog.closeProgressDialog();
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
+                    }
+
                     MyToast.show(activity, message);
                 }
             });
@@ -317,6 +403,34 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
+    class DownloadProgressTask extends TimerTask {
+        String TAG = PhotoDetailPresenter.DownloadProgressTask.class.getSimpleName();
+        long lastTime = 0;
+
+        @Override
+        public void run() {
+            final ICatchFile iCatchFile = ((RemoteMediaItemInfo) currentItemInfo).iCatchFile;
+            File file = new File(curFilePath);
+            AppLog.d(TAG, "filename: " + file + ", iCatchFile name: " + iCatchFile.getFileName() + ", fileHandle: " + iCatchFile.getFileHandle());
+
+            if (file != null) {
+                long fileLength = file.length();
+                if (fileLength == iCatchFile.getFileSize()) {
+                    downloadProgress = 100;
+                } else {
+                    downloadProgress = file.length() * 100 / iCatchFile.getFileSize();
+                }
+            } else {
+                downloadProgress = 0;
+            }
+
+            AppLog.d(TAG, "downloadProgress = " + downloadProgress);
+            activity.runOnUiThread(() -> {
+                updateDownloadStatus();
+            });
+        }
+    }
+
     private void updateUI() {
 //        int curIndex = photoPbView.getViewPagerCurrentItem();
 //        String indexInfo = (curIndex + 1) + "/" + fileList.size();
@@ -344,53 +458,17 @@ public class PhotoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
-    public void showDownloadEnsureDialog() {
-        AppLog.d(TAG, "showProgressDialog");
-
-        if (isCurrentItemLocal()) {
-            AppLog.e(TAG, "showDownloadEnsureDialog: currentItemInfo is not remote file");
-            return;
-        }
-
-        RemoteMediaItemInfo itemInfo = (RemoteMediaItemInfo) currentItemInfo;
-        downloadProcess = 0;
-        if (SystemInfo.getSDFreeSize(activity) < itemInfo.getFileSizeInteger()) {
-            MyToast.show(activity, R.string.text_sd_card_memory_shortage);
-        } else {
-            MyProgressDialog.showProgressDialog(activity, R.string.dialog_downloading_single);
-            executor = Executors.newSingleThreadExecutor();
-            future = executor.submit(new DownloadThread(), null);
-        }
-    }
-
     public void showDeleteEnsureDialog() {
         // show delete confirmation dialog
-        BottomSheetDialog deleteDialog = new BottomSheetDialog(activity);
-        View deleteDialogLayout = LayoutInflater.from(activity).inflate(R.layout.dialog_delete_confirm, null);
-        deleteDialog.setContentView(deleteDialogLayout);
-        deleteDialog.show();
-
-        Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
-        Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
-
-        cancelButton.setOnClickListener(new View.OnClickListener() {
+        AppDialogManager.getInstance().showDeleteConfirmDialog(activity, new DialogButtonListener() {
             @Override
-            public void onClick(View v) {
-                deleteDialog.dismiss();
-            }
-        });
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteDialog.dismiss();
-
+            public void onDelete() {
                 MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
                 executor = Executors.newSingleThreadExecutor();
                 hasDeleted = true;
-                future = executor.submit(new DeleteThread(), null);
+                executor.submit(new DeleteThread(), null);
             }
-        });
+        }, activity.getResources().getString(R.string.dialog_confirm_delete_this_file));
     }
 
     public void setShowArea(Surface surface) {

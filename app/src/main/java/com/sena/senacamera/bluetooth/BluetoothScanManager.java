@@ -9,12 +9,14 @@ import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.os.Handler;
 
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.listener.BluetoothSearchCallback;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.utils.ConvertTools;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BluetoothScanManager {
@@ -28,11 +30,12 @@ public class BluetoothScanManager {
         return BluetoothScanManager.InstanceHolder.instance;
     }
 
-    private final List<BluetoothDevice> deviceList = new ArrayList<>();
+    private final List<BluetoothDeviceInfo> deviceList = new ArrayList<>();
     private BluetoothLeScanner bleScanner;
     private final List<BluetoothSearchCallback> searchCallbackList = new ArrayList<>();
     private Handler scanTimeoutHandler;
     private static final long scanPeriod = 120000;
+    private String MANUFACTURE_ID = "6009", PRODUCT_ID_PRISM_2 = "3568";
 
     private final ScanCallback scanCallback = new ScanCallback() {
         @SuppressLint("MissingPermission")
@@ -42,23 +45,53 @@ public class BluetoothScanManager {
             if (device.getName() == null || device.getAddress() == null) {
                 return;
             }
-            AppLog.i(TAG, "Device found: " + device.getName() + ", Address: " + device.getAddress());
+//            AppLog.i(TAG, "Device found: " + device.getName() + ", Address: " + device.getAddress());
 
             ScanRecord scanRecord = result.getScanRecord();
-            if (scanRecord != null) {
-                byte[] advertisingData = scanRecord.getBytes();
-                AppLog.i(TAG, "scanRecord: " + ConvertTools.getHexStringFromByteArray(advertisingData));
+            String uuid = "", manufactureId = "", productId = "", serialNumber = "", serialData = "";
+            if (scanRecord == null) {
+                return;
+            }
+
+            // get uuid, manufactureId, productId, serialNumber;
+            byte[] advertisingData = scanRecord.getBytes();
+//            AppLog.i(TAG, "scanRecord: " + ConvertTools.getHexStringFromByteArray(advertisingData));
+            while (advertisingData.length > 2) {
+                byte type = advertisingData[1];
+                int length = Math.max(advertisingData[0] - 1, 1);
+                byte[] value = Arrays.copyOfRange(advertisingData, 2, 2 + length);
+                advertisingData = Arrays.copyOfRange(advertisingData, 2 + length, advertisingData.length);
+
+                if (type == 0x07) {
+                    uuid = ConvertTools.getHexStringFromByteArray(value);
+                } else if (type == (byte) 0xff && length > 4) {
+                    manufactureId = ConvertTools.getHexStringFromByteArray(Arrays.copyOfRange(value, 0, 2));
+                    productId = ConvertTools.getHexStringFromByteArray(Arrays.copyOfRange(value, 2, 4));
+                    serialNumber = new StringBuilder(ConvertTools.getStringFromByteArray(Arrays.copyOfRange(value, 4, value.length))).reverse().toString();
+                    if (serialNumber.isEmpty()) {
+                        serialNumber = "000000";
+                    }
+                }
+            }
+
+            // check if device is a sena camera device (prism 2)
+//            AppLog.i(TAG, "uuid: " + uuid + ", manufactureId: " + manufactureId + ", productId: " + productId + ", serialNumber: " + serialNumber);
+            serialData = productId + "-" + serialNumber;
+            if (!manufactureId.equals(MANUFACTURE_ID)) {
+                // scanned device is not sena camera device (prism 2)
+                return;
             }
 
             // check if device name is same with prism 2
-            if (!device.getName().equals(BluetoothInfo.bleDeviceName)) {
-                return;
-            }
+//            if (!device.getName().equals(BluetoothInfo.bleDeviceName)) {
+//                return;
+//            }
+
             // check if device is not found
             boolean isAlreadyFound = false;
             String newDeviceAddress = device.getAddress();
             for (int i = 0; i < deviceList.size(); i ++) {
-                if (newDeviceAddress.equals(deviceList.get(i).getAddress())) {
+                if (newDeviceAddress.equals(deviceList.get(i).device.getAddress())) {
                     isAlreadyFound = true;
                     break;
                 }
@@ -66,11 +99,18 @@ public class BluetoothScanManager {
             if (isAlreadyFound) {
                 return;
             }
-            // check if device is not registered
+
+            // check if device is not registered, or get the password if password is not confirmed
             boolean isAlreadyRegistered = false;
+            String password = "";
             List<CameraDeviceInfo> registeredList = BluetoothDeviceManager.getInstance().getDeviceList();
             for (int i = 0; i < registeredList.size(); i ++) {
                 if (newDeviceAddress.equals(registeredList.get(i).bleAddress)) {
+//                    if (registeredList.get(i).passwordConfirmed) {
+//                        isAlreadyRegistered = true;
+//                    } else {
+//                        password = registeredList.get(i).wifiPassword;
+//                    }
                     isAlreadyRegistered = true;
                     break;
                 }
@@ -79,9 +119,10 @@ public class BluetoothScanManager {
                 return;
             }
 
-            deviceList.add(device);
+            BluetoothDeviceInfo deviceInfo = new BluetoothDeviceInfo(device, serialData, password);
+            deviceList.add(deviceInfo);
             for (BluetoothSearchCallback callback: searchCallbackList) {
-                callback.onFound(device);
+                callback.onFound(deviceInfo);
             }
         }
 
@@ -113,7 +154,7 @@ public class BluetoothScanManager {
 
     }
 
-    public List<BluetoothDevice> getDeviceList() {
+    public List<BluetoothDeviceInfo> getDeviceList() {
         return deviceList;
     }
 

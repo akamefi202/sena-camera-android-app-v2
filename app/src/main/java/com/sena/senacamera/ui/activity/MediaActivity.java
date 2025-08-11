@@ -2,6 +2,8 @@ package com.sena.senacamera.ui.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +16,13 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.tabs.TabLayout;
+import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
@@ -34,6 +38,7 @@ import com.sena.senacamera.data.type.FileType;
 import com.sena.senacamera.data.type.MediaItemType;
 import com.sena.senacamera.data.type.MediaStorageType;
 import com.sena.senacamera.data.type.MediaType;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.ui.decoration.GridSpacingItemDecoration;
@@ -63,6 +68,7 @@ public class MediaActivity extends AppCompatActivity {
     private LocalMediaPresenter localPhotoPresenter, localVideoPresenter;
     private RemoteMediaPresenter remotePhotoPresenter, remoteVideoPresenter;
 
+    private List<String> missingPermissions = new ArrayList<>();
     private String mediaViewMode = MediaViewMode.NORMAL;
     private String mediaStorageType = MediaStorageType.REMOTE;
     private boolean isSelectedAll = false;
@@ -101,6 +107,9 @@ public class MediaActivity extends AppCompatActivity {
         shareButton.setOnClickListener((v) -> shareFiles());
         deleteButton.setOnClickListener((v) -> deleteFiles());
         allowAccessButton.setOnClickListener((v) -> onAllowAccess());
+
+        // check media access permissions
+        checkPermissions();
 
         // set load thumbnail as true
         MyCamera camera = CameraManager.getInstance().getCurCamera();
@@ -177,6 +186,7 @@ public class MediaActivity extends AppCompatActivity {
         //AppLog.d(TAG, "onResume()");
 
         loadPhotoWall();
+        updateData();
 
         // update media list
 //        List<MultiPbItemInfo> mediaList = Stream.concat(imagePresenter.getRemotePhotoInfoList().stream(), videoPresenter.getRemotePhotoInfoList().stream()).collect(Collectors.toList());
@@ -298,6 +308,7 @@ public class MediaActivity extends AppCompatActivity {
         MediaActivity activity = this;
 
         if (this.mediaStorageType.equals(MediaStorageType.LOCAL)) {
+            // local
             List<LocalMediaItemInfo> arrayList = new ArrayList<>();
             for (Object item: this.recyclerViewAdapter.getSelectedItemList()) {
                 arrayList.add((LocalMediaItemInfo) item);
@@ -308,26 +319,9 @@ public class MediaActivity extends AppCompatActivity {
                 return;
             }
 
-            BottomSheetDialog deleteDialog = new BottomSheetDialog(this);
-            View deleteDialogLayout = LayoutInflater.from(this).inflate(R.layout.dialog_delete_confirm, null);
-            deleteDialog.setContentView(deleteDialogLayout);
-            deleteDialog.show();
-
-            Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
-            Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
-
-            cancelButton.setOnClickListener(new View.OnClickListener() {
+            AppDialogManager.getInstance().showDeleteConfirmDialog(this, new DialogButtonListener() {
                 @Override
-                public void onClick(View v) {
-                    deleteDialog.dismiss();
-                }
-            });
-
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteDialog.dismiss();
-
+                public void onDelete() {
                     MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
                     localPhotoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
                     localVideoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
@@ -336,8 +330,9 @@ public class MediaActivity extends AppCompatActivity {
                     // update the recycler view
                     activity.updateData();
                 }
-            });
+            }, getResources().getString(R.string.dialog_confirm_delete_these_files));
         } else {
+            // remote
             List<RemoteMediaItemInfo> arrayList = new ArrayList<>();
             for (Object item: this.recyclerViewAdapter.getSelectedItemList()) {
                 arrayList.add((RemoteMediaItemInfo) item);
@@ -348,26 +343,9 @@ public class MediaActivity extends AppCompatActivity {
                 return;
             }
 
-            BottomSheetDialog deleteDialog = new BottomSheetDialog(this);
-            View deleteDialogLayout = LayoutInflater.from(this).inflate(R.layout.dialog_delete_confirm, null);
-            deleteDialog.setContentView(deleteDialogLayout);
-            deleteDialog.show();
-
-            Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
-            Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
-
-            cancelButton.setOnClickListener(new View.OnClickListener() {
+            AppDialogManager.getInstance().showDeleteConfirmDialog(this, new DialogButtonListener() {
                 @Override
-                public void onClick(View v) {
-                    deleteDialog.dismiss();
-                }
-            });
-
-            deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteDialog.dismiss();
-
+                public void onDelete() {
                     MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
                     remotePhotoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
                     remoteVideoPresenter.deleteFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
@@ -376,7 +354,7 @@ public class MediaActivity extends AppCompatActivity {
                     // update the recycler view
                     activity.updateData();
                 }
-            });
+            }, getResources().getString(R.string.dialog_confirm_delete_these_files));
         }
     }
 
@@ -396,19 +374,14 @@ public class MediaActivity extends AppCompatActivity {
             return;
         }
 
-        remotePhotoPresenter.downloadFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.PHOTO)).collect(Collectors.toList()));
-        remoteVideoPresenter.downloadFiles(arrayList.stream().filter(e -> e.fileType.equals(MediaType.VIDEO)).collect(Collectors.toList()));
-
-        // update the recycler view
-        this.updateData();
+        remotePhotoPresenter.downloadFiles(arrayList);
     }
 
     public void shareFiles() {
     }
 
     public void onAllowAccess() {
-        String[] requestedPermission = {"android.permission.MANAGE_EXTERNAL_STORAGE"};
-        ActivityCompat.requestPermissions(this, requestedPermission, 1);
+        getPermissions();
     }
 
     public void loadPhotoWall() {
@@ -451,7 +424,26 @@ public class MediaActivity extends AppCompatActivity {
             public void run() {
                 List<Object> updatedMediaItemList = new ArrayList<>();
 
+                // if storage (local) tab is selected and all permissions are not granted, show no permission layout
+                if (mediaStorageType.equals(MediaStorageType.LOCAL) && !isAllPermissionGranted()) {
+                    MyProgressDialog.closeProgressDialog();
+
+                    // update the adapter
+                    runOnUiThread(() -> {
+                        recyclerViewAdapter = new MediaRecyclerViewAdapter(activity, updatedMediaItemList);
+                        recyclerView.setAdapter(recyclerViewAdapter);
+                        updateScreenTitle();
+
+                        // show no permission layout
+                        recyclerView.setVisibility(View.GONE);
+                        noContentLayout.setVisibility(View.GONE);
+                        noPermissionLayout.setVisibility(View.VISIBLE);
+                    });
+                    return;
+                }
+
                 if (mediaStorageType.equals(MediaStorageType.LOCAL)) {
+                    // local
                     // initialize the media item list
                     List<LocalMediaItemInfo> mediaInfoList = Stream.concat(localPhotoPresenter.getPhotoInfoList().stream(), localVideoPresenter.getPhotoInfoList().stream()).collect(Collectors.toList());
                     HashMap<String, List<Object>> mediaGroupList = new HashMap<>();
@@ -508,12 +500,22 @@ public class MediaActivity extends AppCompatActivity {
                         updatedMediaItemList.addAll(arrayList);
                     }
                 } else {
+                    // remote
                     // initialize the media item list
                     List<RemoteMediaItemInfo> mediaInfoList = Stream.concat(remotePhotoPresenter.getRemotePhotoInfoList().stream(), remoteVideoPresenter.getRemotePhotoInfoList().stream()).collect(Collectors.toList());
                     HashMap<String, List<Object>> mediaGroupList = new HashMap<>();
 
-                    for (RemoteMediaItemInfo mediaItem : mediaInfoList) {
+                    // get local file name list to check if downloaded
+                    List<LocalMediaItemInfo> localMediaInfoList = Stream.concat(localPhotoPresenter.getPhotoInfoList().stream(), localVideoPresenter.getPhotoInfoList().stream()).collect(Collectors.toList());
+                    List<String> localFilenameList = new ArrayList<>();
+                    for (LocalMediaItemInfo item: localMediaInfoList) {
+                        localFilenameList.add(item.getFileName());
+                    }
+
+                    for (RemoteMediaItemInfo mediaItem: mediaInfoList) {
                         String curKey = mediaItem.getFileDate();
+                        AppLog.i(TAG, "curKey: " + curKey);
+                        mediaItem.isItemDownloaded = localFilenameList.contains(mediaItem.getFileName());
                         if (mediaGroupList.containsKey(curKey)) {
                             List<Object> arrayList = mediaGroupList.get(curKey);
                             if (arrayList == null) {
@@ -537,7 +539,9 @@ public class MediaActivity extends AppCompatActivity {
                             try {
                                 return dateFormat.parse(e2).compareTo(dateFormat.parse(e1));
                             } catch (ParseException e) {
-                                throw new RuntimeException(e);
+                                AppLog.e(TAG, e.getMessage());
+                                return 0;
+//                                throw new RuntimeException(e);
                             }
                         }
                     });
@@ -560,6 +564,17 @@ public class MediaActivity extends AppCompatActivity {
                     recyclerViewAdapter = new MediaRecyclerViewAdapter(activity, updatedMediaItemList);
                     recyclerView.setAdapter(recyclerViewAdapter);
                     updateScreenTitle();
+
+                    if (updatedMediaItemList.isEmpty()) {
+                        // show no content layout if there are no media files
+                        recyclerView.setVisibility(View.GONE);
+                        noPermissionLayout.setVisibility(View.GONE);
+                        noContentLayout.setVisibility(View.VISIBLE);
+                    } else {
+                        noPermissionLayout.setVisibility(View.GONE);
+                        noContentLayout.setVisibility(View.GONE);
+                        recyclerView.setVisibility(View.VISIBLE);
+                    }
                 });
             }
         }).start();
@@ -567,6 +582,44 @@ public class MediaActivity extends AppCompatActivity {
 
     public void updateScreenTitle() {
         this.selectedNumberText.setText(this.recyclerViewAdapter.getSelectedCount() + "/" + this.recyclerViewAdapter.getTotalCount());
+    }
+
+    public void getPermissions() {
+        String[] requestedPermission = {this.missingPermissions.get(0)};
+        this.missingPermissions.remove(0);
+        ActivityCompat.requestPermissions(this, requestedPermission, 1);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            for (int length = permissions.length - 1; length >= 0; length--) {
+                if (!this.missingPermissions.isEmpty()) {
+                    // if some permissions are missing, request again
+                    getPermissions();
+                }
+            }
+        }
+    }
+
+    public boolean checkPermissions() {
+        boolean ret = true;
+        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_IMAGES") != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.missingPermissions.add("android.permission.READ_MEDIA_IMAGES");
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_VIDEO") != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.missingPermissions.add("android.permission.READ_MEDIA_VIDEO");
+            ret = false;
+        }
+
+        return ret;
+    }
+
+    public boolean isAllPermissionGranted() {
+        return this.missingPermissions.isEmpty();
     }
 
     @Override

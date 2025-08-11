@@ -185,7 +185,7 @@ public class MyCamera {
         return mode;
     }
 
-    public CommandSession getSDKsession() {
+    public CommandSession getSdkSession() {
         return commandSession;
     }
 

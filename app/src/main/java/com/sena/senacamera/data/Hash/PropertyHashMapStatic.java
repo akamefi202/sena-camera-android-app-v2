@@ -8,13 +8,16 @@ import com.sena.senacamera.data.type.GeneralDateFormat;
 import com.sena.senacamera.data.type.GeneralDeviceSound;
 import com.sena.senacamera.data.type.GeneralLanguage;
 import com.sena.senacamera.data.type.ImageQuality;
+import com.sena.senacamera.data.type.LoopRecording;
 import com.sena.senacamera.data.type.PhotoMode;
 import com.sena.senacamera.data.type.PhotoVideoMetering;
 import com.sena.senacamera.data.type.SlowMotion;
 import com.sena.senacamera.data.type.TimeLapseDuration;
+import com.sena.senacamera.data.type.TimeLapseInterval;
 import com.sena.senacamera.data.type.TimeLapseMode;
 import com.sena.senacamera.data.type.Upside;
 import com.sena.senacamera.data.entity.ItemInfo;
+import com.sena.senacamera.data.type.WifiFrequency;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 import com.sena.senacamera.data.type.VideoFovAngle;
@@ -30,19 +33,17 @@ public class PropertyHashMapStatic {
     private static final String TAG = PropertyHashMapStatic.class.getSimpleName();
 
     @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> burstMap = new HashMap<Integer, ItemInfo>();
+    public static HashMap<Integer, ItemInfo> photoBurstMap = new HashMap<Integer, ItemInfo>();
+    @SuppressLint("UseSparseArrays")
+    public static HashMap<Integer, ItemInfo> dateCaptionMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> whiteBalanceMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
+    public static HashMap<Integer, ItemInfo> wifiFrequencyMap = new HashMap<Integer, ItemInfo>();
+    @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> electricityFrequencyMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> dateStampMap = new HashMap<Integer, ItemInfo>();
-    @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> timeLapseMode = new HashMap<Integer, ItemInfo>();
-    @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> timeLapseIntervalMap = new HashMap<Integer, ItemInfo>();
-    @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> timeLapseDurationMap = new HashMap<Integer, ItemInfo>();
+    public static HashMap<Integer, ItemInfo> timelapseMode = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> slowMotionMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
@@ -52,13 +53,13 @@ public class PropertyHashMapStatic {
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> photoModeMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> imageQualityMap = new HashMap<Integer, ItemInfo>();
+    public static HashMap<Integer, ItemInfo> photoVideoQualityMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> photoVideoMeteringMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> videoModeMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, ItemInfo> videoFovAngleMap = new HashMap<Integer, ItemInfo>();
+    public static HashMap<Integer, ItemInfo> photoVideoFovMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
     public static HashMap<Integer, ItemInfo> generalDeviceSoundMap = new HashMap<Integer, ItemInfo>();
     @SuppressLint("UseSparseArrays")
@@ -80,20 +81,20 @@ public class PropertyHashMapStatic {
     public void initPropertyHashMap() {
         AppLog.i(TAG, "Start initPropertyHashMap");
         initWhiteBalanceMap();
-        initTimeLapseDuration();
-        initSlowMotion();
+        initWifiFrequencyMap();
+        initSlowMotionMap();
         initUpside();
-        initBurstMap();
+        initPhotoBurstMap();
         initElectricityFrequencyMap();
-        initDateStampMap();
+        initDateCaptionMap();
         initTimeLapseMode();
         initCameraSwitch();
 
         initPhotoModeMap();
-        initImageQualityMap();
+        initPhotoVideoQualityMap();
         initPhotoVideoMeteringMap();
         initVideoModeMap();
-        initVideoFovAngleMap();
+        initPhotoVideoFovMap();
         initGeneralDeviceSoundMap();
         initGeneralLanguageMap();
         initGeneralColorEffectMap();
@@ -108,8 +109,8 @@ public class PropertyHashMapStatic {
     }
 
     private void initTimeLapseMode() {
-        timeLapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_STILL, new ItemInfo(R.string.timeLapse_capture_mode, null, 0));
-        timeLapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_VIDEO, new ItemInfo(R.string.timeLapse_video_mode, null, 0));
+        timelapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_STILL, new ItemInfo(R.string.timeLapse_capture_mode, null, 0));
+        timelapseMode.put(TimeLapseMode.TIME_LAPSE_MODE_VIDEO, new ItemInfo(R.string.timeLapse_video_mode, null, 0));
         // TODO Auto-generated method stub
 
     }
@@ -119,23 +120,15 @@ public class PropertyHashMapStatic {
         whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_CLOUDY, new ItemInfo(R.string.wb_cloudy, null, R.drawable.awb_cloudy));
         whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_DAYLIGHT, new ItemInfo(R.string.wb_daylight, null, R.drawable.awb_daylight));
         whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_FLUORESCENT, new ItemInfo(R.string.wb_fluorescent, null, R.drawable.awb_fluoresecent));
-        whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_TUNGSTEN, new ItemInfo(R.string.wb_incandescent, null, R.drawable.awb_incadescent)); //
-        // whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_UNDEFINED,
+        whiteBalanceMap.put(ICatchCamWhiteBalance.ICH_CAM_WB_TUNGSTEN, new ItemInfo(R.string.wb_incandescent, null, R.drawable.awb_incadescent));
     }
 
-    private void initTimeLapseDuration() {
-        // TODO Auto-generated method stub
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_2MIN, new ItemInfo(R.string.setting_time_lapse_duration_2M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_5MIN, new ItemInfo(R.string.setting_time_lapse_duration_5M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_10MIN, new ItemInfo(R.string.setting_time_lapse_duration_10M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_15MIN, new ItemInfo(R.string.setting_time_lapse_duration_15M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_20MIN, new ItemInfo(R.string.setting_time_lapse_duration_20M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_30MIN, new ItemInfo(R.string.setting_time_lapse_duration_30M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_60MIN, new ItemInfo(R.string.setting_time_lapse_duration_60M, null, 0));
-        timeLapseIntervalMap.put(TimeLapseDuration.TIME_LAPSE_DURATION_UNLIMITED, new ItemInfo(R.string.setting_time_lapse_duration_unlimit, null, 0));
+    public void initWifiFrequencyMap() {
+        wifiFrequencyMap.put(WifiFrequency.WIFI_FREQUENCY_5G, new ItemInfo(R.string.wifi_frequency_5g, null, 0));
+        wifiFrequencyMap.put(WifiFrequency.WIFI_FREQUENCY_24G, new ItemInfo(R.string.wifi_frequency_24g, null, 0));
     }
 
-    private void initSlowMotion() {
+    private void initSlowMotionMap() {
         // TODO Auto-generated method stub
         slowMotionMap.put(SlowMotion.SLOW_MOTION_OFF, new ItemInfo(R.string.setting_off, null, 0));
         slowMotionMap.put(SlowMotion.SLOW_MOTION_ON, new ItemInfo(R.string.setting_on, null, 0));
@@ -147,15 +140,15 @@ public class PropertyHashMapStatic {
         upsideMap.put(Upside.UPSIDE_ON, new ItemInfo(R.string.setting_on, null, 0));
     }
 
-    public void initBurstMap() {
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_OFF, new ItemInfo(R.string.burst_off, null, 0));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_3, new ItemInfo(R.string.burst_3, null, R.drawable.continuous_shot_1));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_5, new ItemInfo(R.string.burst_5, null, R.drawable.continuous_shot_2));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_10, new ItemInfo(R.string.burst_10, null, R.drawable.continuous_shot_3));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_7, new ItemInfo(R.string.burst_7, null, R.drawable.continuous_shot_7));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_15, new ItemInfo(R.string.burst_15, null, R.drawable.continuous_shot_15));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_30, new ItemInfo(R.string.burst_30, null, R.drawable.continuous_shot_30));
-        burstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_HS, new ItemInfo(R.string.burst_hs, null, R.drawable.continuous_shot_continuous));
+    public void initPhotoBurstMap() {
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_OFF, new ItemInfo(R.string.burst_off, null, 0));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_3, new ItemInfo(R.string.burst_3, null, R.drawable.continuous_shot_1));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_5, new ItemInfo(R.string.burst_5, null, R.drawable.continuous_shot_2));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_7, new ItemInfo(R.string.burst_7, null, R.drawable.continuous_shot_7));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_10, new ItemInfo(R.string.burst_10, null, R.drawable.continuous_shot_3));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_15, new ItemInfo(R.string.burst_15, null, R.drawable.continuous_shot_15));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_30, new ItemInfo(R.string.burst_30, null, R.drawable.continuous_shot_30));
+        photoBurstMap.put(ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_HS, new ItemInfo(R.string.burst_hs, null, R.drawable.continuous_shot_continuous));
     }
 
     public void initElectricityFrequencyMap() {
@@ -163,10 +156,10 @@ public class PropertyHashMapStatic {
         electricityFrequencyMap.put(ICatchCamLightFrequency.ICH_CAM_LIGHT_FREQUENCY_60HZ, new ItemInfo(R.string.frequency_60HZ, null, 0));
     }
 
-    public void initDateStampMap() {
-        dateStampMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_OFF, new ItemInfo(R.string.dateStamp_off, null, 0));
-        dateStampMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_DATE, new ItemInfo(R.string.dateStamp_date, null, 0));
-        dateStampMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_DATE_TIME, new ItemInfo(R.string.dateStamp_date_and_time, null, 0));
+    public void initDateCaptionMap() {
+        dateCaptionMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_OFF, new ItemInfo(R.string.dateStamp_off, null, 0));
+        dateCaptionMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_DATE, new ItemInfo(R.string.dateStamp_date, null, 0));
+        dateCaptionMap.put(ICatchCamDateStamp.ICH_CAM_DATE_STAMP_DATE_TIME, new ItemInfo(R.string.dateStamp_date_and_time, null, 0));
     }
 
     public void initPhotoModeMap() {
@@ -176,13 +169,14 @@ public class PropertyHashMapStatic {
         photoModeMap.put(PhotoMode.PHOTO_MODE_SELF_TIMER, new ItemInfo(R.string.photo_mode_self_timer, null, 0));
     }
 
-    public void initImageQualityMap() {
-        imageQualityMap.put(ImageQuality.IMAGE_QUALITY_HIGH, new ItemInfo(R.string.image_quality_high, null, 0));
-        imageQualityMap.put(ImageQuality.IMAGE_QUALITY_MIDDLE, new ItemInfo(R.string.image_quality_middle, null, 0));
-        imageQualityMap.put(ImageQuality.IMAGE_QUALITY_LOW, new ItemInfo(R.string.image_quality_low, null, 0));
+    public void initPhotoVideoQualityMap() {
+        photoVideoQualityMap.put(ImageQuality.IMAGE_QUALITY_HIGH, new ItemInfo(R.string.image_quality_high, null, 0));
+        photoVideoQualityMap.put(ImageQuality.IMAGE_QUALITY_MIDDLE, new ItemInfo(R.string.image_quality_middle, null, 0));
+        photoVideoQualityMap.put(ImageQuality.IMAGE_QUALITY_LOW, new ItemInfo(R.string.image_quality_low, null, 0));
     }
 
     public void initPhotoVideoMeteringMap() {
+        photoVideoMeteringMap.put(PhotoVideoMetering.PHOTO_VIDEO_METERING_NONE, new ItemInfo(R.string.photo_video_metering_none, null, 0));
         photoVideoMeteringMap.put(PhotoVideoMetering.PHOTO_VIDEO_METERING_CENTER, new ItemInfo(R.string.photo_video_metering_center, null, 0));
         photoVideoMeteringMap.put(PhotoVideoMetering.PHOTO_VIDEO_METERING_MULTI, new ItemInfo(R.string.photo_video_metering_multi, null, 0));
     }
@@ -194,11 +188,11 @@ public class PropertyHashMapStatic {
         videoModeMap.put(VideoMode.VIDEO_MODE_SLOW_MOTION, new ItemInfo(R.string.video_mode_slow_motion, null, 0));
     }
 
-    public void initVideoFovAngleMap() {
-        videoFovAngleMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_SUPER_WIDE, new ItemInfo(R.string.video_fov_angle_super_wide, null, 0));
-        videoFovAngleMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_WIDE, new ItemInfo(R.string.video_fov_angle_wide, null, 0));
-        videoFovAngleMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_MEDIUM, new ItemInfo(R.string.video_fov_angle_medium, null, 0));
-        videoFovAngleMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_NARROW, new ItemInfo(R.string.video_fov_angle_narrow, null, 0));
+    public void initPhotoVideoFovMap() {
+        photoVideoFovMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_SUPER_WIDE, new ItemInfo(R.string.video_fov_angle_super_wide, null, 0));
+        photoVideoFovMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_WIDE, new ItemInfo(R.string.video_fov_angle_wide, null, 0));
+        photoVideoFovMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_MEDIUM, new ItemInfo(R.string.video_fov_angle_medium, null, 0));
+        photoVideoFovMap.put(VideoFovAngle.VIDEO_FOV_ANGLE_NARROW, new ItemInfo(R.string.video_fov_angle_narrow, null, 0));
     }
 
     public void initGeneralDeviceSoundMap() {

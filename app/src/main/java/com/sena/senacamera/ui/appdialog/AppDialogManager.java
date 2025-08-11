@@ -24,19 +24,13 @@ public class AppDialogManager {
         return AppDialogManager.InstanceHolder.instance;
     }
 
-    public void showDeleteConfirmDialog(Context context, DialogButtonListener listener, String target) {
+    public void showSelectDeviceConfirmDialog(Context context, DialogButtonListener listener) {
         BottomSheetDialog dialog = new BottomSheetDialog(context);
-        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_delete_confirm, null);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_select_device_confirm, null);
         dialog.setContentView(dialogLayout);
         dialog.show();
 
-        TextView descText = dialogLayout.findViewById(R.id.desc_text);
-        if (target.isBlank()) {
-            descText.setText(String.format("%s?", context.getResources().getString(R.string.wish_to_delete)));
-        } else {
-            descText.setText(String.format("%s %s?", context.getResources().getString(R.string.wish_to_delete), target));
-        }
-        Button deleteButton = dialogLayout.findViewById(R.id.delete_button);
+        Button selectButton = dialogLayout.findViewById(R.id.select_button);
         Button cancelButton = dialogLayout.findViewById(R.id.cancel_button);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -49,11 +43,11 @@ public class AppDialogManager {
             }
         });
 
-        deleteButton.setOnClickListener(new View.OnClickListener() {
+        selectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (listener != null) {
-                    listener.onDelete();
+                    listener.onSelect();
                 }
                 dialog.dismiss();
 
@@ -233,6 +227,141 @@ public class AppDialogManager {
             public void onClick(View v) {
                 if (listener != null) {
                     listener.onUpdate();
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void showDeleteConfirmDialog(Context context, DialogButtonListener listener, String message) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_delete_confirm, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        TextView descText = dialogLayout.findViewById(R.id.desc_text);
+        if (message == null || message.isBlank()) {
+            descText.setText(context.getResources().getString(R.string.dialog_confirm_delete));
+        } else {
+            descText.setText(message);
+        }
+        Button deleteButton = dialogLayout.findViewById(R.id.delete_button);
+        Button cancelButton = dialogLayout.findViewById(R.id.cancel_button);
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onCancel();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onDelete();
+                }
+                dialog.dismiss();
+
+            }
+        });
+    }
+
+    public void showConnectionReadyDialog(Context context, DialogButtonListener listener) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connection_ready, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        Button userGuideButton = dialogLayout.findViewById(R.id.user_guide_button);
+        ImageButton closeButton = dialogLayout.findViewById(R.id.close_button);
+
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onClose();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        userGuideButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onOk();
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void showConnectionSuccessDialog(Context context, DialogButtonListener listener) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connection_success, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        Button okButton = dialogLayout.findViewById(R.id.ok_button);
+
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onOk();
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void showConnectionFailedOkDialog(Context context, DialogButtonListener listener) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connection_failed_ok, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        Button okButton = dialogLayout.findViewById(R.id.ok_button);
+
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onOk();
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public void showStopDownloadDialog(Context context, DialogButtonListener listener) {
+        BottomSheetDialog dialog = new BottomSheetDialog(context);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_stop_download, null);
+        dialog.setContentView(dialogLayout);
+        dialog.show();
+
+        ImageButton closeButton = dialogLayout.findViewById(R.id.close_button);
+        Button stopButton = dialogLayout.findViewById(R.id.stop_button);
+
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onClose();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onStop();
                 }
                 dialog.dismiss();
             }

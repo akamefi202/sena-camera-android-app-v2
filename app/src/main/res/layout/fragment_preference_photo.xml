@@ -22,29 +22,37 @@
             android:layout_height="wrap_content">
 
             <!-- mode -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:textColor="@color/button_disabled_color"
-                android:text="@string/mode" />
-
             <LinearLayout
+                android:id="@+id/shoot_mode_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="56dp"
-                android:paddingHorizontal="16dp"
-                android:background="@drawable/rounded_gray_section">
+                android:orientation="vertical">
 
-                <!-- modes -->
-                <com.sena.senacamera.ui.component.MenuSelection
-                    android:id="@+id/photo_mode_layout"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:textColor="@color/button_disabled_color"
+                    android:text="@string/mode" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:menu_selection_underline="false"
-                    app:menu_selection_title="@string/modes"
-                    app:menu_selection_value="Single" />
+                    android:orientation="vertical"
+                    android:layout_marginBottom="56dp"
+                    android:paddingHorizontal="16dp"
+                    android:background="@drawable/rounded_gray_section">
+
+                    <!-- modes -->
+                    <com.sena.senacamera.ui.component.MenuSelection
+                        android:id="@+id/photo_mode_menu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:menu_selection_underline="false"
+                        app:menu_selection_title="@string/modes"
+                        app:menu_selection_value="Single" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

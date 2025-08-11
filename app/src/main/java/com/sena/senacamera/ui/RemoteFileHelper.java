@@ -82,6 +82,10 @@ public class RemoteFileHelper {
     }
 
     public List<RemoteMediaItemInfo> getRemoteFile(FileOperation fileOperation, FileType fileType) {
+        if (fileOperation == null) {
+            return Collections.emptyList();
+        }
+
         int icatchFileType = ICatchFileType.ICH_FILE_TYPE_IMAGE;
         if (fileType == FileType.FILE_PHOTO) {
             icatchFileType = ICatchFileType.ICH_FILE_TYPE_IMAGE;
@@ -97,7 +101,7 @@ public class RemoteFileHelper {
             cameraProperties = camera.getCameraProperties();
         }
         if (cameraProperties != null && cameraProperties.hasFunction(PropertyId.CAMERA_PB_LIMIT_NUMBER)) {
-            tempItemInfos = getFileList(fileOperation,icatchFileType,500);
+            tempItemInfos = getFileList(fileOperation, icatchFileType,500);
         } else {
             setFileListAttribute(fileOperation, fileType);
             List<ICatchFile> fileList = fileOperation.getFileList(icatchFileType);

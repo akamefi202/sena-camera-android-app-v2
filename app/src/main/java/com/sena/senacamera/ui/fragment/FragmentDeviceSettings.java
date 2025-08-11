@@ -25,9 +25,11 @@ import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
 import com.sena.senacamera.ui.component.MenuLink;
 import com.sena.senacamera.ui.component.MenuSelection;
 import com.sena.senacamera.ui.component.MenuSwitch;
+import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.utils.ClickUtils;
 
 import org.checkerframework.checker.units.qual.C;
@@ -89,7 +91,7 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
         // get camera setting information
         MyCamera myCamera = CameraManager.getInstance().getCurCamera();
         if (myCamera == null || !myCamera.isConnected()) {
-            AppLog.e(TAG, "initialize camera is disconnected");
+            AppLog.e(TAG, "camera is disconnected");
             requireActivity().finish();
             return;
         }
@@ -119,18 +121,18 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
 
         // values (menu switch)
         // front display
-        this.frontDisplayMenu.setValue(false);
+        this.frontDisplayMenu.setValue(baseProperties.getGeneralFrontDisplay().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
         // main status led
-        this.mainStatusLedMenu.setValue(false);
+        this.mainStatusLedMenu.setValue(baseProperties.getGeneralMainStatusLed().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
         // battery status led
-        this.batteryStatusLedMenu.setValue(false);
+        this.batteryStatusLedMenu.setValue(baseProperties.getGeneralBatteryStatusLed().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        //updateFragment();
+        updateFragment();
     }
 
     @Override
@@ -160,7 +162,7 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
         // get camera setting information
         MyCamera myCamera = CameraManager.getInstance().getCurCamera();
         if (myCamera == null || !myCamera.isConnected()) {
-            AppLog.e(TAG, "initialize camera is disconnected");
+            AppLog.e(TAG, "camera is disconnected");
             requireActivity().finish();
             return;
         }
@@ -180,11 +182,11 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
 
         // values (menu switch)
         // front display
-        this.frontDisplayMenu.setValue(false);
+        this.frontDisplayMenu.setValue(baseProperties.getGeneralFrontDisplay().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
         // main status led
-        this.mainStatusLedMenu.setValue(false);
+        this.mainStatusLedMenu.setValue(baseProperties.getGeneralMainStatusLed().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
         // battery status led
-        this.batteryStatusLedMenu.setValue(false);
+        this.batteryStatusLedMenu.setValue(baseProperties.getGeneralBatteryStatusLed().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
     }
 
     private void onBack() {
@@ -211,13 +213,51 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
             @Override
             public void onClick(View v) {
                 // reset settings
+                resetToDefault();
 
                 resetDialog.dismiss();
             }
         });
     }
 
+    public void resetToDefault() {
+        // get camera setting information
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "camera is disconnected");
+            requireActivity().finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
+        MyProgressDialog.showProgressDialog(requireContext(), R.string.resetting);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                baseProperties.getScreenSaver().setValueByPosition(0);
+                baseProperties.getGeneralColorEffect().setValueByPosition(0);
+                baseProperties.getWhiteBalance().setValueByPosition(0);
+                baseProperties.getAutoPowerOff().setValueByPosition(0);
+                baseProperties.getGeneralLanguage().setValueByPosition(0);
+                baseProperties.getGeneralFrontDisplay().setValue(0);
+                baseProperties.getGeneralMainStatusLed().setValue(1);
+                baseProperties.getGeneralBatteryStatusLed().setValue(1);
+
+                updateFragment();
+                MyProgressDialog.closeProgressDialog();
+            }
+        }).start();
+    }
+
     public void onFactoryReset() {
+        // get camera properties
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        if (curCamera == null || !curCamera.isConnected()) {
+            AppLog.e(TAG, "camera is disconnected");
+            return;
+        }
+        CameraProperties properties = curCamera.getCameraProperties();
+
         BottomSheetDialog factoryResetDialog = new BottomSheetDialog(requireContext());
         View factoryResetDialogLayout = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_factory_reset, null);
         factoryResetDialog.setContentView(factoryResetDialogLayout);
@@ -237,7 +277,8 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
             @Override
             public void onClick(View v) {
                 // factory reset
-
+                properties.factoryReset();
+                requireActivity().finish();
 
                 factoryResetDialog.dismiss();
             }
@@ -302,7 +343,13 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
         menuSwitch.setValue(newValue);
 
         // update the setting
-//        baseProperties.getGeneralFrontDisplay().setValueByPosition(0);
+        if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.front_display))) {
+            baseProperties.getGeneralFrontDisplay().setValue(newValue ? 1: 0);
+        } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.main_status_led))) {
+            baseProperties.getGeneralMainStatusLed().setValue(newValue ? 1: 0);
+        } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.battery_status_led))) {
+            baseProperties.getGeneralBatteryStatusLed().setValue(newValue ? 1: 0);
+        }
     }
 
     @Override

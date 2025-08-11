@@ -14,39 +14,36 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
+import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.R;
-import com.sena.senacamera.SdkApi.CameraAction;
-import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.ui.activity.PreferenceActivity;
 import com.sena.senacamera.ui.component.MenuSelection;
 import com.sena.senacamera.ui.component.MenuSwitch;
+import com.sena.senacamera.ui.component.MyProgressDialog;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class FragmentPreferenceVideo extends Fragment implements View.OnClickListener {
     private static final String TAG = FragmentPreferenceVideo.class.getSimpleName();
 
     ConstraintLayout fragmentLayout;
-    MenuSelection modeMenu, resolutionMenu, videoQualityMenu, isoMenu, fovMenu, evMenu, meteringMenu, timelapseIntervalMenu, timelapseDurationMenu, loopRecordingMenu, dateCaptionMenu;
+    MenuSelection videoModeMenu, videoResolutionMenu, videoQualityMenu, fovMenu, evMenu, meteringMenu, timelapseIntervalMenu, timelapseDurationMenu, loopRecordingMenu, dateCaptionMenu;
     MenuSwitch autoLowLightMenu, eisMenu;
-    LinearLayout resetButton;
+    LinearLayout resetButton, shootModeLayout;
 
-    List<String> modeList = new ArrayList<>();
     String currentMode = "";
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         this.fragmentLayout = (ConstraintLayout) layoutInflater.inflate(R.layout.fragment_preference_video, viewGroup, false);
 
-        this.modeMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.video_mode_layout);
-        this.resolutionMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.video_resolution_layout);
+        this.videoModeMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.video_mode_layout);
+        this.videoResolutionMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.video_resolution_layout);
         this.videoQualityMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.video_quality_layout);
-        this.isoMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.iso_layout);
         this.fovMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.fov_layout);
         this.evMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.ev_layout);
         this.meteringMenu = (MenuSelection) this.fragmentLayout.findViewById(R.id.metering_layout);
@@ -57,11 +54,11 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         this.autoLowLightMenu = (MenuSwitch) this.fragmentLayout.findViewById(R.id.auto_low_light_layout);
         this.eisMenu = (MenuSwitch) this.fragmentLayout.findViewById(R.id.eis_layout);
         this.resetButton = (LinearLayout) this.fragmentLayout.findViewById(R.id.reset_button);
+        this.shootModeLayout = (LinearLayout) this.fragmentLayout.findViewById(R.id.shoot_mode_layout);
 
-        this.modeMenu.setOnClickListener(this);
-        this.resolutionMenu.setOnClickListener(this);
+        this.videoModeMenu.setOnClickListener(this);
+        this.videoResolutionMenu.setOnClickListener(this);
         this.videoQualityMenu.setOnClickListener(this);
-        this.isoMenu.setOnClickListener(this);
         this.fovMenu.setOnClickListener(this);
         this.evMenu.setOnClickListener(this);
         this.meteringMenu.setOnClickListener(this);
@@ -72,15 +69,24 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         this.autoLowLightMenu.setOnClickListener(this);
         this.eisMenu.setOnClickListener(this);
 
-        this.resetButton.setOnClickListener(v -> reset());
+        this.resetButton.setOnClickListener(v -> onReset());
 
         // initialize value, option list, and callbacks
-        initialize();
+        initializeOptionList();
+
+        // show or hide shoot mode layout
+        if (!PreferenceActivity.shootModeParam.isEmpty()) {
+            // hide shoot mode layout
+            this.shootModeLayout.setVisibility(View.GONE);
+        } else {
+            // show shoot mode layout
+            this.shootModeLayout.setVisibility(View.VISIBLE);
+        }
 
         return this.fragmentLayout;
     }
 
-    public void initialize() {
+    public void initializeOptionList() {
         // get camera setting information
         MyCamera myCamera = CameraManager.getInstance().getCurCamera();
         if (myCamera == null || !myCamera.isConnected()) {
@@ -90,66 +96,45 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         }
         BaseProperties baseProperties = myCamera.getBaseProperties();
 
+        // initialize option list
         // values (menu selection)
         // video mode
-        modeList = new ArrayList<>(Arrays.asList(
-                requireContext().getResources().getString(R.string.video_mode_video),
-                requireContext().getResources().getString(R.string.video_mode_slow_motion),
-                requireContext().getResources().getString(R.string.video_mode_timelapse),
-                requireContext().getResources().getString(R.string.video_mode_loop_recording)
-        ));
-        this.modeMenu.setOptionList(modeList);
-        this.modeMenu.setValue(modeList.get(0));
-        // resolution
-        this.resolutionMenu.setOptionList(new ArrayList<>());
-        this.resolutionMenu.setValue("");
+        AppLog.i(TAG, "video mode: " + Arrays.asList(baseProperties.getVideoMode().getValueList()));
+        this.videoModeMenu.setOptionList(Arrays.asList(baseProperties.getVideoMode().getValueList()));
+        // video resolution
+        AppLog.i(TAG, "video resolution: " + baseProperties.getVideoResolution().getValueListUI());
+        this.videoResolutionMenu.setOptionList(baseProperties.getVideoResolution().getValueListUI());
         // video quality
-        AppLog.i(TAG, "image quality: " + Arrays.asList(baseProperties.getPhotoVideoImageQuality().getValueList()));
-        this.videoQualityMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoImageQuality().getValueList()));
-        this.videoQualityMenu.setValue(baseProperties.getPhotoVideoImageQuality().getCurrentUiStringInSetting());
-        // iso
-        AppLog.i(TAG, "iso: " + Arrays.asList(baseProperties.getPhotoIso().getValueList()));
-        this.isoMenu.setOptionList(Arrays.asList(baseProperties.getPhotoIso().getValueList()));
-        this.isoMenu.setValue(baseProperties.getPhotoIso().getCurrentUiStringInSetting());
+        AppLog.i(TAG, "video quality: " + Arrays.asList(baseProperties.getPhotoVideoQuality().getValueList()));
+        this.videoQualityMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoQuality().getValueList()));
         // fov
-        AppLog.i(TAG, "fov: " + Arrays.asList(baseProperties.getVideoFov().getValueList()));
-        this.fovMenu.setOptionList(Arrays.asList(baseProperties.getVideoFov().getValueList()));
-        this.fovMenu.setValue(baseProperties.getVideoFov().getCurrentUiStringInSetting());
+        AppLog.i(TAG, "fov: " + Arrays.asList(baseProperties.getPhotoVideoFov().getValueList()));
+        this.fovMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoFov().getValueList()));
         // ev
         AppLog.i(TAG, "ev: " + Arrays.asList(baseProperties.getPhotoVideoEv().getValueList()));
         this.evMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoEv().getValueList()));
-        this.evMenu.setValue(baseProperties.getPhotoVideoEv().getCurrentUiStringInSetting());
         // metering
         AppLog.i(TAG, "metering: " + Arrays.asList(baseProperties.getPhotoVideoMetering().getValueList()));
         this.meteringMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoMetering().getValueList()));
-        this.meteringMenu.setValue(baseProperties.getPhotoVideoMetering().getCurrentUiStringInSetting());
         // timelapse interval
-        this.timelapseIntervalMenu.setOptionList(Arrays.asList(baseProperties.getTimeLapseStillInterval().getValueStringList()));
-        this.timelapseIntervalMenu.setValue(baseProperties.getTimeLapseStillInterval().getCurrentValue());
+        AppLog.i(TAG, "timelapse interval: " + Arrays.asList(baseProperties.getTimelapseInterval().getValueList()));
+        this.timelapseIntervalMenu.setOptionList(Arrays.asList(baseProperties.getTimelapseInterval().getValueList()));
         // timelapse duration
-        AppLog.i(TAG, "timelapse duration: " + Arrays.asList(baseProperties.getPhotoVideoTimelapseDuration().getValueList()));
-        this.timelapseDurationMenu.setOptionList(Arrays.asList(baseProperties.getPhotoVideoTimelapseDuration().getValueList()));
-        this.timelapseDurationMenu.setValue(baseProperties.getPhotoVideoTimelapseDuration().getCurrentUiStringInSetting());
+        AppLog.i(TAG, "timelapse duration: " + Arrays.asList(baseProperties.getTimelapseDuration().getValueList()));
+        this.timelapseDurationMenu.setOptionList(Arrays.asList(baseProperties.getTimelapseDuration().getValueList()));
         // loop recording
-        this.loopRecordingMenu.setOptionList(new ArrayList<>());
-        this.loopRecordingMenu.setValue("");
+        AppLog.i(TAG, "loop recording: " + Arrays.asList(baseProperties.getVideoLoopRecording().getValueList()));
+        this.loopRecordingMenu.setOptionList(Arrays.asList(baseProperties.getVideoLoopRecording().getValueList()));
         // date caption
-        AppLog.i(TAG, "date caption: " + Arrays.asList(baseProperties.getDateStamp().getValueList()));
-        this.dateCaptionMenu.setOptionList(Arrays.asList(baseProperties.getDateStamp().getValueList()));
-        this.dateCaptionMenu.setValue(baseProperties.getDateStamp().getCurrentUiStringInSetting());
-
-        // values (menu switch)
-        // auto low light
-        this.autoLowLightMenu.setValue(false);
-        // eis
-        this.eisMenu.setValue(false);
+        AppLog.i(TAG, "date caption: " + Arrays.asList(baseProperties.getDateCaption().getValueList()));
+        this.dateCaptionMenu.setOptionList(Arrays.asList(baseProperties.getDateCaption().getValueList()));
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        //updateFragment();
+        updateFragment();
     }
 
     @Override
@@ -157,10 +142,9 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         super.onDestroyView();
 
         this.fragmentLayout = null;
-        this.modeMenu = null;
-        this.resolutionMenu = null;
+        this.videoModeMenu = null;
+        this.videoResolutionMenu = null;
         this.videoQualityMenu = null;
-        this.isoMenu = null;
         this.fovMenu = null;
         this.evMenu = null;
         this.meteringMenu = null;
@@ -178,13 +162,11 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         int id = v.getId();
 
         if (id == R.id.video_mode_layout) {
-            onMenuSelection(modeMenu);
+            onMenuSelection(videoModeMenu);
         } else if (id == R.id.video_resolution_layout) {
-            onMenuSelection(resolutionMenu);
+            onMenuSelection(videoResolutionMenu);
         } else if (id == R.id.video_quality_layout) {
             onMenuSelection(videoQualityMenu);
-        } else if (id == R.id.iso_layout) {
-            onMenuSelection(isoMenu);
         } else if (id == R.id.fov_layout) {
             onMenuSelection(fovMenu);
         } else if (id == R.id.ev_layout) {
@@ -219,37 +201,56 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         BaseProperties baseProperties = myCamera.getBaseProperties();
 
         // values (menu selection)
-        // photo mode
-        this.modeMenu.setValue(currentMode);
-        // resolution
-//        this.resolutionMenu.setValue(baseProperties.);
+        // video mode
+        this.videoModeMenu.setValue(baseProperties.getVideoMode().getCurrentUiStringInSetting());
+        this.currentMode = baseProperties.getVideoMode().getCurrentUiStringInSetting();
+        // video resolution
+        this.videoResolutionMenu.setValue(baseProperties.getVideoResolution().getCurrentUiStringInSetting());
         // video quality
-        this.videoQualityMenu.setValue(baseProperties.getPhotoVideoImageQuality().getCurrentUiStringInSetting());
-        // iso
-        this.isoMenu.setValue(baseProperties.getPhotoIso().getCurrentUiStringInSetting());
+        this.videoQualityMenu.setValue(baseProperties.getPhotoVideoQuality().getCurrentUiStringInSetting());
         // fov
-        this.fovMenu.setValue(baseProperties.getVideoFov().getCurrentUiStringInSetting());
+        this.fovMenu.setValue(baseProperties.getPhotoVideoFov().getCurrentUiStringInSetting());
         // ev
         this.evMenu.setValue(baseProperties.getPhotoVideoEv().getCurrentUiStringInSetting());
         // metering
         this.meteringMenu.setValue(baseProperties.getPhotoVideoMetering().getCurrentUiStringInSetting());
         // timelapse interval
-        this.timelapseIntervalMenu.setValue(baseProperties.getTimeLapseStillInterval().getCurrentValue());
+        this.timelapseIntervalMenu.setValue(baseProperties.getTimelapseInterval().getCurrentUiStringInSetting());
         // timelapse duration
-        this.timelapseDurationMenu.setValue(baseProperties.getPhotoVideoTimelapseDuration().getCurrentUiStringInSetting());
+        this.timelapseDurationMenu.setValue(baseProperties.getTimelapseDuration().getCurrentUiStringInSetting());
         // loop recording
-        this.dateCaptionMenu.setValue("");
+        this.loopRecordingMenu.setValue(baseProperties.getVideoLoopRecording().getCurrentUiStringInSetting());
         // date caption
-        this.dateCaptionMenu.setValue(baseProperties.getDateStamp().getCurrentUiStringInSetting());
+        this.dateCaptionMenu.setValue(baseProperties.getDateCaption().getCurrentUiStringInSetting());
 
         // values (menu switch)
         // auto low light
-        this.autoLowLightMenu.setValue(false);
+        this.autoLowLightMenu.setValue(baseProperties.getVideoAutoLowLight().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
         // eis
-        this.eisMenu.setValue(false);
+        this.eisMenu.setValue(baseProperties.getVideoEis().getCurrentUiStringInSetting().equals(requireContext().getResources().getString(R.string.on)));
+
+        // show & hide menus
+        this.eisMenu.setVisibility(View.GONE);
+        this.timelapseIntervalMenu.setVisibility(View.GONE);
+        this.timelapseDurationMenu.setVisibility(View.GONE);
+        this.loopRecordingMenu.setVisibility(View.GONE);
+
+        if (this.currentMode.equals(requireContext().getResources().getString(R.string.video_mode_normal))) {
+            // normal
+            this.eisMenu.setVisibility(View.VISIBLE);
+        } else if (this.currentMode.equals(requireContext().getResources().getString(R.string.video_mode_timelapse))) {
+            // timelapse
+            this.timelapseIntervalMenu.setVisibility(View.VISIBLE);
+            this.timelapseDurationMenu.setVisibility(View.VISIBLE);
+        } else if (this.currentMode.equals(requireContext().getResources().getString(R.string.video_mode_loop_recording))) {
+            // loop
+            this.loopRecordingMenu.setVisibility(View.VISIBLE);
+        } else {
+            // slow motion
+        }
     }
 
-    public void reset() {
+    public void onReset() {
         BottomSheetDialog resetDialog = new BottomSheetDialog(requireContext());
         View resetDialogLayout = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_reset_to_default, null);
         resetDialog.setContentView(resetDialogLayout);
@@ -269,10 +270,45 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
             @Override
             public void onClick(View v) {
                 // reset settings
+                resetToDefault();
 
                 resetDialog.dismiss();
             }
         });
+    }
+
+    public void resetToDefault() {
+        // get camera setting information
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "camera is disconnected");
+            requireActivity().finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
+        MyProgressDialog.showProgressDialog(requireContext(), R.string.resetting);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                baseProperties.getVideoMode().setValueByPosition(0);
+                baseProperties.getVideoResolution().setValueByPosition(0);
+                baseProperties.getPhotoVideoQuality().setValueByPosition(0);
+                baseProperties.getPhotoVideoIso().setValueByPosition(0);
+                baseProperties.getPhotoVideoFov().setValueByPosition(0);
+                baseProperties.getPhotoVideoEv().setValueByPosition(2);
+                baseProperties.getPhotoVideoMetering().setValueByPosition(1);
+                baseProperties.getTimelapseInterval().setValueByPosition(0);
+                baseProperties.getTimelapseDuration().setValueByPosition(0);
+                baseProperties.getDateCaption().setValueByPosition(0);
+                baseProperties.getVideoLoopRecording().setValue(0);
+                baseProperties.getVideoAutoLowLight().setValue(0);
+                baseProperties.getVideoEis().setValue(0);
+
+                updateFragment();
+                MyProgressDialog.closeProgressDialog();
+            }
+        }).start();
     }
 
     public void onMenuSelection(MenuSelection menuSelection) {
@@ -280,6 +316,7 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         Fragment fragment = new FragmentOptions();
         Bundle args = new Bundle();
         args.putString("title", menuSelection.getTitle());
+        args.putString("cameraMode", CameraMode.VIDEO);
         args.putString("value", menuSelection.getValue());
         args.putString("optionList", new Gson().toJson(menuSelection.getOptionList()));
         fragment.setArguments(args);
@@ -301,11 +338,25 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
     }
 
     public void onMenuSwitch(MenuSwitch menuSwitch) {
+        // get camera setting information
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "initialize camera is disconnected");
+            requireActivity().finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
         // toggle menu switch
         boolean newValue = !menuSwitch.getValue();
         menuSwitch.setValue(newValue);
 
         // update the setting
+        if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.auto_low_light))) {
+            baseProperties.getVideoAutoLowLight().setValue(newValue ? 1: 0);
+        } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.eis))) {
+            baseProperties.getVideoEis().setValue(newValue ? 1: 0);
+        }
     }
 
 }

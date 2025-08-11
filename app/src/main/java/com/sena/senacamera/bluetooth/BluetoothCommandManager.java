@@ -1,7 +1,6 @@
 package com.sena.senacamera.bluetooth;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -9,10 +8,8 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -21,18 +18,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.R;
-import com.sena.senacamera.data.SystemInfo.MWifiManager;
 import com.sena.senacamera.data.entity.BluetoothCommand;
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.listener.BluetoothCommandCallback;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.log.AppLog;
-import com.sena.senacamera.ui.component.MyProgressDialog;
-import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.utils.ConvertTools;
 
 import java.util.Arrays;
@@ -52,11 +45,11 @@ public class BluetoothCommandManager {
     }
 
     private final ConcurrentLinkedQueue<BluetoothCommand> commandQueue = new ConcurrentLinkedQueue<>();
-    private boolean isProcessing = false;
+    private boolean isProcessing = false, isFirstConnect = false;
     private static final long connectPeriod = 60000;
     private String currentWifiSsid = "", currentWifiPassword = "", currentFirmwareVersion = "";
     private BluetoothGatt bluetoothGatt;
-    public BluetoothDevice currentDevice;
+    public BluetoothDeviceInfo currentDevice;
     private Handler connectTimeoutHandler;
     private BottomSheetDialog connectDeviceDialog, connectFailedDialog;
     private BluetoothGattService bluetoothGattService;
@@ -64,7 +57,6 @@ public class BluetoothCommandManager {
     private BluetoothConnectCallback connectCallback;
 
     private Runnable connectTimeoutRunnable = new Runnable() {
-        @SuppressLint("MissingPermission")
         @Override
         public void run() {
             AppLog.i(TAG, "stopping connect due to time out");
@@ -83,22 +75,29 @@ public class BluetoothCommandManager {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
+            // update mtu size
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                // update mtu size
                 gatt.requestMtu(BluetoothInfo.MTU_SIZE);
                 new Handler(Looper.getMainLooper()).postDelayed(gatt::discoverServices, 1000);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTING) {
                 // cancel connect timeout handler
                 connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
                 clearQueue();
+                if (bluetoothGatt != null) {
+                    bluetoothGatt.disconnect();
+                    bluetoothGatt.close();
+                    bluetoothGatt = null;
+                }
             }
         }
 
         @Override
-        public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value) {
-            super.onCharacteristicChanged(gatt, characteristic, value);
-            AppLog.i(TAG, "onCharacteristicChanged value: " + ConvertTools.getHexStringFromByteArray(value));
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            onCharacteristicChanged(gatt, characteristic, characteristic.getValue());
+        }
 
+        @Override
+        public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value) {
             BluetoothCommand command = commandQueue.peek();
             if (command == null) {
                 return;
@@ -137,7 +136,7 @@ public class BluetoothCommandManager {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
 
-            // get the ble gatt service
+            // get the bluetooth gatt service
             bluetoothGatt = gatt;
             bluetoothGattService = gatt.getService(UUID.fromString(BluetoothInfo.bleServiceUUID));
             // if failed, connection is failed
@@ -152,10 +151,17 @@ public class BluetoothCommandManager {
             // get write & read gatt characteristics
             notifyGattChar = bluetoothGattService.getCharacteristic(UUID.fromString(BluetoothInfo.bleNotifyCharUUID));
             writeGattChar = bluetoothGattService.getCharacteristic(UUID.fromString(BluetoothInfo.bleWriteCharUUID));
-
             // if failed, connection is failed
             if (notifyGattChar == null || writeGattChar == null) {
                 AppLog.i(TAG, "connection is failed because notify gatt char or write gatt char is null");
+                // cancel connect timeout handler
+                connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                onConnectionFailed();
+                return;
+            }
+
+            if ((notifyGattChar.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) == 0) {
+                AppLog.i(TAG, "characteristic does not support notifications");
                 // cancel connect timeout handler
                 connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
                 onConnectionFailed();
@@ -172,6 +178,14 @@ public class BluetoothCommandManager {
             }
 
             BluetoothGattDescriptor descriptor = notifyGattChar.getDescriptor(UUID.fromString(BluetoothInfo.CLIENT_CHARACTERISTIC_CONFIG_UUID));
+            if (descriptor == null) {
+                AppLog.i(TAG, "descriptor is null");
+                // cancel connect timeout handler
+                connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                onConnectionFailed();
+                return;
+            }
+
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             if (!gatt.writeDescriptor(descriptor)) {
                 AppLog.i(TAG, "writeDescriptor is failed");
@@ -214,6 +228,18 @@ public class BluetoothCommandManager {
                         // get firmware version
                         currentFirmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
                         AppLog.i(TAG, "getFirmwareVersionCommand firmwareVersion: " + currentFirmwareVersion);
+
+                        if (isFirstConnect) {
+                            // this is first connecting to the device, so need to set up device information (ssid & password) before connecting via wifi
+                            // cancel connect timeout handler
+                            connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+
+                            // complete bluetooth connecting process by turning on wifi of camera device
+                            connectDeviceDialog.dismiss();
+                            if (connectCallback != null) {
+                                connectCallback.onConnected();
+                            }
+                        }
                     }
 
                     @Override
@@ -225,30 +251,31 @@ public class BluetoothCommandManager {
                     }
                 });
                 // turn on wifi
-                addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
-                    @SuppressLint("NewApi")
-                    @Override
-                    public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                if (!isFirstConnect) {
+                    addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                        @Override
+                        public void onSuccess(byte[] response) {
+                            AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
 
-                        // cancel connect timeout handler
-                        connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                            // cancel connect timeout handler
+                            connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
 
-                        // complete bluetooth connecting process by turning on wifi of camera device
-                        connectDeviceDialog.dismiss();
-                        if (connectCallback != null) {
-                            connectCallback.onConnected();
+                            // complete bluetooth connecting process by turning on wifi of camera device
+                            connectDeviceDialog.dismiss();
+                            if (connectCallback != null) {
+                                connectCallback.onConnected();
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onFailure() {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
-                        // cancel connect timeout handler
-                        connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
-                        onConnectionFailed();
-                    }
-                });
+                        @Override
+                        public void onFailure() {
+                            AppLog.i(TAG, "cameraWifiOnOffCommand failed");
+                            // cancel connect timeout handler
+                            connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                            onConnectionFailed();
+                        }
+                    });
+                }
             }, 1000);
         }
     };
@@ -320,6 +347,7 @@ public class BluetoothCommandManager {
     @SuppressLint("MissingPermission")
     private void sendCommand(BluetoothCommand command) {
         writeGattChar.setValue(command.getData());
+
         if (!bluetoothGatt.writeCharacteristic(writeGattChar)) {
             if (command.getCallback() != null) {
                 command.getCallback().onFailure();
@@ -338,17 +366,20 @@ public class BluetoothCommandManager {
         isProcessing = false;
     }
 
+    // firstConnect: connect to the bluetooth device (only get wifi info & firmware version), after bluetooth scan and before set up device
     @SuppressLint("MissingPermission")
-    public void connectDevice(BluetoothDevice device, BluetoothConnectCallback callback, boolean autoConnect) {
+    public void connectDevice(BluetoothDeviceInfo device, BluetoothConnectCallback callback, boolean autoConnect, boolean firstConnect) {
         // close previous connection if exists and clear queue
         clearQueue();
         if (bluetoothGatt != null) {
+            bluetoothGatt.disconnect();
             bluetoothGatt.close();
             bluetoothGatt = null;
         }
 
         this.currentDevice = device;
         this.connectCallback = callback;
+        this.isFirstConnect = firstConnect;
         showConnectDeviceDialog(autoConnect);
     }
 
@@ -360,8 +391,9 @@ public class BluetoothCommandManager {
 
     public void showConnectFailedDialog() {
         connectFailedDialog = new BottomSheetDialog(context);
-        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connection_failed, null);
+        View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connection_failed_retry, null);
         connectFailedDialog.setContentView(dialogLayout);
+        connectDeviceDialog.setCanceledOnTouchOutside(false);
         connectFailedDialog.show();
 
         Button retryButton = dialogLayout.findViewById(R.id.retry_button);
@@ -394,6 +426,7 @@ public class BluetoothCommandManager {
         connectDeviceDialog = new BottomSheetDialog(context);
         View dialogLayout = LayoutInflater.from(context).inflate(R.layout.dialog_connect_device, null);
         connectDeviceDialog.setContentView(dialogLayout);
+        connectDeviceDialog.setCanceledOnTouchOutside(false);
         connectDeviceDialog.show();
 
         Button connectButton = dialogLayout.findViewById(R.id.connect_button);
@@ -403,9 +436,9 @@ public class BluetoothCommandManager {
         ProgressBar connectingProgress = dialogLayout.findViewById(R.id.connecting_progress);
 
         // device name
-        deviceModelText.setText(currentDevice.getName());
+        deviceModelText.setText(currentDevice.device.getName());
         // device address
-        deviceNameText.setText(String.format("B/D: %s", currentDevice.getAddress()));
+        deviceNameText.setText(String.format("B/D: %s", currentDevice.serialData));
 
         if (autoConnect) {
             // try connecting automatically
@@ -414,11 +447,19 @@ public class BluetoothCommandManager {
             connectButton.setVisibility(View.GONE);
             connectingProgress.setVisibility(View.VISIBLE);
 
+            // close previous connection if exists and clear queue
+            clearQueue();
+            if (bluetoothGatt != null) {
+                bluetoothGatt.disconnect();
+                bluetoothGatt.close();
+                bluetoothGatt = null;
+            }
+
             // set connect timeout handler
             connectTimeoutHandler = new Handler();
             connectTimeoutHandler.postDelayed(connectTimeoutRunnable, connectPeriod);
 
-            currentDevice.connectGatt(context, false, gattCallback);
+            currentDevice.device.connectGatt(context, false, gattCallback);
         }
 
         closeButton.setOnClickListener(new View.OnClickListener() {
@@ -443,11 +484,19 @@ public class BluetoothCommandManager {
                 connectButton.setVisibility(View.GONE);
                 connectingProgress.setVisibility(View.VISIBLE);
 
+                // close previous connection if exists and clear queue
+                clearQueue();
+                if (bluetoothGatt != null) {
+                    bluetoothGatt.disconnect();
+                    bluetoothGatt.close();
+                    bluetoothGatt = null;
+                }
+
                 // set connect timeout handler
                 connectTimeoutHandler = new Handler();
                 connectTimeoutHandler.postDelayed(connectTimeoutRunnable, connectPeriod);
 
-                currentDevice.connectGatt(context, false, gattCallback);
+                currentDevice.device.connectGatt(context, false, gattCallback);
             }
         });
     }

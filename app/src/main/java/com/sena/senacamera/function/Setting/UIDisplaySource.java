@@ -14,7 +14,6 @@ import com.sena.senacamera.SdkApi.CameraFixedInfo;
 import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.SdkApi.CameraState;
 import com.sena.senacamera.utils.StorageUtil;
-import com.icatchtek.control.customer.type.ICatchCamMode;
 import com.icatchtek.control.customer.type.ICatchCamProperty;
 
 import java.util.LinkedList;
@@ -69,7 +68,7 @@ public class UIDisplaySource {
 //            settingMenuList.add(new SettingMenu(R.string.photo_mode, BaseProperties.getPhotoMode().getCurrentUiStringInSetting()));
 //        }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_image_size, BaseProperties.getImageSize().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.setting_image_size, BaseProperties.getPhotoResolution().getCurrentUiStringInSetting()));
         }
         // akamefi202: updated settings
 //        if (cameraProperties.hasFunction(PropertyId.PHOTO_VIDEO_IMAGE_QUALITY)) {
@@ -88,10 +87,10 @@ public class UIDisplaySource {
 //            settingMenuList.add(new SettingMenu(R.string.metering, BaseProperties.getPhotoVideoMetering().getCurrentUiStringInSetting()));
 //        }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_capture_delay, BaseProperties.getCaptureDelay().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.setting_capture_delay, BaseProperties.getPhotoSelfTimer().getCurrentUiStringInSetting()));
         }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER)) {
-            settingMenuList.add(new SettingMenu(R.string.title_burst, BaseProperties.getBurst().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.title_burst, BaseProperties.getPhotoBurst().getCurrentUiStringInSetting()));
         }
         // akamefi202: updated settings
 //        if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_TIMELAPSE_STILL)) {
@@ -146,7 +145,7 @@ public class UIDisplaySource {
             settingMenuList.add(new SettingMenu(R.string.setting_power_supply, BaseProperties.getElectricityFrequency().getCurrentUiStringInSetting()));
         }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_DATE_STAMP)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_datestamp, BaseProperties.getDateStamp().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.setting_datestamp, BaseProperties.getDateCaption().getCurrentUiStringInSetting()));
         }
         if (cameraState.isSupportImageAutoDownload()) {
             settingMenuList.add(new SettingMenu(R.string.setting_auto_download, ""));
@@ -171,8 +170,8 @@ public class UIDisplaySource {
         if (cameraProperties.hasFunction(PropertyId.AUTO_POWER_OFF)) {
             settingMenuList.add(new SettingMenu(R.string.setting_title_auto_power_off, BaseProperties.getAutoPowerOff().getCurrentUiStringInSetting()));
         }
-        if (cameraProperties.hasFunction(PropertyId.EXPOSURE_COMPENSATION)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getExposureCompensation().getCurrentUiStringInSetting()));
+        if (cameraProperties.hasFunction(PropertyId.PHOTO_VIDEO_EV)) {
+            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getPhotoVideoEv().getCurrentUiStringInSetting()));
         }
 
         settingMenuList.add(new SettingMenu(R.string.setting_app_version, AppInfo.APP_VERSION));
@@ -196,7 +195,7 @@ public class UIDisplaySource {
 //            settingMenuList.add(new SettingMenu(R.string.video_mode, BaseProperties.getVideoMode().getCurrentUiStringInSetting()));
 //        }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_VIDEO_SIZE)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_video_size, BaseProperties.getVideoSize().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.setting_video_size, BaseProperties.getVideoResolution().getCurrentUiStringInSetting()));
         }
         // akamefi202: updated settings
 //        if (cameraProperties.hasFunction(PropertyId.PHOTO_VIDEO_IMAGE_QUALITY)) {
@@ -271,7 +270,7 @@ public class UIDisplaySource {
             settingMenuList.add(new SettingMenu(R.string.setting_power_supply, BaseProperties.getElectricityFrequency().getCurrentUiStringInSetting()));
         }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_DATE_STAMP)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_datestamp, BaseProperties.getDateStamp().getCurrentUiStringInSetting()));
+            settingMenuList.add(new SettingMenu(R.string.setting_datestamp, BaseProperties.getDateCaption().getCurrentUiStringInSetting()));
         }
         if (cameraState.isSupportImageAutoDownload()) {
             settingMenuList.add(new SettingMenu(R.string.setting_auto_download, ""));
@@ -305,15 +304,15 @@ public class UIDisplaySource {
             settingMenuList.add(new SettingMenu(R.string.setting_title_auto_power_off, BaseProperties.getAutoPowerOff().getCurrentUiStringInSetting()));
         }
 
-        if (cameraProperties.hasFunction(PropertyId.EXPOSURE_COMPENSATION)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getExposureCompensation().getCurrentUiStringInSetting()));
+        if (cameraProperties.hasFunction(PropertyId.PHOTO_VIDEO_EV)) {
+            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getPhotoVideoEv().getCurrentUiStringInSetting()));
         }
-        if (cameraProperties.hasFunction(PropertyId.IMAGE_STABILIZATION)) {
+        if (cameraProperties.hasFunction(PropertyId.VIDEO_EIS)) {
             settingMenuList.add(new SettingMenu(R.string.setting_title_image_stabilization, ""));
         }
         settingMenuList.add(new SettingMenu(R.string.setting_update_fw,""));
-        if (cameraProperties.hasFunction(PropertyId.VIDEO_FILE_LENGTH)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_title_video_file_length, BaseProperties.getVideoFileLength().getCurrentUiStringInSetting()));
+        if (cameraProperties.hasFunction(PropertyId.VIDEO_LOOP_RECORDING)) {
+            settingMenuList.add(new SettingMenu(R.string.setting_title_video_file_length, BaseProperties.getVideoLoopRecording().getCurrentUiStringInSetting()));
         }
         if (cameraProperties.hasFunction(PropertyId.FAST_MOTION_MOVIE)) {
             settingMenuList.add(new SettingMenu(R.string.setting_title_fast_motion_movie, BaseProperties.getFastMotionMovie().getCurrentUiStringInSetting()));
@@ -339,11 +338,11 @@ public class UIDisplaySource {
         }
         if (curCamera.timeLapsePreviewMode == TimeLapseMode.TIME_LAPSE_MODE_STILL) {
             if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE)) {
-                settingMenuList.add(new SettingMenu(R.string.setting_image_size, BaseProperties.getImageSize().getCurrentUiStringInSetting()));
+                settingMenuList.add(new SettingMenu(R.string.setting_image_size, BaseProperties.getPhotoResolution().getCurrentUiStringInSetting()));
             }
         } else if (curCamera.timeLapsePreviewMode == TimeLapseMode.TIME_LAPSE_MODE_VIDEO) {
             if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_VIDEO_SIZE)) {
-                settingMenuList.add(new SettingMenu(R.string.setting_video_size, BaseProperties.getVideoSize().getCurrentUiStringInSetting()));
+                settingMenuList.add(new SettingMenu(R.string.setting_video_size, BaseProperties.getVideoResolution().getCurrentUiStringInSetting()));
             }
         }
         if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_WHITE_BALANCE)) {
@@ -363,17 +362,17 @@ public class UIDisplaySource {
         if (cameraProperties.hasFunction(PropertyId.STA_MODE_SSID)) {
             settingMenuList.add(new SettingMenu(R.string.setting_enable_wifi_hotspot, ""));
         }
-        if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE)) {
-            String curTimeLapseInterval;
-            if (curCamera.timeLapsePreviewMode == TimeLapseMode.TIME_LAPSE_MODE_STILL) {
-                curTimeLapseInterval = BaseProperties.getTimeLapseStillInterval().getCurrentValue();
-            } else {
-                curTimeLapseInterval = BaseProperties.getTimeLapseVideoInterval().getCurrentValue();
-            }
-            settingMenuList.add(new SettingMenu(R.string.title_timelapse_mode, BaseProperties.getTimeLapseMode().getCurrentUiStringInSetting()));
-            settingMenuList.add(new SettingMenu(R.string.setting_time_lapse_interval, curTimeLapseInterval));
-            settingMenuList.add(new SettingMenu(R.string.setting_time_lapse_duration, BaseProperties.getTimeLapseDuration().getCurrentValue()));
-        }
+//        if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE)) {
+//            String curTimeLapseInterval;
+//            if (curCamera.timeLapsePreviewMode == TimeLapseMode.TIME_LAPSE_MODE_STILL) {
+//                curTimeLapseInterval = BaseProperties.getTimeLapseStillInterval().getCurrentValue();
+//            } else {
+//                curTimeLapseInterval = BaseProperties.getTimeLapseVideoInterval().getCurrentValue();
+//            }
+//            settingMenuList.add(new SettingMenu(R.string.title_timelapse_mode, BaseProperties.getTimeLapseMode().getCurrentUiStringInSetting()));
+//            settingMenuList.add(new SettingMenu(R.string.setting_time_lapse_interval, curTimeLapseInterval));
+//            settingMenuList.add(new SettingMenu(R.string.setting_time_lapse_duration, BaseProperties.getTimeLapseDuration().getCurrentValue()));
+//        }
 
         if (cameraProperties.hasFunction(PropertyId.UP_SIDE)) {
             settingMenuList.add(new SettingMenu(R.string.upside, BaseProperties.getUpside().getCurrentUiStringInSetting()));
@@ -388,8 +387,8 @@ public class UIDisplaySource {
         if (cameraProperties.hasFunction(PropertyId.AUTO_POWER_OFF)) {
             settingMenuList.add(new SettingMenu(R.string.setting_title_auto_power_off, BaseProperties.getAutoPowerOff().getCurrentUiStringInSetting()));
         }
-        if (cameraProperties.hasFunction(PropertyId.EXPOSURE_COMPENSATION)) {
-            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getExposureCompensation().getCurrentUiStringInSetting()));
+        if (cameraProperties.hasFunction(PropertyId.PHOTO_VIDEO_EV)) {
+            settingMenuList.add(new SettingMenu(R.string.setting_title_exposure_compensation, BaseProperties.getPhotoVideoEv().getCurrentUiStringInSetting()));
         }
         settingMenuList.add(new SettingMenu(R.string.setting_app_version, AppInfo.APP_VERSION));
         settingMenuList.add(new SettingMenu(R.string.setting_product_name, cameraFixedInfo.getCameraName()));

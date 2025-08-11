@@ -8,11 +8,13 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.MyCamera.CameraManager;
@@ -36,7 +38,7 @@ public class FragmentOptions extends Fragment {
     private ListView optionListView;
     private OptionListAdapter optionListAdapter;
     private List<String> optionList = new ArrayList<>();
-    private String title = "", value = "";
+    private String title = "", value = "", cameraMode = "", originalValue = "";
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
@@ -51,13 +53,25 @@ public class FragmentOptions extends Fragment {
         // get the setting title id
         if (getArguments() != null) {
             this.title = getArguments().getString("title");
+            this.cameraMode = getArguments().getString("cameraMode");
             this.value = getArguments().getString("value");
+            this.originalValue = this.value;
 
             String json = getArguments().getString("optionList");
             Type type = TypeToken.getParameterized(List.class, String.class).getType();
             this.optionList = new Gson().fromJson(json, type);
             this.titleText.setText(this.title);
         }
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        onBack();
+                    }
+                }
+        );
 
         // initialize the view
         initialize();
@@ -96,6 +110,7 @@ public class FragmentOptions extends Fragment {
 
         Bundle result = new Bundle();
         result.putString("title", this.title);
+        result.putString("cameraMode" ,this.cameraMode);
         result.putString("value", this.value);
         requireActivity().getSupportFragmentManager().setFragmentResult(TAG, result);
         requireActivity().getSupportFragmentManager().popBackStack();
@@ -110,6 +125,11 @@ public class FragmentOptions extends Fragment {
     }
 
     public void updateSettingValue() {
+        // check if value is changed
+        if (this.originalValue.equals(this.value)) {
+            return;
+        }
+
         // check if option list is not empty
         if (this.optionList.isEmpty()) {
             return;
@@ -138,6 +158,46 @@ public class FragmentOptions extends Fragment {
             baseProperties.getAutoPowerOff().setValueByPosition(position);
         } else if (this.title.equals(requireContext().getResources().getString(R.string.language))) {
             baseProperties.getGeneralLanguage().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.modes))) {
+            if (this.cameraMode.equals(CameraMode.PHOTO)) {
+                // photo
+                baseProperties.getPhotoMode().setValueByPosition(position);
+            } else {
+                // video
+                baseProperties.getVideoMode().setValueByPosition(position);
+            }
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.metering))) {
+            baseProperties.getPhotoVideoMetering().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.iso))) {
+            baseProperties.getPhotoVideoIso().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.ev))) {
+            baseProperties.getPhotoVideoEv().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.setting_time_lapse_duration))) {
+            baseProperties.getTimelapseDuration().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.setting_time_lapse_interval))) {
+            baseProperties.getTimelapseInterval().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.image_quality)) || this.title.equals(requireContext().getResources().getString(R.string.video_quality))) {
+            baseProperties.getPhotoVideoQuality().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.date_caption))) {
+            baseProperties.getDateCaption().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.photo_burst))) {
+            baseProperties.getPhotoBurst().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.photo_mode_self_timer))) {
+            baseProperties.getPhotoSelfTimer().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.fov))) {
+            baseProperties.getPhotoVideoFov().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.loop_recording))) {
+            baseProperties.getVideoLoopRecording().setValueByPosition(position);
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.resolution))) {
+            if (this.cameraMode.equals(CameraMode.PHOTO)) {
+                // photo
+                baseProperties.getPhotoResolution().setValueByPosition(position);
+            } else {
+                // video
+                baseProperties.getVideoResolution().setValueByPosition(position);
+            }
+        } else if (this.title.equals(requireContext().getResources().getString(R.string.wifi_frequency))) {
+            baseProperties.getWifiFrequency().setValueByPosition(position);
         }
     }
 }

@@ -114,26 +114,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="4dp"
-                    android:src="@drawable/status_osd" />
-                <TextView
-                    android:id="@+id/camera_fps_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="30fps" />
+                    android:src="@drawable/status_osd_4k" />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/camera_photo_status"
+            <TextView
+                android:id="@+id/camera_osd_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-                <TextView
-                    android:id="@+id/camera_mp_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="20mp" />
-            </LinearLayout>
+                android:text="20mp" />
 
         </LinearLayout>
 
@@ -223,7 +211,7 @@
         <LinearLayout
             android:id="@+id/shoot_mode_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="24dp"
             android:gravity="center"
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">

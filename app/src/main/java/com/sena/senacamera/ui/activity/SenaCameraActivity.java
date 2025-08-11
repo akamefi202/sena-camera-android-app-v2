@@ -20,7 +20,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.sena.senacamera.R;
+import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
+import com.sena.senacamera.listener.Callback;
+import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.ui.BuildConfig;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
+import com.sena.senacamera.utils.SenaXmlParser;
 import com.sena.senacamera.utils.SharedPreferencesUtils;
 
 import java.util.ArrayList;
@@ -38,6 +43,7 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
     ImageView termsPolicyCheckbox;
     /* access modifiers changed from: private */
     public List<String> missingPermissions = new ArrayList<>();
+    public SenaXmlParser senaXmlParser = SenaXmlParser.getInstance();
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -80,6 +86,24 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
                 this.getPermissions();
             }
         }
+
+        // initialize sena xml parser
+        if (!senaXmlParser.isExecuted) {
+            senaXmlParser.setContext(this);
+            senaXmlParser.setCallback(new Callback() {
+                @Override
+                public void processSucceed() {
+                    AppLog.e(TAG, "xml read is succeeded");
+                }
+
+                @Override
+                public void processFailed() {
+                    AppLog.e(TAG, "xml read is failed");
+                }
+            });
+            senaXmlParser.readFromSharedPref();
+            senaXmlParser.execute();
+        }
     }
 
     public boolean checkPermissions() {
@@ -89,6 +113,10 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
         }
         if (ContextCompat.checkSelfPermission(this, "android.permission.INTERNET") != 0) {
             this.missingPermissions.add("android.permission.INTERNET");
+            z = false;
+        }
+        if (ContextCompat.checkSelfPermission(this, "android.permission.CHANGE_WIFI_STATE") != 0) {
+            this.missingPermissions.add("android.permission.CHANGE_WIFI_STATE");
             z = false;
         }
         if (ContextCompat.checkSelfPermission(this, "android.permission.ACCESS_WIFI_STATE") != 0) {
@@ -115,14 +143,15 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
             this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
             z = false;
         }
-//        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_SCAN") != 0) {
-//            this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
-//            z = false;
-//        }
-//        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_CONNECT") != 0) {
-//            this.missingPermissions.add("android.permission.BLUETOOTH_ADMIN");
-//            z = false;
-//        }
+
+        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_SCAN") != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            this.missingPermissions.add("android.permission.BLUETOOTH_SCAN");
+            z = false;
+        }
+        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_CONNECT") != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            this.missingPermissions.add("android.permission.BLUETOOTH_CONNECT");
+            z = false;
+        }
 //        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_EXTERNAL_STORAGE") != 0) {
 //            this.missingPermissions.add("android.permission.READ_EXTERNAL_STORAGE");
 //            z = false;
@@ -139,15 +168,19 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
             this.missingPermissions.add("android.permission.ACCESS_FINE_LOCATION");
             z = false;
         }
+        if (ContextCompat.checkSelfPermission(this, "android.permission.ACCESS_COARSE_LOCATION") != 0) {
+            this.missingPermissions.add("android.permission.ACCESS_COARSE_LOCATION");
+            z = false;
+        }
 //        if (ContextCompat.checkSelfPermission(this, "android.permission.WRITE_SETTINGS") != 0 && !Settings.System.canWrite(this)) {
 //            this.missingPermissions.add("android.permission.WRITE_SETTINGS");
 //            z = false;
 //        }
-        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_IMAGES") != 0) {
+        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_IMAGES") != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             this.missingPermissions.add("android.permission.READ_MEDIA_IMAGES");
             z = false;
         }
-        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_VIDEO") != 0) {
+        if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_VIDEO") != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             this.missingPermissions.add("android.permission.READ_MEDIA_VIDEO");
             z = false;
         }
@@ -159,6 +192,8 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
             this.missingPermissions.add("android.permission.WAKE_LOCK");
             z = false;
         }
+
+        AppLog.i(TAG, "checkPermissions: " + missingPermissions.toString());
 
         return z;
     }
@@ -221,14 +256,18 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
             startActivity(intent);
         } else if (id == R.id.terms_agree_checkbox) {
             if (this.termsPolicyAgreed) {
-                return;
+                SharedPreferencesUtils.put(this, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.TERMS_AGREED, false);
+                this.termsPolicyAgreed = false;
+
+                this.agreeButton.setEnabled(false);
+                this.termsPolicyCheckbox.setImageResource(R.drawable.status_checkbox_off);
+            } else {
+                SharedPreferencesUtils.put(this, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.TERMS_AGREED, true);
+                this.termsPolicyAgreed = true;
+
+                this.agreeButton.setEnabled(true);
+                this.termsPolicyCheckbox.setImageResource(R.drawable.status_checkbox_on);
             }
-
-            SharedPreferencesUtils.put(this, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.TERMS_AGREED, true);
-            this.termsPolicyAgreed = true;
-
-            this.agreeButton.setEnabled(true);
-            this.termsPolicyCheckbox.setImageResource(R.drawable.status_checkbox_on);
         }
     }
 }

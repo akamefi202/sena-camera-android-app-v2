@@ -59,23 +59,24 @@
         </LinearLayout>
 
         <!-- device list -->
-        <LinearLayout
+        <androidx.cardview.widget.CardView
             android:id="@+id/device_list_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingHorizontal="32dp"
-            android:orientation="vertical"
-            android:background="@drawable/rounded_gray_section">
+            app:cardCornerRadius="24dp"
+            app:cardBackgroundColor="@color/background_primary_color"
+            android:orientation="vertical">
 
             <ListView
                 android:id="@+id/device_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/background_secondary_color"
                 android:divider="@color/divider_gray_color"
                 android:dividerHeight="1dp" />
 
-        </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- add new device button -->
         <android.widget.Button
@@ -89,13 +90,14 @@
             android:textAllCaps="false"
             android:textSize="@dimen/button_text_size"
             android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="24dp" />
 
         <!-- bottom button layout -->
         <LinearLayout
             android:id="@+id/bottom_button_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:visibility="gone"
             android:orientation="horizontal">
             <android.widget.Button

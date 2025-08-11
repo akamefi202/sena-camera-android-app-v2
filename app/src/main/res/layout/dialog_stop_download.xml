@@ -1,47 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@drawable/rounded_bottom_dialog"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:paddingVertical="50dp"
-    android:paddingHorizontal="16dp"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
+    <ImageButton
+        android:id="@+id/close_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/dialog_stop_download_title"
-        android:textStyle="bold"
-        android:textSize="@dimen/dialog_title_text_size" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:paddingHorizontal="32dp"
-        android:text="@string/dialog_confirm_stop_download"
-        android:textAlignment="center"
-        android:textSize="@dimen/dialog_desc_text_size" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/selector_button_close" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <android.widget.Button
-            android:id="@+id/cancel_button"
-            android:layout_width="match_parent"
+        android:paddingVertical="50dp"
+        android:paddingHorizontal="16dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="@dimen/button_min_height"
-            android:background="@drawable/rounded_gray_small_button"
-            android:layout_weight="1"
-            android:layout_marginEnd="10dp"
-            android:textAllCaps="false"
-            android:textSize="@dimen/button_text_size"
+            android:layout_marginBottom="16dp"
+            android:text="@string/dialog_stop_download_title"
             android:textStyle="bold"
-            android:text="@string/action_cancel" />
+            android:textSize="@dimen/dialog_title_text_size" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp"
+            android:paddingHorizontal="32dp"
+            android:text="@string/dialog_confirm_stop_download"
+            android:textAlignment="center"
+            android:textSize="@dimen/dialog_desc_text_size" />
 
         <android.widget.Button
             android:id="@+id/stop_button"
@@ -50,11 +47,11 @@
             android:minHeight="@dimen/button_min_height"
             android:textColor="@color/selector_button_text_black_color"
             android:background="@drawable/rounded_white_button"
-            android:layout_weight="1"
             android:textAllCaps="false"
             android:textSize="@dimen/button_text_size"
             android:textStyle="bold"
             android:text="@string/action_stop" />
+
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

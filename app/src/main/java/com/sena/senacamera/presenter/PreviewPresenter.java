@@ -163,7 +163,15 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
 
     public void initData() {
         curCamera = CameraManager.getInstance().getCurCamera();
+        // akamefi202: to be fixed
+        if (curCamera == null) {
+            AppLog.i(TAG, "initData curCamera is null");
+            finishActivity();
+            return;
+        }
+
         panoramaPreviewPlayback = curCamera.getPanoramaPreviewPlayback();
+
         cameraStreaming = new CameraStreaming(panoramaPreviewPlayback);
         cameraProperties = curCamera.getCameraProperties();
         if (cameraProperties == null) {
@@ -474,32 +482,32 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             previewView.updateUIByVideoMode();
         }
 
-        if (BaseProperties.getCaptureDelay().needDisplayByMode(appStateMode)) {
+        if (BaseProperties.getPhotoSelfTimer().needDisplayByMode(appStateMode)) {
             previewView.setDelayCaptureLayoutVisibility(View.VISIBLE);
-            previewView.setDelayCaptureTextTime(BaseProperties.getCaptureDelay().getCurrentUiStringInSetting());
+            previewView.setDelayCaptureTextTime(BaseProperties.getPhotoSelfTimer().getCurrentUiStringInSetting());
         } else {
             previewView.setDelayCaptureLayoutVisibility(View.GONE);
         }
 
-        if (BaseProperties.getImageSize().needDisplayByMode(appStateMode)) {
+        if (BaseProperties.getPhotoResolution().needDisplayByMode(appStateMode)) {
             previewView.setImageSizeLayoutVisibility(View.VISIBLE);
-            previewView.setImageSizeInfo(BaseProperties.getImageSize().getCurrentUiStringInSetting());
+            previewView.setImageSizeInfo(BaseProperties.getPhotoResolution().getCurrentUiStringInSetting());
             previewView.setRemainCaptureCount(Integer.valueOf(cameraProperties.getRemainImageNum()).toString());
         } else {
             previewView.setImageSizeLayoutVisibility(View.GONE);
         }
 
-        if (BaseProperties.getVideoSize().needDisplayByMode(appStateMode)) {
+        if (BaseProperties.getVideoResolution().needDisplayByMode(appStateMode)) {
             previewView.setVideoSizeLayoutVisibility(View.VISIBLE);
-            previewView.setVideoSizeInfo(BaseProperties.getVideoSize().getCurrentUiStringInSetting());
+            previewView.setVideoSizeInfo(BaseProperties.getVideoResolution().getCurrentUiStringInSetting());
             previewView.setRemainRecordingTimeText(ConvertTools.secondsToMinuteOrHours(cameraProperties.getRecordingRemainTime()));
         } else {
             previewView.setVideoSizeLayoutVisibility(View.GONE);
         }
 
-        if (BaseProperties.getBurst().needDisplayByMode(appStateMode)) {
+        if (BaseProperties.getPhotoBurst().needDisplayByMode(appStateMode)) {
             previewView.setBurstStatusVisibility(View.VISIBLE);
-            int iconId = BaseProperties.getBurst().getCurrentIcon();
+            int iconId = BaseProperties.getPhotoBurst().getCurrentIcon();
             if (iconId > 0) {
                 previewView.setBurstStatusIcon(iconId);
             }
@@ -529,9 +537,9 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             previewView.setSlowMotionVisibility(View.GONE);
         }
 
-        if (BaseProperties.getTimeLapseMode().needDisplayByMode(appStateMode)) {
+        if (BaseProperties.getTimelapseMode().needDisplayByMode(appStateMode)) {
             previewView.setTimeLapseModeVisibility(View.VISIBLE);
-            int iconId = BaseProperties.getTimeLapseMode().getCurrentIcon();
+            int iconId = BaseProperties.getTimelapseMode().getCurrentIcon();
             if (iconId > 0) {
                 previewView.setTimeLapseModeIcon(iconId);
             }
@@ -549,17 +557,17 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                 switch (sdkEventId) {
                     case SDKEvent.EVENT_SDCARD_REMOVED:
                         MyToast.show(activity, R.string.dialog_card_removed);
-                        if (BaseProperties.getImageSize().needDisplayByMode(curAppStateMode)) {
+                        if (BaseProperties.getPhotoResolution().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainCaptureCount("0");
-                        } else if (BaseProperties.getVideoSize().needDisplayByMode(curAppStateMode)) {
+                        } else if (BaseProperties.getVideoResolution().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainRecordingTimeText(ConvertTools.secondsToMinuteOrHours(0));
                         }
                         break;
                     case SDKEvent.EVENT_SDCARD_INSERT:
                         MyToast.show(activity, R.string.dialog_card_inserted);
-                        if (BaseProperties.getImageSize().needDisplayByMode(curAppStateMode)) {
+                        if (BaseProperties.getPhotoResolution().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainCaptureCount(String.valueOf(cameraProperties.getRemainImageNum()));
-                        } else if (BaseProperties.getVideoSize().needDisplayByMode(curAppStateMode)) {
+                        } else if (BaseProperties.getVideoResolution().needDisplayByMode(curAppStateMode)) {
                             previewView.setRemainRecordingTimeText(ConvertTools.secondsToMinuteOrHours(cameraProperties.getRecordingRemainTime()));
                         }
                         break;
@@ -593,18 +601,22 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             startVideoCaptureButtonChangeTimer();
             startRecordingLapseTimeTimer(cameraProperties.getVideoRecordingTime());
         } else if (curAppStateMode == PreviewMode.APP_STATE_NONE_MODE) {
-            if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_VIDEO)) {
-                curAppStateMode = PreviewMode.APP_STATE_VIDEO_PREVIEW;
-                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_VIDEO_PREVIEW_MODE;
+            // akamefi202: to be fixed
+//            if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_VIDEO)) {
+//                curAppStateMode = PreviewMode.APP_STATE_VIDEO_PREVIEW;
+//                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_VIDEO_PREVIEW_MODE;
+//            }
+            if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_CAMERA)) {
+                curAppStateMode = PreviewMode.APP_STATE_STILL_PREVIEW;
+                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_STILL_PREVIEW_MODE;
             } else if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_TIMELAPSE)) {
                 curAppStateMode = APP_STATE_TIMELAPSE_VIDEO_PREVIEW;
                 curIcatchMode = ICatchCamPreviewMode.ICH_CAM_TIMELAPSE_VIDEO_PREVIEW_MODE;
-            } else if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_CAMERA)) {
+            } else {
                 curAppStateMode = PreviewMode.APP_STATE_STILL_PREVIEW;
                 curIcatchMode = ICatchCamPreviewMode.ICH_CAM_STILL_PREVIEW_MODE;
-            } else {
-                curAppStateMode = PreviewMode.APP_STATE_VIDEO_PREVIEW;
-                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_VIDEO_PREVIEW_MODE;
+//                curAppStateMode = PreviewMode.APP_STATE_VIDEO_PREVIEW;
+//                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_VIDEO_PREVIEW_MODE;
             }
         } else if (curAppStateMode == PreviewMode.APP_STATE_VIDEO_PREVIEW) {
             AppLog.i(TAG, "initPreview curMode == PreviewMode.APP_STATE_VIDEO_PREVIEW");
@@ -868,7 +880,6 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
     }
 
     public void zoomBySeekBar() {
-
         zoomInOut.addZoomCompletedListener(new ZoomInOut.ZoomCompletedListener() {
             @Override
             public void onCompleted(final float currentZoomRate) {
@@ -884,7 +895,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
         });
 
         zoomInOut.startZoomInOutThread(this);
-        MyProgressDialog.showProgressDialog(activity, null);
+        MyProgressDialog.showProgressDialog(activity, "");
     }
 
     public void showZoomView() {
@@ -1183,13 +1194,21 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
                 MyProgressDialog.closeProgressDialog();
                 Intent intent = new Intent();
                 AppLog.i(TAG, "intent:start PbMainActivity.class");
+                intent.putExtra("cameraMode", getCurrentCameraMode());
+                if (getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+                    // photo
+                    intent.putExtra("shootMode", curCamera.getBaseProperties().getPhotoMode().getCurrentUiStringInSetting());
+                } else {
+                    // video
+                    intent.putExtra("shootMode", curCamera.getBaseProperties().getVideoMode().getCurrentUiStringInSetting());
+                }
                 intent.setClass(context, cls);
                 context.startActivity(intent);
                 AppLog.i(TAG, "intent:end start PbMainActivity.class");
             }
         }, 500);
         allowClickButtons = true;
-        AppLog.i(TAG, "end processing for responsing pbBtn clicking");
+        AppLog.i(TAG, "end processing for responding pbBtn clicking");
     }
 
     private boolean checkModeSwitch(int appStateMode) {

@@ -2,7 +2,10 @@ package com.sena.senacamera.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +19,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.R;
@@ -23,13 +27,17 @@ import com.sena.senacamera.SdkApi.CameraAction;
 import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.bluetooth.BluetoothCommandManager;
 import com.sena.senacamera.bluetooth.BluetoothScanManager;
+import com.sena.senacamera.data.SystemInfo.SystemInfo;
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.data.type.BluetoothConnectStatus;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.listener.BluetoothSearchCallback;
+import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.ui.adapter.BluetoothDeviceListAdapter;
 import com.sena.senacamera.ui.adapter.OptionListAdapter;
+import com.sena.senacamera.ui.component.CustomPasswordInput;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +60,7 @@ public class FragmentBluetoothSearch extends Fragment implements View.OnClickLis
 
     public final BluetoothSearchCallback bluetoothSearchCallback = new BluetoothSearchCallback() {
         @Override
-        public void onFound(BluetoothDevice device) {
+        public void onFound(BluetoothDeviceInfo device) {
             AppLog.i(TAG, "onFound: " + bluetoothScanManager.getDeviceCount());
             deviceListAdapter.add(device);
             deviceListAdapter.notifyDataSetChanged();
@@ -68,8 +76,13 @@ public class FragmentBluetoothSearch extends Fragment implements View.OnClickLis
     private final BluetoothConnectCallback bluetoothConnectCallback = new BluetoothConnectCallback() {
         @Override
         public void onConnected() {
-            // show the set device fragment
-            showSetDeviceFragment();
+            if (bluetoothCommandManager.currentDevice.wifiPassword.isEmpty()) {
+                // show the set device fragment
+                showSetDeviceFragment(true);
+            } else {
+                // show password check dialog
+                showPasswordInputDialog(bluetoothCommandManager.currentDevice.wifiPassword);
+            }
         }
 
         @SuppressLint("MissingPermission")
@@ -95,7 +108,7 @@ public class FragmentBluetoothSearch extends Fragment implements View.OnClickLis
         this.closeButton.setOnClickListener(v -> onClose());
         this.retryButton.setOnClickListener(v -> onRetry());
 
-        this.deviceListAdapter = new BluetoothDeviceListAdapter(requireContext(), R.id.device_list, new ArrayList<BluetoothDevice>(this.bluetoothScanManager.getDeviceList()), this);
+        this.deviceListAdapter = new BluetoothDeviceListAdapter(requireContext(), R.id.device_list, new ArrayList<BluetoothDeviceInfo>(this.bluetoothScanManager.getDeviceList()), this);
         this.deviceListView.setAdapter(deviceListAdapter);
         this.bluetoothScanManager.addSearchCallback(bluetoothSearchCallback);
 
@@ -165,17 +178,83 @@ public class FragmentBluetoothSearch extends Fragment implements View.OnClickLis
     }
 
     public void selectOption(int itemIndex) {
-        bluetoothCommandManager.connectDevice(this.deviceListAdapter.getItem(itemIndex), bluetoothConnectCallback, true);
+        bluetoothCommandManager.connectDevice(this.deviceListAdapter.getItem(itemIndex), bluetoothConnectCallback, true, true);
     }
 
-    public void showSetDeviceFragment() {
+    public void showSetDeviceFragment(boolean firstConnect) {
         bluetoothScanManager.stopScan();
         bluetoothScanManager.clearSearchCallbackList();
 
+        Bundle args = new Bundle();
+        args.putBoolean("firstConnect", firstConnect);
+
         Fragment fragment = new FragmentSetDevice();
+        fragment.setArguments(args);
         FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+
+    public void showPasswordInputDialog(String password) {
+        // stop scan
+        bluetoothScanManager.stopScan();
+        bluetoothScanManager.clearSearchCallbackList();
+
+        // show password input dialog
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        View dialogLayout = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_password_input, null);
+        dialog.setContentView(dialogLayout);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        Button doneButton = dialogLayout.findViewById(R.id.done_button);
+        doneButton.setEnabled(false);
+        Button backButton = dialogLayout.findViewById(R.id.back_button);
+        TextView forgotPasswordButton = dialog.findViewById(R.id.ble_password_input);
+        CustomPasswordInput passwordInput = dialog.findViewById(R.id.password_input);
+        passwordInput.setTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                doneButton.setEnabled(s.length() != 0 && s.toString().equals(password));
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SystemInfo.hideInputMethod(requireActivity());
+
+                showSetDeviceFragment(false);
+            }
+        });
+
+        forgotPasswordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Fragment fragment = new FragmentForgotPassword();
+                FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragment_container, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
     }
 }

@@ -1,7 +1,7 @@
 package com.sena.senacamera.ui.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.sena.senacamera.R;
@@ -26,11 +27,12 @@ import com.sena.senacamera.data.Mode.DeviceListMode;
 import com.sena.senacamera.data.SystemInfo.MWifiManager;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.listener.BluetoothCommandCallback;
+import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.log.AppLog;
-import com.sena.senacamera.ui.adapter.BluetoothDeviceListAdapter;
 import com.sena.senacamera.ui.adapter.CameraDeviceListAdapter;
 import com.sena.senacamera.ui.appdialog.AppDialogManager;
+import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.utils.ConvertTools;
 
 import java.util.ArrayList;
@@ -44,7 +46,8 @@ public class DeviceListActivity extends AppCompatActivity {
     private ImageButton backButton;
     private Button addNewDeviceButton, cancelButton, saveButton, editButton, deleteAllButton;
     private ListView deviceListView;
-    private LinearLayout deviceListLayout, bottomButtonLayout;
+    private CardView deviceListLayout;
+    private LinearLayout bottomButtonLayout;
     private TextView titleText;
 
     private String deviceListMode = DeviceListMode.NORMAL;
@@ -68,7 +71,7 @@ public class DeviceListActivity extends AppCompatActivity {
         editButton = (Button) findViewById(R.id.edit_button);
         deleteAllButton = (Button) findViewById(R.id.delete_all_button);
         deviceListView = (ListView) findViewById(R.id.device_list);
-        deviceListLayout = (LinearLayout) findViewById(R.id.device_list_layout);
+        deviceListLayout = (CardView) findViewById(R.id.device_list_layout);
         bottomButtonLayout = (LinearLayout) findViewById(R.id.bottom_button_layout);
         titleText = (TextView) findViewById(R.id.title_text);
 
@@ -108,10 +111,8 @@ public class DeviceListActivity extends AppCompatActivity {
             this.bottomButtonLayout.setVisibility(View.GONE);
             this.addNewDeviceButton.setVisibility(View.VISIBLE);
 
-            this.deviceListLayout.setPadding(32, 0, 32, 0);
-            this.deviceListLayout.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.rounded_gray_section, (Resources.Theme) null));
-
-            this.deviceListView.setDivider(new ColorDrawable(ResourcesCompat.getColor(getResources(), R.color.divider_gray_color, (Resources.Theme) null)));
+            this.deviceListView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.background_secondary_color, null));
+            this.deviceListView.setDivider(new ColorDrawable(ResourcesCompat.getColor(getResources(), R.color.divider_gray_color, null)));
             this.deviceListView.setDividerHeight(1);
         } else {
             // edit mode
@@ -123,10 +124,8 @@ public class DeviceListActivity extends AppCompatActivity {
             this.addNewDeviceButton.setVisibility(View.GONE);
             this.bottomButtonLayout.setVisibility(View.VISIBLE);
 
-            this.deviceListLayout.setPadding(0, 0, 0, 0);
-            this.deviceListLayout.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.full_transparent, (Resources.Theme) null));
-
-            this.deviceListView.setDivider(new ColorDrawable(ResourcesCompat.getColor(getResources(), R.color.full_transparent, (Resources.Theme) null)));
+            this.deviceListView.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.full_transparent, null));
+            this.deviceListView.setDivider(new ColorDrawable(ResourcesCompat.getColor(getResources(), R.color.full_transparent, null)));
             this.deviceListView.setDividerHeight(16);
         }
 
@@ -195,7 +194,9 @@ public class DeviceListActivity extends AppCompatActivity {
                 // update current device name via bluetooth command
                 String currentSsid = bluetoothDeviceManager.getCurrentDevice().wifiSsid;
                 String currentPassword = bluetoothDeviceManager.getCurrentDevice().wifiPassword;
-                CameraDeviceInfo finalOrgDeviceInfo = orgDeviceInfo;
+
+                MyProgressDialog.showProgressDialog(this, R.string.action_reconnecting);
+
                 bluetoothCommandManager.addCommand(BluetoothInfo.setCameraWifiInfoCommand(currentSsid, currentPassword), BluetoothInfo.setCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
@@ -207,10 +208,6 @@ public class DeviceListActivity extends AppCompatActivity {
                         bluetoothCommandManager.setCurrentWifiPassword(password);
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep ssid: " + ssid + ", password: " + password);
 
-                        // disconnect wifi connection & remove the device with original name from network
-                        MWifiManager.disconnect(activity);
-                        MWifiManager.removeCurrentNetwork(activity, finalOrgDeviceInfo.wifiSsid, finalOrgDeviceInfo.wifiPassword, null);
-
                         // write current device list to shared preferences
                         bluetoothDeviceManager.writeToSharedPref(activity);
                     }
@@ -218,6 +215,46 @@ public class DeviceListActivity extends AppCompatActivity {
                     @Override
                     public void onFailure() {
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
+                    }
+                });
+                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(false), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                    @Override
+                    public void onSuccess(byte[] response) {
+                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                    }
+
+                    @Override
+                    public void onFailure() {
+                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
+                    }
+                });
+                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                    @Override
+                    public void onSuccess(byte[] response) {
+                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+
+                        MWifiManager.connect(activity, currentSsid, currentPassword, new Callback() {
+                            @Override
+                            public void processSucceed() {
+                                runOnUiThread(() -> {
+                                    MyProgressDialog.closeProgressDialog();
+                                    deviceListAdapter.notifyDataSetChanged();
+                                });
+                            }
+
+                            @Override
+                            public void processFailed() {
+                                runOnUiThread(() -> {
+                                    MyProgressDialog.closeProgressDialog();
+                                    deviceListAdapter.notifyDataSetChanged();
+                                });
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure() {
+                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
                     }
                 });
             } else {
@@ -251,7 +288,7 @@ public class DeviceListActivity extends AppCompatActivity {
                     bluetoothDeviceManager.currentIndex = 0;
                     updateDeviceListView();
                 }
-            }, getResources().getString(R.string.all_devices));
+            }, "");
         } else {
             appDialogManager.showAlertDialog(activity, null, activity.getResources().getString(R.string.not_allowed_to_delete_device));
         }
@@ -278,7 +315,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
         orgDeviceList = new ArrayList<>();
         for (CameraDeviceInfo item: bluetoothDeviceManager.getDeviceList()) {
-            orgDeviceList.add(new CameraDeviceInfo(item.bleName, item.bleAddress, item.wifiSsid, item.wifiPassword, item.firmwareVerison));
+            orgDeviceList.add(new CameraDeviceInfo(item.bleName, item.bleAddress, item.wifiSsid, item.wifiPassword, item.firmwareVersion, item.serialData));
         }
         orgCurrentIndex = bluetoothDeviceManager.currentIndex;
     }
@@ -295,5 +332,14 @@ public class DeviceListActivity extends AppCompatActivity {
 
         bluetoothDeviceManager.currentIndex = orgCurrentIndex;
         bluetoothDeviceManager.updateDeviceList(orgDeviceList);
+    }
+
+    public void selectDevice(int index) {
+        if (bluetoothDeviceManager.isCurrentDeviceConnected(this)) {
+            appDialogManager.showAlertDialog(this, null, getResources().getString(R.string.not_allowed_to_deselect_device));
+        } else {
+            bluetoothDeviceManager.currentIndex = index;
+            deviceListAdapter.notifyDataSetChanged();
+        }
     }
 }

@@ -49,6 +49,17 @@ public class CameraDeviceListAdapter extends ArrayAdapter<CameraDeviceInfo> {
         if (itemIndex > -1 && itemIndex < CameraDeviceListAdapter.this.arrayList.size()) {
             int id = view.getId();
             if (id == R.id.device_layout) {
+                if (itemIndex == bluetoothDeviceManager.currentIndex || ((DeviceListActivity) this.context).getDeviceListMode().equals(DeviceListMode.EDIT)) {
+                    return;
+                }
+
+                // show select device confirm dialog
+                appDialogManager.showSelectDeviceConfirmDialog(context, new DialogButtonListener() {
+                    @Override
+                    public void onSelect() {
+                        ((DeviceListActivity) context).selectDevice(itemIndex);
+                    }
+                });
             }
         }
     };
@@ -113,6 +124,12 @@ public class CameraDeviceListAdapter extends ArrayAdapter<CameraDeviceInfo> {
         this.viewHolder.deviceName.setText(this.arrayList.get(position).wifiSsid);
         this.viewHolder.deviceNameEdit.setText(this.arrayList.get(position).wifiSsid);
 
+        if (bluetoothDeviceManager.currentIndex == position) {
+            this.viewHolder.normalLayout.setBackgroundColor(context.getResources().getColor(R.color.overlay_gray_color));
+        } else {
+            this.viewHolder.normalLayout.setBackgroundColor(context.getResources().getColor(R.color.background_secondary_color));
+        }
+
         if (bluetoothDeviceManager.isDeviceConnected(context, position)) {
             // device is connected
             this.viewHolder.disconnectedStatusLayout.setVisibility(View.GONE);
@@ -164,7 +181,7 @@ public class CameraDeviceListAdapter extends ArrayAdapter<CameraDeviceInfo> {
                         bluetoothDeviceManager.deleteDevice(position);
                         ((DeviceListActivity) context).updateDeviceListView();
                     }
-                }, context.getResources().getString(R.string.this_device));
+                }, "");
             } else {
                 appDialogManager.showAlertDialog(context, null, context.getResources().getString(R.string.not_allowed_to_delete_device));
             }

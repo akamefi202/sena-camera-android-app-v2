@@ -153,6 +153,10 @@ public class FragmentChangePassword extends Fragment implements View.OnClickList
 
     private void onOk() {
         // change password
+        Bundle result = new Bundle();
+        result.putString("password", confirmPasswordInput.getText());
+        requireActivity().getSupportFragmentManager().setFragmentResult(TAG, result);
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
 }

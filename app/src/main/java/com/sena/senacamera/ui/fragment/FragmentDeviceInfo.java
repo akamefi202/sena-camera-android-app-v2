@@ -19,6 +19,7 @@ import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.R;
 import com.sena.senacamera.SdkApi.CameraAction;
 import com.sena.senacamera.SdkApi.CameraProperties;
+import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
 import com.sena.senacamera.data.SystemInfo.MWifiManager;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.log.AppLog;
@@ -61,7 +62,7 @@ public class FragmentDeviceInfo extends Fragment implements View.OnClickListener
         // firmware version
         this.cameraVersionMenu.setValue(myCamera.getCameraFixedInfo().getCameraVersion());
         // sdk version
-        this.softwareVersionMenu.setValue(myCamera.getCameraFixedInfo().getSdkVersion());
+        this.softwareVersionMenu.setValue(BluetoothDeviceManager.getInstance().getCurrentDevice().firmwareVersion);
     }
 
     @Override

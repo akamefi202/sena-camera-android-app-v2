@@ -91,7 +91,41 @@ public class FragmentHelpGuide extends Fragment implements View.OnClickListener 
     }
 
     public void updateFragment() {
+        if (senaXmlParser.getUserGuideUrl().isEmpty()) {
+            setEnabledRecursive(userGuideLayout, false);
+        }
+        if (senaXmlParser.getQuickGuideUrl().isEmpty()) {
+            setEnabledRecursive(quickGuideLayout, false);
+        }
+        if (senaXmlParser.getVideoGuideUrl().isEmpty()) {
+            setEnabledRecursive(videoGuideLayout, false);
+        }
+        if (senaXmlParser.supportUrl.isEmpty()) {
+            setEnabledRecursive(supportLayout, false);
+        }
+        if (senaXmlParser.forumUrl.isEmpty()) {
+            setEnabledRecursive(forumLayout, false);
+        }
+        if (senaXmlParser.mailingListUrl.isEmpty()) {
+            setEnabledRecursive(mailingListLayout, false);
+        }
+        if (senaXmlParser.termsUrl.isEmpty()) {
+            setEnabledRecursive(termsLayout, false);
+        }
+        if (senaXmlParser.privacyPolicyUrl.isEmpty()) {
+            setEnabledRecursive(privacyPolicyLayout, false);
+        }
+    }
 
+    public static void setEnabledRecursive(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+                setEnabledRecursive(child, enabled);
+            }
+        }
     }
 
     private void onBack() {
@@ -107,29 +141,35 @@ public class FragmentHelpGuide extends Fragment implements View.OnClickListener 
         }
 
         if (id == R.id.user_guide_layout) {
-            if (senaXmlParser.userGuideUrl.isEmpty()) {
+            if (senaXmlParser.getUserGuideUrl().isEmpty()) {
                 return;
             }
 
             // open user guide
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(senaXmlParser.userGuideUrl));
-            startActivity(browserIntent);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(senaXmlParser.getUserGuideUrl()), "application/pdf");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
         } else if (id == R.id.quick_guide_layout) {
-            if (senaXmlParser.quickGuideUrl.isEmpty()) {
+            if (senaXmlParser.getQuickGuideUrl().isEmpty()) {
                 return;
             }
 
             // open quick guide
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(senaXmlParser.quickGuideUrl));
-            startActivity(browserIntent);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(senaXmlParser.getQuickGuideUrl()), "application/pdf");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
         } else if (id == R.id.video_guide_layout) {
-            if (senaXmlParser.videoGuideUrl.isEmpty()) {
+            if (senaXmlParser.getVideoGuideUrl().isEmpty()) {
                 return;
             }
 
             // open video guide
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(senaXmlParser.videoGuideUrl));
-            startActivity(browserIntent);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(senaXmlParser.getVideoGuideUrl()), "application/pdf");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
         } else if (id == R.id.support_layout) {
             if (senaXmlParser.supportUrl.isEmpty()) {
                 return;

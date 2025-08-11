@@ -2,13 +2,7 @@ package com.sena.senacamera.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -18,7 +12,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
@@ -26,7 +19,6 @@ import com.sena.senacamera.R;
 import com.sena.senacamera.bluetooth.BluetoothCommandManager;
 import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
 import com.sena.senacamera.bluetooth.BluetoothInfo;
-import com.sena.senacamera.data.SystemInfo.MWifiManager;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.listener.BluetoothCommandCallback;
@@ -51,7 +43,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
 
     public WifiCheck wifiCheck;
     public String currentSsid, newPassword = "";
-    public BluetoothCommandManager bleCommandManager = BluetoothCommandManager.getInstance();
+    public BluetoothCommandManager bluetoothCommandManager = BluetoothCommandManager.getInstance();
 
     TextWatcher newPasswordWatcher = new TextWatcher() {
         @Override
@@ -193,7 +185,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
     private void onOk() {
         SystemInfo.hideInputMethod(requireActivity());
 
-        if (!bleCommandManager.isConnected()) {
+        if (!bluetoothCommandManager.isConnected()) {
             AppLog.i(TAG, "onOk ble camera device is disconnected");
             MyToast.show(requireContext(), R.string.error_occurred);
             return;
@@ -204,15 +196,15 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
             @Override
             public void run() {
                 // set ssid & password
-                bleCommandManager.addCommand(BluetoothInfo.setCameraWifiInfoCommand(currentSsid, newPassword), BluetoothInfo.setCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
+                bluetoothCommandManager.addCommand(BluetoothInfo.setCameraWifiInfoCommand(currentSsid, newPassword), BluetoothInfo.setCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep succeeded");
                         byte[] payload = Arrays.copyOfRange(response, 6, response.length);
                         String ssid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
                         String password = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
-                        bleCommandManager.setCurrentWifiSsid(ssid);
-                        bleCommandManager.setCurrentWifiPassword(password);
+                        bluetoothCommandManager.setCurrentWifiSsid(ssid);
+                        bluetoothCommandManager.setCurrentWifiPassword(password);
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep ssid: " + ssid + ", password: " + password);
                     }
 
@@ -221,7 +213,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
                     }
                 });
-                bleCommandManager.addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
+                bluetoothCommandManager.addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
                         AppLog.i(TAG, "getFirmwareVersionCommand succeeded");
@@ -229,7 +221,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
 
                         // get firmware version
                         String firmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
-                        bleCommandManager.setCurrentFirmwareVersion(firmwareVersion);
+                        bluetoothCommandManager.setCurrentFirmwareVersion(firmwareVersion);
                         AppLog.i(TAG, "getFirmwareVersionCommand firmwareVersion: " + firmwareVersion);
                     }
 
@@ -238,43 +230,30 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
                         AppLog.i(TAG, "getFirmwareVersionCommand failed");
                     }
                 });
-                // turn on wifi & connect to the device
-                bleCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
-                    @SuppressLint({"MissingPermission", "NewApi"})
+                // turn on wifi & register the device
+                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                    @SuppressLint({"MissingPermission"})
                     @Override
                     public void onSuccess(byte[] response) {
                         AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
 
-                        // check if wifi of phone is turned on
-                        if (!MWifiManager.isWifiEnabled(requireContext().getApplicationContext())) {
-                            // wifi is turned off
-                            AppLog.i(TAG, "cameraWifiOnOffCommand wifi is turned off");
-                            MyProgressDialog.closeProgressDialog();
-                            MyToast.show(requireContext(), R.string.wifi_turned_off);
-                            return;
-                        }
+                        // register device
+                        BluetoothDeviceManager deviceManager = BluetoothDeviceManager.getInstance();
+                        deviceManager.addDevice(new CameraDeviceInfo(bluetoothCommandManager.currentDevice.device.getName(), bluetoothCommandManager.currentDevice.device.getAddress(), currentSsid, newPassword, bluetoothCommandManager.getCurrentFirmwareVersion(), bluetoothCommandManager.currentDevice.serialData));
+                        deviceManager.currentIndex = deviceManager.getDeviceCount() - 1;
+                        deviceManager.writeToSharedPref(requireContext().getApplicationContext());
 
-                        // connect to the camera device via wifi
-                        MWifiManager.connect(requireContext().getApplicationContext(), currentSsid, newPassword, null);
+                        MyProgressDialog.closeProgressDialog();
 
-                        // allow always connect & wake lock
-                        MWifiManager.allowWifiAlwaysConnect(requireContext().getApplicationContext());
+                        SystemInfo.hideInputMethod(requireActivity());
+                        startActivity(new Intent(requireContext(), MainActivity.class));
+                        requireActivity().finish();
 
                         // open wifi settings
 //                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
 //                            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
 //                            requireActivity().startActivity(intent);
 //                        }, 300);
-
-                        // register device
-                        BluetoothDeviceManager deviceManager = BluetoothDeviceManager.getInstance();
-                        deviceManager.addDevice(new CameraDeviceInfo(bleCommandManager.currentDevice.getName(), bleCommandManager.currentDevice.getAddress(), currentSsid, newPassword, bleCommandManager.getCurrentFirmwareVersion()));
-                        deviceManager.currentIndex = deviceManager.getDeviceCount() - 1;
-                        deviceManager.writeToSharedPref(requireContext().getApplicationContext());
-
-                        MyProgressDialog.closeProgressDialog();
-                        startActivity(new Intent(requireContext(), MainActivity.class));
-                        requireActivity().finish();
                     }
 
                     @Override

@@ -52,11 +52,9 @@ public class PhotoCapture {
             //JIRA BUG IC-564 Begin modify by b.jiang 2016-8-16
 //            CameraProperties.getInstance().getCurrentCaptureDelay();
             //check property support then setting the value.
-            int delayTime;
+            int delayTime = 0;
             if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY)) {
                 delayTime = cameraProperties.getCurrentCaptureDelay();
-            } else {
-                delayTime = 0;
             }
             if (delayTime < 1000) {//ms
                 onStopPreviewListener.onStop();
@@ -75,9 +73,10 @@ public class PhotoCapture {
 
             //start capture audio
             int needCaptureCount = 1;
-            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) == true) {
-                needCaptureCount = cameraProperties.getCurrentAppBurstNum();
-            }
+            // akamefi202: to be fixed
+//            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) == true) {
+//                needCaptureCount = cameraProperties.getCurrentBurstNumber();
+//            }
             if (needCaptureCount == 1) {
                 CaptureAudioTask captureAudioTask = new CaptureAudioTask(needCaptureCount, TYPE_NORMAL_CAPTURE);
                 Timer captureAudioTimer = new Timer(true);
@@ -152,7 +151,7 @@ public class PhotoCapture {
         public void run() {
             if (type == TYPE_NORMAL_CAPTURE) {
                 if (burstNumber > 0) {
-                    AppLog.i(TAG, "CaptureAudioTask remainBurstNumer =" + burstNumber);
+                    AppLog.i(TAG, "CaptureAudioTask remainBurstNumber =" + burstNumber);
                     stillCaptureStartBeep.start();
                     burstNumber--;
                 } else {
@@ -160,7 +159,7 @@ public class PhotoCapture {
                 }
             } else {
                 if (burstNumber > 0) {
-                    AppLog.i(TAG, "CaptureAudioTask remainBurstNumer =" + burstNumber);
+                    AppLog.i(TAG, "CaptureAudioTask remainBurstNumber =" + burstNumber);
                     continuousCaptureBeep.start();
                     burstNumber--;
                 } else {
@@ -184,7 +183,7 @@ public class PhotoCapture {
         public void run() {
             // TODO Auto-generated method stub
             if (count-- > 0) {
-                delayBeep.start();
+//                delayBeep.start();
             } else {
                 if (timer != null) {
                     timer.cancel();

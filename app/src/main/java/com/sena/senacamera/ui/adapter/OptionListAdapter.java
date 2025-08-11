@@ -12,11 +12,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.sena.senacamera.R;
+import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.ui.fragment.FragmentNewPassword;
 import com.sena.senacamera.ui.fragment.FragmentOptions;
 
 import java.util.ArrayList;
 
 public class OptionListAdapter extends ArrayAdapter<String> {
+    private static final String TAG = OptionListAdapter.class.getSimpleName();
 
     public ArrayList<String> arrayList = null;
     private Context context;
@@ -80,6 +83,7 @@ public class OptionListAdapter extends ArrayAdapter<String> {
         this.viewHolder.optionLayout.setFocusable(false);
 
         this.viewHolder.optionTitle.setText(this.arrayList.get(position));
+
         if (this.arrayList.get(position).equals(parentFragment.getValue())) {
             this.viewHolder.optionStatus.setVisibility(View.VISIBLE);
         } else {

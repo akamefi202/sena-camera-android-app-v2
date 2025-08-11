@@ -348,7 +348,7 @@ public class CameraAction {
     public boolean updateFW(String fileName) {
         boolean ret = false;
         AppLog.i(TAG, "begin update FW");
-        CommandSession mSDKSession = CameraManager.getInstance().getCurCamera().getSDKsession();
+        CommandSession mSDKSession = CameraManager.getInstance().getCurCamera().getSdkSession();
         try {
             ret = cameraAssist.updateFw(mSDKSession.getSDKSession(), fileName);
         } catch (IchInvalidSessionException e) {

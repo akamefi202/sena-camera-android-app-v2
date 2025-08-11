@@ -1,5 +1,6 @@
 package com.sena.senacamera.ui.activity;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -7,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -26,6 +28,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.sena.senacamera.bluetooth.BluetoothCommandManager;
 import com.sena.senacamera.bluetooth.BluetoothScanManager;
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.listener.BluetoothSearchCallback;
 import com.sena.senacamera.log.AppLog;
@@ -35,6 +38,7 @@ import com.sena.senacamera.ui.fragment.FragmentBluetoothSearch;
 import com.sena.senacamera.ui.fragment.FragmentChangeDeviceName;
 import com.sena.senacamera.ui.fragment.FragmentDeviceManual;
 import com.sena.senacamera.ui.fragment.FragmentSetDevice;
+import com.sena.senacamera.utils.GpsUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +57,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
 
     public final BluetoothSearchCallback bluetoothSearchCallback = new BluetoothSearchCallback() {
         @Override
-        public void onFound(BluetoothDevice device) {
+        public void onFound(BluetoothDeviceInfo device) {
             if (BluetoothScanManager.getInstance().getDeviceCount() != 1) {
                 return;
             }
@@ -179,7 +183,7 @@ public class ConnectDeviceActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == 1) {
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             for (int length = permissions.length - 1; length >= 0; length--) {
                 if (!this.missingPermissions.isEmpty()) {
                     // if some permissions are missing, request again
@@ -194,14 +198,36 @@ public class ConnectDeviceActivity extends AppCompatActivity {
 
     public boolean checkPermissions() {
         boolean ret = true;
-        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_SCAN") != PackageManager.PERMISSION_GRANTED) {
-            this.missingPermissions.add("android.permission.BLUETOOTH_SCAN");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AppLog.i(TAG, "checkPermissions: BLUETOOTH_SCAN is missing");
+            this.missingPermissions.add(Manifest.permission.BLUETOOTH_SCAN);
             ret = false;
         }
-        if (ContextCompat.checkSelfPermission(this, "android.permission.BLUETOOTH_CONNECT") != PackageManager.PERMISSION_GRANTED) {
-            this.missingPermissions.add("android.permission.BLUETOOTH_CONNECT");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AppLog.i(TAG, "checkPermissions: BLUETOOTH_CONNECT is missing");
+            this.missingPermissions.add(Manifest.permission.BLUETOOTH_CONNECT);
             ret = false;
         }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            AppLog.i(TAG, "checkPermissions: BLUETOOTH is missing");
+            this.missingPermissions.add(Manifest.permission.BLUETOOTH);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+            AppLog.i(TAG, "checkPermissions: BLUETOOTH_ADMIN is missing");
+            this.missingPermissions.add(Manifest.permission.BLUETOOTH_ADMIN);
+            ret = false;
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            AppLog.i(TAG, "checkPermissions: ACCESS_FINE_LOCATION is missing");
+            this.missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            ret = false;
+        }
+
+//        if (!GpsUtil.isLocationEnabled(this)) {
+//            GpsUtil.openGpsSettings(this);
+//            ret = false;
+//        }
 
         return ret;
     }
@@ -242,5 +268,13 @@ public class ConnectDeviceActivity extends AppCompatActivity {
             this.scanningRadarImage.setVisibility(View.GONE);
             this.scanningImage.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        this.bluetoothScanManager.stopScan();
+        this.bluetoothScanManager.clearSearchCallbackList();
     }
 }

@@ -1,7 +1,6 @@
 package com.sena.senacamera.ui.fragment;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +29,7 @@ import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.bluetooth.BluetoothCommandManager;
 import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
 import com.sena.senacamera.data.SystemInfo.MWifiManager;
+import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.listener.Callback;
@@ -38,9 +37,10 @@ import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
 import com.sena.senacamera.R;
-import com.sena.senacamera.ui.adapter.MediaRecyclerViewAdapter;
+import com.sena.senacamera.ui.activity.MainActivity;
 import com.sena.senacamera.ui.appdialog.AppDialogManager;
 import com.sena.senacamera.ui.component.MenuSelection;
+import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.utils.ClickUtils;
 import com.sena.senacamera.utils.FileDownloader;
@@ -48,7 +48,6 @@ import com.sena.senacamera.utils.SenaXmlParser;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FragmentFirmwareUpdate extends Fragment implements View.OnClickListener {
@@ -74,7 +73,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
     List<String> firmwareLanguageList = new ArrayList<>();
     boolean isInstalling = false, isInstalled = false;
     int installPercent = 0;
-    long firmwareInstallDuration = 180000;
+    long firmwareInstallDuration = 200000;
 
     static {
         System.loadLibrary("native-firmware-lib");
@@ -116,11 +115,11 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
 
     public void initialize() {
         // get current & latest firmware versions
-        latestVersionText.setText(xmlManager.latestFirmwareVersion);
-        currentVersionText.setText(bleDeviceManager.getCurrentDevice().firmwareVerison);
+        latestVersionText.setText(xmlManager.getLatestFirmwareVersion());
+        currentVersionText.setText(bleDeviceManager.getCurrentDevice().firmwareVersion);
 
         // firmware language menu
-        firmwareLanguageList = xmlManager.firmwareLangaugeList;
+        firmwareLanguageList = xmlManager.getFirmwareLanguageList();
         firmwareLanguageMenu.setOptionList(firmwareLanguageList);
 
         if (!firmwareLanguageList.isEmpty()) {
@@ -131,7 +130,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         // set firmware url & path
         int index = firmwareLanguageList.indexOf(firmwareLanguage);
         if (index != -1) {
-            firmwareUrl = xmlManager.firmwareUrlList.get(index);
+            firmwareUrl = xmlManager.getFirmwareUrlList().get(index);
         }
         firmwareFolderPath = requireContext().getExternalFilesDir(null).getPath() + "/";
 
@@ -268,7 +267,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         // check if battery is higher than 50%
         MyCamera curCamera = CameraManager.getInstance().getCurCamera();
         if (curCamera == null || !curCamera.isConnected()) {
-            AppLog.e(TAG, "onUpdate - curCamera is not connected");
+            AppLog.e(TAG, "onUpdate - curCamera is disconnected");
             appDialogManager.showUpdateFailedDialog(requireContext(), null);
             return;
         }
@@ -289,19 +288,14 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         FileDownloader downloader = new FileDownloader(this.getContext(), new Callback() {
             @Override
             public void processSucceed() {
+                AppLog.e(TAG, "firmware download is succeeded");
                 splitUploadFirmware();
             }
 
             @Override
             public void processFailed() {
                 AppLog.e(TAG, "firmware download is failed");
-                appDialogManager.showUpdateFailedDialog(requireContext(), null);
-            }
-
-            @Override
-            public void processAbnormal() {
-                AppLog.e(TAG, "firmware download is abnormal");
-                appDialogManager.showUpdateFailedDialog(requireContext(), null);
+                appDialogManager.showAlertDialog(requireContext(), null, requireContext().getResources().getString(R.string.failed_to_access_ota_server));
             }
         });
 
@@ -382,6 +376,14 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
 
     @SuppressLint({"MissingPermission"})
     private void reconnectDevice() {
+        CameraManager.getInstance().setCurCamera(null);
+
+        Intent intent = new Intent(requireActivity(), MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("autoConnect", true);
+        startActivity(intent);
+
+        /*
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // check if bluetooth is turned on
@@ -399,6 +401,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
             // no device is registered
             return;
         }
+
         // get bluetooth device object from address
         BluetoothDevice bleDevice = bluetoothAdapter.getRemoteDevice(currentDevice.bleAddress);
         if (bleDevice == null) {
@@ -422,21 +425,39 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
                 // update current device with wifi ssid & password
                 currentDevice.wifiSsid = bleCommandManager.getCurrentWifiSsid();
                 currentDevice.wifiPassword = bleCommandManager.getCurrentWifiPassword();
-                currentDevice.firmwareVerison = bleCommandManager.getCurrentFirmwareVersion();
+                currentDevice.firmwareVersion = bleCommandManager.getCurrentFirmwareVersion();
                 bleDeviceManager.updateCurrentDevice(currentDevice);
                 bleDeviceManager.writeToSharedPref(requireContext());
 
                 // connect to the camera device via wifi
                 // add wifi connect suggestion
-                MWifiManager.connect(requireContext(), bleCommandManager.getCurrentWifiSsid(), bleCommandManager.getCurrentWifiPassword(), null);
+                requireActivity().runOnUiThread(() -> {
+                    MyProgressDialog.showProgressDialog(requireContext(), null);
+                });
 
-                // open wifi settings
-                //MyProgressDialog.showProgressDialog(activity, null);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-                    requireActivity().startActivity(intent);
-                    requireActivity().getSupportFragmentManager().popBackStack();
-                }, 1000);
+                MWifiManager.connect(requireContext(), bleCommandManager.getCurrentWifiSsid(), bleCommandManager.getCurrentWifiPassword(), new Callback() {
+                    @Override
+                    public void processSucceed() {
+                        requireActivity().runOnUiThread(() -> {
+                            MyProgressDialog.closeProgressDialog();
+                        });
+
+                        Intent intent = new Intent(requireActivity(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        intent.putExtra("autoConnect", true);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void processFailed() {
+                        requireActivity().runOnUiThread(() -> {
+                            MyProgressDialog.closeProgressDialog();
+                            appDialogManager.showConnectionFailedOkDialog(requireContext(), null);
+                        });
+
+                        AppLog.e(TAG, "onConnected: wifi connect is failed");
+                    }
+                });
             }
 
             @Override
@@ -447,7 +468,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
 
         // connect to the current device via bluetooth
         // wifi of camera device will be turned on
-        bleCommandManager.connectDevice(bleDevice, bluetoothConnectCallback, true);
+        bleCommandManager.connectDevice(new BluetoothDeviceInfo(bleDevice, currentDevice.serialData, ""), bluetoothConnectCallback, true, false);*/
     }
 
 }

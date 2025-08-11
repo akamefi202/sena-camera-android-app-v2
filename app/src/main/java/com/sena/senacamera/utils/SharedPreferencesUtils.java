@@ -25,7 +25,19 @@ public class SharedPreferencesUtils {
     /** 修改以后的sp文件的路径 MyApplication.getContext().getExternalFilesDir(null).getAbsolutePath()=/sdcard/Android/%package_name%/file */
     public static final String FILE_PATH = android.os.Environment.getDataDirectory().getAbsolutePath() + AppInfo.PROPERTY_CFG_DIRECTORY_PATH + "databases";
     public static final String DEVICE_LIST = "deviceList";
+    public static final String CURRENT_DEVICE_INDEX = "currentDeviceIndex";
     public static final String TERMS_AGREED = "termsAgreed";
+    public static final String FIRMWARE_LANGUAGE_LIST = "firmwareLanguageList";
+    public static final String FIRMWARE_URL_LIST = "firmwareUrlList";
+    public static final String LATEST_FIRMWARE_VERSION = "latestFirmwareVersion";
+    public static final String USER_GUIDE_URL = "userGuideUrl";
+    public static final String QUICK_GUIDE_URL = "quickGuideUrl";
+    public static final String VIDEO_GUIDE_URL = "videoGuideUrl";
+    public static final String SUPPORT_URL = "supportUrl";
+    public static final String FORUM_URL = "forumUrl";
+    public static final String MAILING_LIST_URL = "mailingListUrl";
+    public static final String TERMS_URL = "termsUrl";
+    public static final String PRIVACY_POLICY_URL = "privacyPolicyUrl";
 
     /**
      * 保存数据

@@ -22,7 +22,7 @@ public class PropertyTypeString {
     private String[] valueArrayString;
     private CameraProperties cameraProperties;
 
-    public PropertyTypeString(CameraProperties cameraProperties,int propertyId, Context context) {
+    public PropertyTypeString(CameraProperties cameraProperties, int propertyId, Context context) {
         this.propertyId = propertyId;
         this.cameraProperties = cameraProperties;
         initItem();
@@ -36,27 +36,26 @@ public class PropertyTypeString {
         if (hashMap == null) {
             return;
         }
-        if (propertyId == PropertyId.IMAGE_SIZE) {
+        if (propertyId == PropertyId.PHOTO_RESOLUTION) {
             valueListString = cameraProperties.getSupportedImageSizes();
         }
-        if (propertyId == PropertyId.VIDEO_SIZE) {
+        if (propertyId == PropertyId.VIDEO_RESOLUTION) {
             valueListString = cameraProperties.getSupportedVideoSizes();
         }
-        for (int ii = 0; ii < valueListString.size(); ii++) {
-            if (!hashMap.containsKey(valueListString.get(ii))) {
-                valueListString.remove(ii);
-                ii--;
+        for (int i = 0; i < valueListString.size(); i ++) {
+            if (!hashMap.containsKey(valueListString.get(i))) {
+                valueListString.remove(i);
+                i--;
             }
         }
         valueListStringUI = new LinkedList<String>();
         valueArrayString = new String[valueListString.size()];
         if (valueListString != null) {
-            for (int ii = 0; ii < valueListString.size(); ii++) {
-                valueListStringUI.add(ii, hashMap.get(valueListString.get(ii)).uiStringInSettingString);
-                valueArrayString[ii] = hashMap.get(valueListString.get(ii)).uiStringInSettingString;
+            for (int i = 0; i < valueListString.size(); i ++) {
+                valueListStringUI.add(i, hashMap.get(valueListString.get(i)).uiStringInSettingString);
+                valueArrayString[i] = hashMap.get(valueListString.get(i)).uiStringInSettingString;
             }
         }
-
     }
 
     public String getCurrentValue() {
@@ -69,7 +68,7 @@ public class PropertyTypeString {
             return "Unknown";
         }
         ItemInfo itemInfo = hashMap.get(getCurrentValue());
-        String ret = null;
+        String ret;
         if (itemInfo == null) {
             ret = "Unknown";
         } else {
@@ -84,7 +83,7 @@ public class PropertyTypeString {
            return "Unknown";
         }
         ItemInfo itemInfo = hashMap.get(getCurrentValue());
-        String ret = null;
+        String ret;
         if (itemInfo == null) {
             ret = "Unknown";
         } else {
@@ -105,7 +104,7 @@ public class PropertyTypeString {
 
     public List<String> getValueListUI() {
         // TODO Auto-generated method stub
-        return valueListString;
+        return valueListStringUI;
     }
 
     public Boolean setValue(String value) {
@@ -125,7 +124,7 @@ public class PropertyTypeString {
     public Boolean needDisplayByMode(int previewMode) {
         boolean retValue = false;
         switch (propertyId) {
-            case PropertyId.IMAGE_SIZE:
+            case PropertyId.PHOTO_RESOLUTION:
                 //retValue = cameraProperties.setWhiteBalance(valueListInt.get(position));
                 if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_IMAGE_SIZE)) {
                     if (previewMode == PreviewMode.APP_STATE_STILL_PREVIEW ||
@@ -137,7 +136,7 @@ public class PropertyTypeString {
                     }
                 }
                 break;
-            case PropertyId.VIDEO_SIZE:
+            case PropertyId.VIDEO_RESOLUTION:
                 if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_VIDEO_SIZE)) {
                     if (previewMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
                             previewMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||

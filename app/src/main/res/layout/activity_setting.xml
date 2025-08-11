@@ -89,7 +89,6 @@
                 android:layout_marginEnd="8dp"
                 android:src="@drawable/selector_button_firmware_update" />
             <TextView
-                android:id="@+id/temp_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -98,10 +97,12 @@
                 android:textSize="@dimen/menu_title_text_size"
                 android:text="@string/firmware_update" />
             <ImageView
+                android:id="@+id/firmware_update_arrow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/selector_button_arrow_right" />
             <TextView
+                android:id="@+id/firmware_update_tag"
                 android:layout_width="64dp"
                 android:layout_height="32dp"
                 android:gravity="center"

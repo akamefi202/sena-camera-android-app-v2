@@ -1,0 +1,48 @@
+/**************************************************************************
+ *
+ *         Copyright (c) 2014 by iCatch Technology Co., Ltd.
+ *
+ *  This software is copyrighted by and is the property of Sunplus
+ *  Technology Co., Ltd. All rights are reserved by Sunplus Technology
+ *  Co., Ltd. This software may only be used in accordance with the
+ *  corresponding license agreement. Any unauthorized use, duplication,
+ *  distribution, or disclosure of this software is expressly forbidden.
+ *
+ *  This Copyright notice MUST not be removed or modified without prior
+ *  written consent of Sunplus Technology Co., Ltd.
+ *
+ *  Sunplus Technology Co., Ltd. reserves the right to modify this
+ *  software without notice.
+ *
+ *  Sunplus Technology Co., Ltd.
+ *  19, Innovation First Road, Science-Based Industrial Park,
+ *  Hsin-Chu, Taiwan, R.O.C.
+ *
+ *  Author: peng.tan
+ *  Email:  peng.tan@sunmedia.com.cn
+ *
+ **************************************************************************/
+
+#ifndef __ICATCH_CAM_BURST_NUMBER_H__
+#define __ICATCH_CAM_BURST_NUMBER_H__
+
+namespace com { namespace icatchtek{ namespace control{
+
+enum ICatchCamBurstNumber
+{
+    ICH_CAM_BRUST_NUMBER_HS         = 0x0000,
+    ICH_CAM_BURST_NUMBER_OFF        = 0x0001,
+    ICH_CAM_BURST_NUMBER_3          = 0x0002,
+    ICH_CAM_BURST_NUMBER_5          = 0x0003,
+    ICH_CAM_BURST_NUMBER_10         = 0x0004,
+    ICH_CAM_BURST_NUMBER_7          = 0x0005,
+    ICH_CAM_BURST_NUMBER_15         = 0x0006,
+    ICH_CAM_BURST_NUMBER_30         = 0x0007,
+
+    ICH_CAM_BURST_NUMBER_UNDEFINED  = 0xFFFF,
+};
+
+}}}
+
+#endif
+

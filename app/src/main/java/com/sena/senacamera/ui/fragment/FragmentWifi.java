@@ -60,8 +60,8 @@ public class FragmentWifi extends Fragment implements View.OnClickListener {
         BaseProperties baseProperties = myCamera.getBaseProperties();
 
         // wifi frequency
-        this.wifiFrequencyMenu.setOptionList(Arrays.asList(baseProperties.getElectricityFrequency().getValueList()));
-        this.wifiFrequencyMenu.setValue(baseProperties.getElectricityFrequency().getCurrentUiStringInSetting());
+        this.wifiFrequencyMenu.setOptionList(Arrays.asList(baseProperties.getWifiFrequency().getValueList()));
+        this.wifiFrequencyMenu.setValue(baseProperties.getWifiFrequency().getCurrentUiStringInSetting());
 
         CameraDeviceInfo currentDevice = BluetoothDeviceManager.getInstance().getCurrentDevice();
         this.ssidMenu.setValue(currentDevice.wifiSsid);
@@ -102,7 +102,7 @@ public class FragmentWifi extends Fragment implements View.OnClickListener {
         BaseProperties baseProperties = myCamera.getBaseProperties();
 
         // wifi frequency
-        this.wifiFrequencyMenu.setValue(baseProperties.getElectricityFrequency().getCurrentUiStringInSetting());
+        this.wifiFrequencyMenu.setValue(baseProperties.getWifiFrequency().getCurrentUiStringInSetting());
     }
 
     private void onBack() {

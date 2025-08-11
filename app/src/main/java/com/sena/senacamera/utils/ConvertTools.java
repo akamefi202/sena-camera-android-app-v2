@@ -176,7 +176,7 @@ public class ConvertTools {
 
     public static String getExposureCompensation(int value) {
         AppLog.d(TAG, "start getExposureCompensation value=" + value);
-        String ret = "EV ";
+        String ret = "";
         int temp = 0x80000000;
         int temp2 = 0x40000000;
         int temp3 = 0x00ffffff;
@@ -239,7 +239,7 @@ public class ConvertTools {
 
     public static String getStringFromByteArray(byte[] param) {
         // get the end index by skipping 00 bytes
-        int endIndex = 0;
+        int endIndex = param.length;
         for (int i = 0; i < param.length; i ++) {
             if (param[i] == 0) {
                 endIndex = i;

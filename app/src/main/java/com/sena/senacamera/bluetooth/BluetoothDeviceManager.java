@@ -31,7 +31,7 @@ public class BluetoothDeviceManager {
 
     public CameraDeviceInfo getCurrentDevice() {
         if (currentIndex >= deviceList.size()) {
-            AppLog.e(TAG, "invalid index value");
+            AppLog.e(TAG, "getCurrentDevice: invalid index value");
             return null;
         }
 
@@ -40,7 +40,7 @@ public class BluetoothDeviceManager {
 
     public void updateCurrentDevice(CameraDeviceInfo device) {
         if (currentIndex >= deviceList.size()) {
-            AppLog.e(TAG, "invalid index value");
+            AppLog.e(TAG, "updateCurrentDevice: invalid index value");
             return;
         }
         deviceList.set(currentIndex, device);
@@ -52,7 +52,7 @@ public class BluetoothDeviceManager {
 
     public void updateDevice(int index, CameraDeviceInfo device) {
         if (index >= deviceList.size()) {
-            AppLog.e(TAG, "invalid index value");
+            AppLog.e(TAG, "updateDevice: invalid index value");
             return;
         }
         deviceList.set(index, device);
@@ -60,18 +60,19 @@ public class BluetoothDeviceManager {
 
     public void deleteDevice(int index) {
         if (index >= deviceList.size()) {
-            AppLog.e(TAG, "invalid index value");
+            AppLog.e(TAG, "deleteDevice: invalid index value");
             return;
         }
         deviceList.remove(index);
-        if (currentIndex >= deviceList.size()) {
-            currentIndex = 0;
+
+        if (index < currentIndex) {
+            currentIndex --;
         }
     }
 
     public void swapDevices(int index1, int index2) {
         if (index1 >= deviceList.size() || index2 >= deviceList.size()) {
-            AppLog.e(TAG, "invalid index value");
+            AppLog.e(TAG, "swapDevices: invalid index value");
             return;
         }
 
@@ -92,8 +93,24 @@ public class BluetoothDeviceManager {
         this.currentIndex = 0;
     }
 
+    public int findDevice(String bluetoothAddress) {
+        int index = -1;
+        for (int i = 0; i < deviceList.size(); i ++) {
+            if (deviceList.get(i).bleAddress.equals(bluetoothAddress)) {
+                index = i;
+                break;
+            }
+        }
+
+        return index;
+    }
+
     public List<CameraDeviceInfo> getDeviceList() {
         return deviceList;
+    }
+
+    public CameraDeviceInfo getDeviceByIndex(int index) {
+        return deviceList.get(index);
     }
 
     public int getDeviceCount() {
@@ -101,8 +118,9 @@ public class BluetoothDeviceManager {
     }
 
     public void readFromSharedPref(Context context) {
-        currentIndex = 0;
+        currentIndex = (int) SharedPreferencesUtils.get(context, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.CURRENT_DEVICE_INDEX, 0);
 
+        // read device list via json
         String json = (String) SharedPreferencesUtils.get(context, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.DEVICE_LIST, "");
         if (json != null && !json.isEmpty()) {
             AppLog.i(TAG, "readFromSharedPref " + json);
@@ -120,6 +138,7 @@ public class BluetoothDeviceManager {
         String json = gson.toJson(deviceList);
         AppLog.i(TAG, "writeToSharedPref " + json);
         SharedPreferencesUtils.put(context, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.DEVICE_LIST, json);
+        SharedPreferencesUtils.put(context, SharedPreferencesUtils.CONFIG_FILE, SharedPreferencesUtils.CURRENT_DEVICE_INDEX, currentIndex);
     }
 
     public boolean isCurrentDeviceConnected(Context context) {

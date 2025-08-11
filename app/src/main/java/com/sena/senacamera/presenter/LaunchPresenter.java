@@ -257,13 +257,6 @@ public class LaunchPresenter extends BasePresenter {
                 launchView.setLaunchSettingFrameVisibility(View.VISIBLE);
                 launchView.setNavigationTitle("");
                 launchView.setBackBtnVisibility(true);
-
-                // akamefi202: to be fixed
-//                AddNewCamFragment addNewCamFragment = new AddNewCamFragment(activity.getApplicationContext(), launchHandler, position);
-//                FragmentTransaction ft = fm.beginTransaction();
-//                ft.replace(R.id.launch_setting_frame, addNewCamFragment, "other");
-//                ft.addToBackStack("tag");
-//                ft.commit();
             }
         }
     }
@@ -805,6 +798,18 @@ public class LaunchPresenter extends BasePresenter {
             return "UsbDevice";
         }
 
+    }
+
+    public synchronized boolean disconnectCamera() {
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        if (curCamera == null || !curCamera.isConnected()) {
+            AppLog.i(TAG, "disconnectCamera: camera is disconnected already");
+            return false;
+        }
+
+        CameraManager.getInstance().setCurCamera(null);
+        //camera.disconnect();
+        return true;
     }
 
 }

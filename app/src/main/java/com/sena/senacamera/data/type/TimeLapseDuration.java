@@ -91,7 +91,7 @@ public class TimeLapseDuration {
 
     public static String convertTimeLapseDuration(int value) {
         if (value == 0xffff) {
-            return GlobalInfo.getInstance().getCurrentApp().getResources().getString(R.string.setting_time_lapse_duration_unlimit);
+            return GlobalInfo.getInstance().getCurrentApp().getResources().getString(R.string.setting_time_lapse_duration_unlimited);
         }
         String time = "";
         int h = value / 60;

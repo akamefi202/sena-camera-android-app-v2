@@ -7,9 +7,6 @@ import com.sena.senacamera.data.Hash.PropertyHashMapStatic;
 import com.sena.senacamera.data.PropertyId.PropertyId;
 import com.sena.senacamera.data.entity.PropertyTypeInteger;
 import com.sena.senacamera.data.entity.PropertyTypeString;
-import com.sena.senacamera.data.type.TimeLapseDuration;
-import com.sena.senacamera.data.type.TimeLapseInterval;
-import com.icatchtek.control.customer.type.ICatchCamProperty;
 
 /**
  * Created by b.jiang on 2017/9/15.
@@ -20,21 +17,20 @@ public class BaseProperties {
 
     private CameraProperties cameraProperty;
     private PropertyTypeInteger whiteBalance;
-    private PropertyTypeInteger burst;
+    private PropertyTypeInteger photoBurst;
     private PropertyTypeInteger electricityFrequency;
-    private PropertyTypeInteger dateStamp;
+    private PropertyTypeInteger wifiFrequency;
+    private PropertyTypeInteger dateCaption;
     private PropertyTypeInteger slowMotion;
     private PropertyTypeInteger upside;
-    private PropertyTypeInteger captureDelay;
-    private PropertyTypeString videoSize;
-    private PropertyTypeString imageSize;
-    //private TimeLapseInterval timeLapseInterval;
-    private TimeLapseInterval timeLapseVideoInterval;
-    private TimeLapseInterval timeLapseStillInterval;
-    private TimeLapseDuration timeLapseDuration;
-    private PropertyTypeInteger timeLapseMode;
-    private PropertyTypeInteger exposureCompensation;
-    private PropertyTypeInteger videoFileLength;
+    private PropertyTypeInteger photoSelfTimer;
+    private PropertyTypeString videoResolution;
+    private PropertyTypeString photoResolution;
+    private PropertyTypeInteger timelapseInterval;
+    private PropertyTypeInteger timelapseDuration;
+    private PropertyTypeInteger timelapseMode;
+    private PropertyTypeInteger photoVideoEv;
+    private PropertyTypeInteger videoLoopRecording;
     private PropertyTypeInteger cameraSwitch;
     private PropertyTypeInteger screenSaver;
     private PropertyTypeInteger autoPowerOff;
@@ -43,13 +39,12 @@ public class BaseProperties {
     // akamefi202: updated settings
     private PropertyTypeInteger photoMode;
     private PropertyTypeInteger photoVideoImageQuality;
-    private PropertyTypeInteger photoIso;
-    private PropertyTypeInteger photoVideoEv;
+    private PropertyTypeInteger photoVideoIso;
     private PropertyTypeInteger photoVideoMetering;
-    private PropertyTypeInteger photoVideoTimelapseDuration;
     private PropertyTypeInteger videoMode;
     private PropertyTypeInteger videoAutoLowLight;
-    private PropertyTypeInteger videoFov;
+    private PropertyTypeInteger videoEis;
+    private PropertyTypeInteger photoVideoFov;
     private PropertyTypeInteger generalAudioInput;
     private PropertyTypeInteger generalDisplayBrightness;
     private PropertyTypeInteger generalDeviceSound;
@@ -71,29 +66,28 @@ public class BaseProperties {
         AppLog.i(TAG, "Start initProperty");
         whiteBalance = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.whiteBalanceMap, PropertyId.WHITE_BALANCE, GlobalInfo
                 .getInstance().getAppContext());
-        burst = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.burstMap, ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER, GlobalInfo
+        photoBurst = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.photoBurstMap, PropertyId.PHOTO_BURST, GlobalInfo
                 .getInstance().getAppContext());
-        dateStamp = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.dateStampMap, PropertyId.DATE_STAMP, GlobalInfo.getInstance()
+        dateCaption = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.dateCaptionMap, PropertyId.DATE_CAPTION, GlobalInfo.getInstance()
                 .getAppContext());
         slowMotion = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.slowMotionMap, PropertyId.SLOW_MOTION, GlobalInfo.getInstance()
                 .getAppContext());
         upside = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.upsideMap, PropertyId.UP_SIDE, GlobalInfo.getInstance()
                 .getAppContext());
-
         electricityFrequency = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.electricityFrequencyMap, PropertyId.LIGHT_FREQUENCY,
                 GlobalInfo.getInstance().getAppContext());
+        wifiFrequency = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.wifiFrequencyMap, PropertyId.GENERAL_WIFI_FREQUENCY,
+                GlobalInfo.getInstance().getAppContext());
 
-        captureDelay = new PropertyTypeInteger(cameraProperty, PropertyId.CAPTURE_DELAY, GlobalInfo.getInstance().getAppContext());
-        videoSize = new PropertyTypeString(cameraProperty, PropertyId.VIDEO_SIZE, GlobalInfo.getInstance().getAppContext());
-        imageSize = new PropertyTypeString(cameraProperty, PropertyId.IMAGE_SIZE, GlobalInfo.getInstance().getAppContext());
-        //timeLapseInterval = new TimeLapseInterval(cameraProperty);
-        timeLapseVideoInterval = new TimeLapseInterval(cameraProperty);
-        timeLapseStillInterval = new TimeLapseInterval(cameraProperty);
-        timeLapseDuration = new TimeLapseDuration(cameraProperty);
-        timeLapseMode = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.timeLapseMode, PropertyId.TIMELAPSE_MODE, GlobalInfo.getInstance()
+        photoSelfTimer = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_SELF_TIMER, GlobalInfo.getInstance().getAppContext());
+        videoResolution = new PropertyTypeString(cameraProperty, PropertyId.VIDEO_RESOLUTION, GlobalInfo.getInstance().getAppContext());
+        photoResolution = new PropertyTypeString(cameraProperty, PropertyId.PHOTO_RESOLUTION, GlobalInfo.getInstance().getAppContext());
+        timelapseInterval = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_TIMELAPSE_INTERVAL, GlobalInfo.getInstance().getAppContext());
+        timelapseDuration = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_TIMELAPSE_DURATION, GlobalInfo.getInstance().getAppContext());
+        timelapseMode = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.timelapseMode, PropertyId.TIMELAPSE_MODE, GlobalInfo.getInstance()
                 .getAppContext());
-        exposureCompensation = new PropertyTypeInteger(cameraProperty,PropertyId.EXPOSURE_COMPENSATION, GlobalInfo.getInstance().getAppContext());
-        videoFileLength = new PropertyTypeInteger(cameraProperty,PropertyId.VIDEO_FILE_LENGTH, GlobalInfo.getInstance().getAppContext());
+        photoVideoEv = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_EV, GlobalInfo.getInstance().getAppContext());
+        videoLoopRecording = new PropertyTypeInteger(cameraProperty, PropertyId.VIDEO_LOOP_RECORDING, GlobalInfo.getInstance().getAppContext());
 //        cameraSwitch = new PropertyTypeInteger(cameraProperty,PropertyHashMapStatic.cameraSwitchMap, PropertyId.CAMERA_SWITCH, GlobalInfo.getInstance().getAppContext());
 
         screenSaver = new PropertyTypeInteger(cameraProperty, PropertyId.SCREEN_SAVER, GlobalInfo.getInstance().getAppContext());
@@ -102,23 +96,23 @@ public class BaseProperties {
 
         // akamefi202: updated settings
         photoMode = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.photoModeMap, PropertyId.PHOTO_MODE, GlobalInfo.getInstance().getAppContext());
-        photoVideoImageQuality = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.imageQualityMap, PropertyId.PHOTO_VIDEO_IMAGE_QUALITY, GlobalInfo.getInstance().getAppContext());
+        photoVideoImageQuality = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.photoVideoQualityMap, PropertyId.PHOTO_VIDEO_QUALITY, GlobalInfo.getInstance().getAppContext());
         photoVideoMetering = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.photoVideoMeteringMap, PropertyId.PHOTO_VIDEO_METERING, GlobalInfo.getInstance().getAppContext());
-        videoFov = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.videoFovAngleMap, PropertyId.VIDEO_FOV, GlobalInfo.getInstance().getAppContext());
+        photoVideoFov = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.photoVideoFovMap, PropertyId.PHOTO_VIDEO_FOV, GlobalInfo.getInstance().getAppContext());
         generalDeviceSound = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.generalDeviceSoundMap, PropertyId.GENERAL_DEVICE_SOUND, GlobalInfo.getInstance().getAppContext());
         generalLanguage = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.generalLanguageMap, PropertyId.GENERAL_LANGUAGE, GlobalInfo.getInstance().getAppContext());
         generalColorEffect = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.generalColorEffectMap, PropertyId.GENERAL_COLOR_EFFECT, GlobalInfo.getInstance().getAppContext());
         generalDateFormat = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.generalDateFormatMap, PropertyId.GENERAL_DATE_FORMAT, GlobalInfo.getInstance().getAppContext());
 
-        photoIso = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_ISO, GlobalInfo.getInstance().getAppContext());
-        photoVideoEv = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_EV, GlobalInfo.getInstance().getAppContext());
-        photoVideoTimelapseDuration = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_TIMELAPSE_DURATION, GlobalInfo.getInstance().getAppContext());
-        videoAutoLowLight = new PropertyTypeInteger(cameraProperty, PropertyId.VIDEO_AUTO_LOW_LIGHT, GlobalInfo.getInstance().getAppContext());
+        videoMode = new PropertyTypeInteger(cameraProperty, PropertyHashMapStatic.videoModeMap, PropertyId.VIDEO_MODE, GlobalInfo.getInstance().getAppContext());
+        photoVideoIso = new PropertyTypeInteger(cameraProperty, PropertyId.PHOTO_VIDEO_ISO, GlobalInfo.getInstance().getAppContext());
         generalAudioInput = new PropertyTypeInteger(cameraProperty, PropertyId.GENERAL_AUDIO_INPUT, GlobalInfo.getInstance().getAppContext());
         generalDisplayBrightness = new PropertyTypeInteger(cameraProperty, PropertyId.GENERAL_DISPLAY_BRIGHTNESS, GlobalInfo.getInstance().getAppContext());
         generalFrontDisplay = new PropertyTypeInteger(cameraProperty, PropertyId.GENERAL_FRONT_DISPLAY, GlobalInfo.getInstance().getAppContext());
         generalMainStatusLed = new PropertyTypeInteger(cameraProperty, PropertyId.GENERAL_MAIN_STATUS_LED, GlobalInfo.getInstance().getAppContext());
         generalBatteryStatusLed = new PropertyTypeInteger(cameraProperty, PropertyId.GENERAL_BATTERY_STATUS_LED, GlobalInfo.getInstance().getAppContext());
+        videoEis = new PropertyTypeInteger(cameraProperty, PropertyId.VIDEO_EIS, GlobalInfo.getInstance().getAppContext());
+        videoAutoLowLight = new PropertyTypeInteger(cameraProperty, PropertyId.VIDEO_AUTO_LOW_LIGHT, GlobalInfo.getInstance().getAppContext());
         AppLog.i(TAG, "End initProperty");
     }
 
@@ -133,12 +127,12 @@ public class BaseProperties {
     public PropertyTypeInteger getCameraSwitch() { return cameraSwitch;  }
 
 
-    public PropertyTypeInteger getExposureCompensation() {
-        return exposureCompensation;
+    public PropertyTypeInteger getPhotoVideoEv() {
+        return photoVideoEv;
     }
 
-    public PropertyTypeInteger getVideoFileLength() {
-        return videoFileLength;
+    public PropertyTypeInteger getVideoLoopRecording() {
+        return videoLoopRecording;
     }
 
     public PropertyTypeInteger getFastMotionMovie() {
@@ -149,16 +143,16 @@ public class BaseProperties {
         return whiteBalance;
     }
 
-    public PropertyTypeInteger getBurst() {
-        return burst;
+    public PropertyTypeInteger getPhotoBurst() {
+        return photoBurst;
     }
 
-    public PropertyTypeInteger getDateStamp() {
-        return dateStamp;
+    public PropertyTypeInteger getDateCaption() {
+        return dateCaption;
     }
 
-    public PropertyTypeInteger getCaptureDelay() {
-        return captureDelay;
+    public PropertyTypeInteger getPhotoSelfTimer() {
+        return photoSelfTimer;
     }
 
     public PropertyTypeInteger getSlowMotion() {
@@ -169,72 +163,64 @@ public class BaseProperties {
         return upside;
     }
 
-    public PropertyTypeString getVideoSize() {
-        return videoSize;
+    public PropertyTypeString getVideoResolution() {
+        return videoResolution;
     }
 
-    public PropertyTypeString getImageSize() {
-        return imageSize;
+    public PropertyTypeString getPhotoResolution() {
+        return photoResolution;
     }
 
     public PropertyTypeInteger getElectricityFrequency() {
         return electricityFrequency;
     }
 
-    public TimeLapseInterval getTimeLapseVideoInterval() {
-        return timeLapseVideoInterval;
+    public PropertyTypeInteger getWifiFrequency() {
+        return wifiFrequency;
     }
 
-    public TimeLapseInterval getTimeLapseStillInterval() {
-        return timeLapseStillInterval;
+    public PropertyTypeInteger getTimelapseInterval() {
+        return timelapseInterval;
     }
 
-//    public TimeLapseInterval getTimeLapseInterval() {
-//        return timeLapseInterval;
-//    }
-
-    public TimeLapseDuration getTimeLapseDuration() {
-        return timeLapseDuration;
+    public PropertyTypeInteger getTimelapseDuration() {
+        return timelapseDuration;
     }
 
-    public PropertyTypeInteger getTimeLapseMode() {
-        return timeLapseMode;
+    public PropertyTypeInteger getTimelapseMode() {
+        return timelapseMode;
     }
 
     public PropertyTypeInteger getPhotoMode() {
         return photoMode;
     }
 
-    public PropertyTypeInteger getPhotoVideoImageQuality() {
+    public PropertyTypeInteger getPhotoVideoQuality() {
         return photoVideoImageQuality;
     }
 
-    public PropertyTypeInteger getPhotoIso() {
-        return photoIso;
-    }
-
-    public PropertyTypeInteger getPhotoVideoEv() {
-        return photoVideoEv;
+    public PropertyTypeInteger getPhotoVideoIso() {
+        return photoVideoIso;
     }
 
     public PropertyTypeInteger getPhotoVideoMetering() {
         return photoVideoMetering;
     }
 
-    public PropertyTypeInteger getPhotoVideoTimelapseDuration() {
-        return photoVideoTimelapseDuration;
-    }
-
     public PropertyTypeInteger getVideoMode() {
         return videoMode;
+    }
+
+    public PropertyTypeInteger getVideoEis() {
+        return videoEis;
     }
 
     public PropertyTypeInteger getVideoAutoLowLight() {
         return videoAutoLowLight;
     }
 
-    public PropertyTypeInteger getVideoFov() {
-        return videoFov;
+    public PropertyTypeInteger getPhotoVideoFov() {
+        return photoVideoFov;
     }
 
     public PropertyTypeInteger getGeneralAudioInput() {

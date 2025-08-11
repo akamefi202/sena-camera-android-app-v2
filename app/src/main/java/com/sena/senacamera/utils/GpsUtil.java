@@ -1,5 +1,6 @@
 package com.sena.senacamera.utils;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +31,12 @@ public class GpsUtil {
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         isOpen = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         return isOpen;
+    }
+
+    @SuppressLint("NewApi")
+    public static boolean isLocationEnabled(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isLocationEnabled();
     }
 
     /**

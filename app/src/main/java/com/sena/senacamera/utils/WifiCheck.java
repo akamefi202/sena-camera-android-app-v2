@@ -212,10 +212,10 @@ public class WifiCheck {
     }
 
     private void showReconnectDialog() {
-
         if (dialog != null) {
             dialog.dismiss();
         }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(GlobalInfo.getInstance().getAppContext());
         builder.setIcon(R.drawable.warning).setTitle(R.string.dialog_btn_reconnect).setMessage(R.string.message_reconnect);
         builder.setPositiveButton(R.string.dialog_btn_exit, new DialogInterface.OnClickListener() {
@@ -277,7 +277,6 @@ public class WifiCheck {
         reconnectDialog.show();
     }
 
-
     private class ReconnectTask extends TimerTask {
 
         @Override
@@ -337,6 +336,5 @@ public class WifiCheck {
             }
         }
     };
-
 
 }

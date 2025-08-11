@@ -18,8 +18,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible"
-            android:background="@drawable/rounded_gray_section"
+            android:background="@color/background_secondary_color"
             android:paddingVertical="24dp"
+            android:paddingHorizontal="32dp"
             android:gravity="center"
             android:orientation="horizontal">
 

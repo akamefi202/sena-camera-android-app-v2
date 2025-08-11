@@ -15,6 +15,7 @@ multidex = "2.0.1"
 scribejavaApis = "2.8.1"
 universalImageLoader = "1.9.5"
 adsMobileSdk = "0.16.0-alpha01"
+cardview = "1.0.0"
 
 [libraries]
 android-universal-image-loader = { module = "com.github.nostra13:Android-Universal-Image-Loader", version.ref = "androidUniversalImageLoader" }
@@ -33,6 +34,7 @@ multidex = { group = "androidx.multidex", name = "multidex", version.ref = "mult
 scribejava-apis = { module = "com.github.scribejava:scribejava-apis", version.ref = "scribejavaApis" }
 universal-image-loader = { module = "com.nostra13.universalimageloader:universal-image-loader", version.ref = "universalImageLoader" }
 ads-mobile-sdk = { group = "com.google.android.libraries.ads.mobile.sdk", name = "ads-mobile-sdk", version.ref = "adsMobileSdk" }
+cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

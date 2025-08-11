@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -31,6 +32,7 @@ public class FragmentSdCard extends Fragment implements View.OnClickListener {
     ImageButton backButton;
     Button formatButton;
     TextView totalCapacityText, usedCapacityText, remainingCapacityText;
+    ProgressBar capacityUsageProgressBar;
 
     @Override
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
@@ -41,9 +43,12 @@ public class FragmentSdCard extends Fragment implements View.OnClickListener {
         this.totalCapacityText = (TextView) this.fragmentLayout.findViewById(R.id.total_capacity_text);
         this.usedCapacityText = (TextView) this.fragmentLayout.findViewById(R.id.used_capacity_text);
         this.remainingCapacityText = (TextView) this.fragmentLayout.findViewById(R.id.remaining_capacity_text);
+        this.capacityUsageProgressBar = (ProgressBar) this.fragmentLayout.findViewById(R.id.capacity_usage_progress_bar);
 
         this.backButton.setOnClickListener(v -> onBack());
         this.formatButton.setOnClickListener(v -> formatSdCard());
+
+        getSdCardInfo();
 
         return this.fragmentLayout;
     }
@@ -70,6 +75,7 @@ public class FragmentSdCard extends Fragment implements View.OnClickListener {
         this.totalCapacityText = null;
         this.usedCapacityText = null;
         this.remainingCapacityText = null;
+        this.capacityUsageProgressBar = null;
     }
 
     public void updateFragment() {
@@ -85,6 +91,30 @@ public class FragmentSdCard extends Fragment implements View.OnClickListener {
 
     }
 
+    public void getSdCardInfo() {
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        if (curCamera == null || !curCamera.isConnected()) {
+            AppLog.i(TAG, "camera is disconnected");
+            return;
+        }
+        CameraProperties cameraProperties = curCamera.getCameraProperties();
+        if (!cameraProperties.isSDCardExist()) {
+            AppLog.i(TAG, "sd card does not exist");
+            return;
+        }
+
+        String[] result = cameraProperties.getSdCardInfo().split(" ");
+        AppLog.i(TAG, "getSdCardInfo result: " + result);
+        int totalSize = Integer.parseInt(result[0].substring(0, result[0].length() - 2));
+        int remainingSize = Integer.parseInt(result[1].substring(0, result[1].length() - 2));
+
+        totalCapacityText.setText(String.format("%d GB", totalSize / 1024));
+        usedCapacityText.setText(String.format("%d GB", totalSize / 1024 - remainingSize / 1024));
+        remainingCapacityText.setText(String.format("%d GB", remainingSize / 1024));
+        capacityUsageProgressBar.setProgress((totalSize - remainingSize) * 100 / totalSize);
+
+    }
+
     public void formatSdCard() {
         if (ClickUtils.isFastClick()) {
             return;
@@ -92,7 +122,7 @@ public class FragmentSdCard extends Fragment implements View.OnClickListener {
 
         MyCamera curCamera = CameraManager.getInstance().getCurCamera();
         if (curCamera == null || !curCamera.isConnected()) {
-            AppLog.i(TAG, "camera is not connected");
+            AppLog.i(TAG, "camera is disconnected");
             return;
         }
         CameraProperties cameraProperties = curCamera.getCameraProperties();

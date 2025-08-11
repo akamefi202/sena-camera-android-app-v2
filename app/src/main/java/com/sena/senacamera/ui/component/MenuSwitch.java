@@ -69,6 +69,10 @@ public class MenuSwitch extends LinearLayout {
         }
     }
 
+    public String getTitle() {
+        return (String) this.titleText.getText();
+    }
+
     public void setValue(boolean value) {
         this.menuSwitch.setChecked(value);
     }

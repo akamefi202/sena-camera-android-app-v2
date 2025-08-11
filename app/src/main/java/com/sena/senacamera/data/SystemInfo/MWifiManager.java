@@ -3,6 +3,7 @@ package com.sena.senacamera.data.SystemInfo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
@@ -12,11 +13,14 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiNetworkSuggestion;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.log.AppLog;
 
 import java.util.ArrayList;
@@ -26,6 +30,7 @@ public class MWifiManager {
     private static final String TAG = MWifiManager.class.getSimpleName();
     private static final String WIFI_SSID_UNKNOWN = "unknown";
 
+    @SuppressLint("MissingPermission")
     public static String getSsid(Context context) {
         if (!isWifiEnabled(context)) {
             AppLog.e(TAG, "----------ssid is null=");
@@ -124,6 +129,7 @@ public class MWifiManager {
      *      
      */
 
+    @SuppressLint("MissingPermission")
     public static boolean isWifiConnected(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetworkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -140,7 +146,7 @@ public class MWifiManager {
         wifiManager.disconnect();
     }
 
-    @SuppressLint("NewApi")
+    @SuppressLint({"NewApi", "MissingPermission"})
     public static void removeCurrentNetwork(Context context, String ssid, String password, ConnectivityManager.NetworkCallback callback) {
         WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
                 .setSsid(ssid)
@@ -160,49 +166,68 @@ public class MWifiManager {
         }
     }
 
-    @SuppressLint("NewApi")
-    public static void connect(Context context, String ssid, String password, ConnectivityManager.NetworkCallback callback) {
-//        WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
-//                .setSsid(ssid)
-//                .setWpa2Passphrase(password)
-//                .build();
-//
-//        // build the wifi request
-//        NetworkRequest networkRequest = new NetworkRequest.Builder()
-//                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-//                .setNetworkSpecifier(specifier)
-//                .build();
-//
-//        // connect to wifi network
-//        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//        connectivityManager.requestNetwork(networkRequest, callback);
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-        // suggest network
-        WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+    @SuppressLint({"NewApi", "MissingPermission"})
+    public static void connect(Context context, String ssid, String password, Callback callback) {
+        WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
                 .setSsid(ssid)
                 .setWpa2Passphrase(password)
                 .build();
 
-        List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
-        suggestions.add(suggestion);
+        // build the wifi request
+        NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .setNetworkSpecifier(specifier)
+                .build();
 
-        int status = wifiManager.addNetworkSuggestions(suggestions);
+        // connect to wifi network
+        Handler handler = new Handler(Looper.getMainLooper());
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        // define network callback
+        ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network network) {
+                handler.removeCallbacksAndMessages(null);
 
-        if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-            AppLog.i(TAG, "connect suggestion added successfully");
-        } else {
-            AppLog.i(TAG, "connect failed to add suggestion: " + status);
-        }
-    }
+                connectivityManager.bindProcessToNetwork(network);
+                if (callback != null) {
+                    callback.processSucceed();
+                }
+            }
 
-    public static void allowWifiAlwaysConnect(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        WifiManager.WifiLock wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "MyAppWifiLock");
-        wifiLock.acquire();
+            @Override
+            public void onUnavailable() {
+                handler.removeCallbacksAndMessages(null);
 
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::WakeLock");
-        wakeLock.acquire();
+                if (callback != null) {
+                    callback.processFailed();
+                }
+            }
+        };
+
+        handler.postDelayed(() -> {
+            if (callback != null) {
+                callback.processFailed();
+            }
+        }, 30000);
+        connectivityManager.requestNetwork(networkRequest, networkCallback);
+
+//        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//
+//        // suggest network
+//        WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+//                .setSsid(ssid)
+//                .setWpa2Passphrase(password)
+//                .build();
+//
+//        List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+//        suggestions.add(suggestion);
+//
+//        int status = wifiManager.addNetworkSuggestions(suggestions);
+//
+//        if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+//            AppLog.i(TAG, "connect suggestion added successfully");
+//        } else {
+//            AppLog.i(TAG, "connect failed to add suggestion: " + status);
+//        }
     }
 }

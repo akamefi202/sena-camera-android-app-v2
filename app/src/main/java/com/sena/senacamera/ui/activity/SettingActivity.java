@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,7 +17,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.sena.senacamera.listener.Callback;
+import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
@@ -25,14 +26,15 @@ import com.sena.senacamera.ui.fragment.FragmentClearCache;
 import com.sena.senacamera.ui.fragment.FragmentDeviceSettings;
 import com.sena.senacamera.ui.fragment.FragmentFirmwareUpdate;
 import com.sena.senacamera.ui.fragment.FragmentHelpGuide;
-import com.sena.senacamera.utils.WifiCheck;
+import com.sena.senacamera.utils.SenaXmlParser;
 
 public class SettingActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = SettingActivity.class.getSimpleName();
 
     private ImageButton backButton;
     private LinearLayout deviceSettingsLayout, clearCacheLayout, firmwareUpdateLayout, helpGuideLayout;
-    private TextView tempText;
+    private TextView firmwareUpdateTag;
+    private ImageView firmwareUpdateArrow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +47,8 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         clearCacheLayout = findViewById(R.id.layout_clear_cache);
         firmwareUpdateLayout = findViewById(R.id.layout_firmware_update);
         helpGuideLayout = findViewById(R.id.layout_help_guide);
-        tempText = findViewById(R.id.temp_text);
+        firmwareUpdateTag = findViewById(R.id.firmware_update_tag);
+        firmwareUpdateArrow = findViewById(R.id.firmware_update_arrow);
 
         deviceSettingsLayout.setOnClickListener(this);
         clearCacheLayout.setOnClickListener(this);
@@ -73,26 +76,18 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
         // check connection
         if (!checkConnection()) {
             this.setLayoutEnabled(this.deviceSettingsLayout, false);
-            this.setLayoutEnabled(this.clearCacheLayout, false);
             this.setLayoutEnabled(this.firmwareUpdateLayout, false);
-            this.setLayoutEnabled(this.helpGuideLayout, false);
+        } else {
+            this.setLayoutEnabled(this.deviceSettingsLayout, true);
+            this.setLayoutEnabled(this.firmwareUpdateLayout, true);
 
-            WifiCheck.showCameraDisconnectedDialog(this, new Callback() {
-                @Override
-                public void processSucceed() {
-                    finish();
-                }
-
-                @Override
-                public void processFailed() {
-
-                }
-
-                @Override
-                public void processAbnormal() {
-
-                }
-            });
+            if (SenaXmlParser.getInstance().getLatestFirmwareVersion().equals(BluetoothDeviceManager.getInstance().getCurrentDevice().firmwareVersion)) {
+                firmwareUpdateTag.setVisibility(View.GONE);
+                firmwareUpdateArrow.setVisibility(View.VISIBLE);
+            } else {
+                firmwareUpdateArrow.setVisibility(View.GONE);
+                firmwareUpdateTag.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -137,19 +132,12 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public boolean checkConnection() {
-        // check if wifi is working
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiInfo == null || !wifiInfo.isConnected()) {
-            return false;
-        }
-
         // check if the camera is connected
-        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
-        if (curCamera == null || !curCamera.isConnected()) {
+        if (!BluetoothDeviceManager.getInstance().isCurrentDeviceConnected(this)) {
             return false;
         }
 
-        return true;
+        MyCamera curCamera = CameraManager.getInstance().getCurCamera();
+        return curCamera != null && curCamera.isConnected();
     }
 }

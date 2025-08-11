@@ -8,6 +8,7 @@ import android.net.NetworkRequest;
 import android.os.AsyncTask;
 
 import com.sena.senacamera.listener.Callback;
+import com.sena.senacamera.log.AppLog;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,6 +45,7 @@ public class FileDownloader extends AsyncTask<String, Void, Boolean> {
                 try {
                     String fileUrl = urls[0]; // URL to download
                     String filePath = urls[1]; // temporary file name
+                    AppLog.i(TAG, "fileUrl: " + fileUrl);
                     URL url = new URL(fileUrl);
                     File file = new File(filePath);
                     HttpURLConnection conn = (HttpURLConnection) network.openConnection(url);
@@ -52,6 +54,7 @@ public class FileDownloader extends AsyncTask<String, Void, Boolean> {
                     conn.connect();
 
                     if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        callback.processFailed();
                         return;
                         //return "Server returned HTTP " + conn.getResponseCode();
                     }

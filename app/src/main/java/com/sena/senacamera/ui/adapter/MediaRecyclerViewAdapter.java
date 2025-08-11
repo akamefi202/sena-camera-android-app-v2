@@ -170,7 +170,7 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
                 String uri = TutkUriUtil.getTutkThumbnailUri(file);
                 ImageLoaderUtil.loadImageView(uri, holder.ivMediaThumbnail, R.drawable.media_thumbnail);
                 holder.ivMediaThumbnail.getLayoutParams().height = mediaItemWidth;
-                holder.ivMediaThumbnail.setBackgroundColor(ResourcesCompat.getColor(this.context.getResources(), R.color.background_primary_color, (Resources.Theme) null));
+                holder.ivMediaThumbnail.setBackgroundColor(ResourcesCompat.getColor(this.context.getResources(), R.color.background_primary_color, null));
             }
 
             // update the media grid item by file type (photo or video)
@@ -230,7 +230,7 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
                 int mediaItemWidth = (context.getResources().getDisplayMetrics().widthPixels - 12) / 3;
                 Glide.with(context).load(file).placeholder(R.drawable.media_thumbnail).into(holder.ivMediaThumbnail);
                 holder.ivMediaThumbnail.getLayoutParams().height = mediaItemWidth;
-                holder.ivMediaThumbnail.setBackgroundColor(ResourcesCompat.getColor(this.context.getResources(), R.color.background_primary_color, (Resources.Theme) null));
+                holder.ivMediaThumbnail.setBackgroundColor(ResourcesCompat.getColor(this.context.getResources(), R.color.background_primary_color, null));
             }
 
             // update the media grid item by file type (photo or video)

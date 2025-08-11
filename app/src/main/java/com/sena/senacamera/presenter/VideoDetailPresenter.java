@@ -13,18 +13,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.widget.Button;
+import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sena.senacamera.data.entity.LocalMediaItemInfo;
 import com.sena.senacamera.data.entity.MediaItemInfo;
 import com.sena.senacamera.data.type.MediaItemType;
 import com.sena.senacamera.function.SDKEvent;
 import com.sena.senacamera.function.streaming.VideoStreaming;
+import com.sena.senacamera.listener.DialogButtonListener;
 import com.sena.senacamera.listener.VideoFramePtsChangedListener;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
@@ -40,17 +39,16 @@ import com.sena.senacamera.data.Message.AppMessage;
 import com.sena.senacamera.data.Mode.TouchMode;
 import com.sena.senacamera.data.Mode.VideoPbMode;
 import com.sena.senacamera.data.SystemInfo.SystemInfo;
-import com.sena.senacamera.data.entity.DownloadInfo;
 import com.sena.senacamera.data.entity.RemoteMediaItemInfo;
 import com.sena.senacamera.data.type.FileType;
-import com.sena.senacamera.ui.activity.MediaActivity;
 import com.sena.senacamera.ui.activity.MediaVideoDetailActivity;
+import com.sena.senacamera.ui.appdialog.AppDialogManager;
+import com.sena.senacamera.ui.appdialog.CustomDownloadDialog;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.ui.Interface.VideoDetailView;
 import com.sena.senacamera.ui.RemoteFileHelper;
 import com.sena.senacamera.ui.appdialog.AppDialog;
-import com.sena.senacamera.ui.appdialog.SingleDownloadDialog;
 import com.sena.senacamera.utils.ConvertTools;
 import com.sena.senacamera.utils.MediaRefresh;
 import com.sena.senacamera.utils.PanoramaTools;
@@ -64,6 +62,7 @@ import com.icatchtek.pancam.customer.type.ICatchGLPoint;
 import com.icatchtek.reliant.customer.type.ICatchFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -105,7 +104,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     private ExecutorService executor;
     protected Timer downloadProgressTimer;
     //private List<RemoteMediaItemInfo> fileList;
-    private SingleDownloadDialog singleDownloadDialog;
+    private CustomDownloadDialog customDownloadDialog;
     private SDKEvent sdkEvent;
     private VideoStreaming videoStreaming;
     private boolean enableRender = AppInfo.enableRender;
@@ -115,9 +114,13 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     private MediaItemInfo currentItemInfo;
     private MediaPlayer localMediaPlayer;
     private Handler seekBarUpdateHandler = new Handler(Looper.getMainLooper());
+    private int localPausePosition = 0;
+    public long downloadProgress;
+    private String downloadFilePath = "";
 
     public VideoDetailPresenter(Activity activity) {
         super(activity);
+
         this.activity = activity;
         Intent intent = activity.getIntent();
         Bundle data = intent.getExtras();
@@ -294,7 +297,9 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         AppLog.i(TAG, "mode == MODE_VIDEO_PAUSE");
         if (isCurrentItemLocal()) {
             // local
+            localMediaPlayer.seekTo(localPausePosition);
             localMediaPlayer.start();
+            setSeekBarUpdateHandler();
         } else {
             // remote
             if (!panoramaVideoPlayback.resumePlayback()) {
@@ -314,7 +319,8 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         AppLog.i(TAG, "begin pause the playing");
         if (isCurrentItemLocal()) {
             // local
-            localMediaPlayer.stop();
+            localPausePosition = localMediaPlayer.getCurrentPosition();
+            localMediaPlayer.pause();
         } else {
             // remote
             if (!panoramaVideoPlayback.pausePlayback()) {
@@ -330,6 +336,15 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         videoPbMode = VideoPbMode.MODE_VIDEO_PAUSE;
         videoDetailView.showLoadingCircle(false);
         videoDetailView.setDownloadBtnEnabled(true);
+    }
+
+    private void setupLocalMediaPlayer() {
+        try {
+            localMediaPlayer.setDataSource(curLocalVideoFile.getPath());
+            localMediaPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setSeekBarUpdateHandler() {
@@ -351,7 +366,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
             videoDetailView.setSeekbarEnabled(false);
         }
         if (videoDuration - curProgress < 100) {
-            lastSeekBarPosition = videoDuration -100;
+            lastSeekBarPosition = videoDuration - 100;
             videoDetailView.setSeekBarProgress(lastSeekBarPosition);
         } else {
             lastSeekBarPosition = curProgress;
@@ -362,39 +377,57 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (panoramaVideoPlayback.videoSeek(lastSeekBarPosition / 100.0)) {
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-//                    if (videoPbMode == VideoPbMode.MODE_VIDEO_PLAY) {
-                    panoramaVideoPlayback.resumePlayback();
-//                    resumeVideoPb();
-//                    }
+                if (isCurrentItemLocal()) {
+                    // local
+                    localMediaPlayer.seekTo(lastSeekBarPosition * 10);
+                    localMediaPlayer.start();
+                    setSeekBarUpdateHandler();
+
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             MyProgressDialog.closeProgressDialog();
                             videoDetailView.setPlayBtnSrc(R.drawable.selector_button_pause);
-//                            VideoDetailView.setPlayCircleImageViewVisibility(View.GONE);
-//                            VideoDetailView.setDeleteBtnEnabled(false);
                             videoDetailView.setDownloadBtnEnabled(false);
                             videoDetailView.showLoadingCircle(true);
                         }
                     });
                 } else {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            MyProgressDialog.closeProgressDialog();
-                            videoDetailView.setSeekBarProgress(lastSeekBarPosition);
-                            MyToast.show(activity, R.string.dialog_failed);
+                    // remote
+                    if (panoramaVideoPlayback.videoSeek(lastSeekBarPosition / 100.0)) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
                         }
-                    });
-
+//                    if (videoPbMode == VideoPbMode.MODE_VIDEO_PLAY) {
+                        panoramaVideoPlayback.resumePlayback();
+//                    resumeVideoPb();
+//                    }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                MyProgressDialog.closeProgressDialog();
+                                videoDetailView.setPlayBtnSrc(R.drawable.selector_button_pause);
+//                            VideoDetailView.setPlayCircleImageViewVisibility(View.GONE);
+//                            VideoDetailView.setDeleteBtnEnabled(false);
+                                videoDetailView.setDownloadBtnEnabled(false);
+                                videoDetailView.showLoadingCircle(true);
+                            }
+                        });
+                    } else {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                MyProgressDialog.closeProgressDialog();
+                                videoDetailView.setSeekBarProgress(lastSeekBarPosition);
+                                MyToast.show(activity, R.string.dialog_failed);
+                            }
+                        });
+                    }
                 }
+
                 videoPbMode = VideoPbMode.MODE_VIDEO_PLAY;
                 needUpdateSeekBar = true;
             }
@@ -425,7 +458,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
 
         if (isCurrentItemLocal()) {
             // local
-            localMediaPlayer.stop();
+            localMediaPlayer.pause();
         } else {
             // remote
             panoramaVideoPlayback.pausePlayback();
@@ -436,7 +469,7 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void setTimeLapsedValue(int progress) {
-        if (needUpdateSeekBar && videoDuration >0 && (videoDuration - progress) < 500) {
+        if (needUpdateSeekBar && videoDuration > 0 && (videoDuration - progress) < 500) {
             AppLog.i(TAG, "setTimeLapsedValue setSeekbarEnabled");
             videoDetailView.setSeekbarEnabled(false);
         }
@@ -458,6 +491,12 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                     }
 
                     ((MediaVideoDetailActivity) activity).adjustSurfaceViewAspectRatio(width, height);
+                });
+
+                localMediaPlayer.setOnCompletionListener(mp -> {
+                    stopVideoStream();
+                    videoPbMode = VideoPbMode.MODE_VIDEO_IDLE;
+                    videoDetailView.setProgress(0);
                 });
             } catch (Exception e) {
                 AppLog.e(TAG, "initSurface error: " + e.getMessage());
@@ -489,6 +528,8 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         if (isCurrentItemLocal()) {
             if (localMediaPlayer != null) {
                 localMediaPlayer.stop();
+                localMediaPlayer.reset();
+                setupLocalMediaPlayer();
             }
         } else {
             removeEventListener();
@@ -552,11 +593,91 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
     }
 
     public void download() {
-        //ICOM-4097 ADD by b.jiang 20170112
         if (videoPbMode == VideoPbMode.MODE_VIDEO_PLAY) {
             pauseVideoPb();
         }
-        showDownloadEnsureDialog();
+
+        if (isCurrentItemLocal()) {
+            AppLog.e(TAG, "download: currentItemInfo is not remote file");
+            return;
+        }
+
+        if (videoPbMode == VideoPbMode.MODE_VIDEO_PAUSE) {
+            stopVideoStream();
+        }
+
+        downloadProgress = 0;
+        if (SystemInfo.getSDFreeSize(activity) < curRemoteVideoFile.getFileSize()) {
+            MyToast.show(activity, R.string.text_sd_card_memory_shortage);
+        } else {
+            executor = Executors.newSingleThreadExecutor();
+            String path = StorageUtil.getRootPath(activity) + AppInfo.DOWNLOAD_PATH_VIDEO;
+            String fileName = curRemoteVideoFile.getFileName();
+            AppLog.d(TAG, "------------fileName = " + fileName);
+            FileOper.createDirectory(path);
+            downloadFilePath = FileTools.chooseUniqueFilename(path + fileName);
+            executor.submit(new DownloadThread(downloadFilePath), null);
+
+            downloadProgressTimer = new Timer();
+            downloadProgressTimer.schedule(new DownloadProgressTask(downloadFilePath), 500, 1000);
+
+            showDownloadManagerDialog();
+        }
+    }
+
+    public void showDownloadManagerDialog() {
+        customDownloadDialog = new CustomDownloadDialog(activity);
+        customDownloadDialog.showDownloadDialog();
+        customDownloadDialog.setBackBtnOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                // TODO Auto-generated method stub
+                alertForQuitDownload();
+            }
+        });
+        updateDownloadStatus();
+    }
+
+    private void updateDownloadStatus() {
+        int progress = (int) downloadProgress;
+        String message = String.format("%d/1 %s(%d%%)", downloadProgress == 100? 1: 0, activity.getResources().getString(R.string.saving), progress);
+
+        if (customDownloadDialog != null) {
+            customDownloadDialog.setMessage(message);
+            customDownloadDialog.setProgress(progress);
+        }
+    }
+
+    public void alertForQuitDownload() {
+        AppDialogManager.getInstance().showStopDownloadDialog(activity, new DialogButtonListener() {
+            @Override
+            public void onStop() {
+                if (downloadFilePath != null) {
+                    File file = new File(downloadFilePath);
+                    if (!file.exists()) {
+                        return;
+                    }
+                    if (file.delete()) {
+                        AppLog.d(TAG, "alertForQuitDownload file delete success == " + downloadFilePath);
+                    }
+                }
+
+                if (!fileOperation.cancelDownload()) {
+                    Toast.makeText(activity, R.string.dialog_cancel_downloading_failed, Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
+                    }
+                    if (downloadProgressTimer != null) {
+                        downloadProgressTimer.cancel();
+                    }
+                    Toast.makeText(activity, R.string.dialog_cancel_downloading_succeeded, Toast.LENGTH_SHORT).show();
+                }
+                AppLog.d(TAG, "cancel download");
+            }
+        });
     }
 
     public void back() {
@@ -618,8 +739,9 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                     break;
                 case AppMessage.MESSAGE_CANCEL_VIDEO_DOWNLOAD:
                     AppLog.d(TAG, "receive CANCEL_VIDEO_DOWNLOAD_SUCCESS");
-                    if (singleDownloadDialog != null) {
-                        singleDownloadDialog.dismissDownloadDialog();
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
                     }
                     if (downloadProgressTimer != null) {
                         downloadProgressTimer.cancel();
@@ -665,13 +787,13 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
             AppInfo.isDownloading = true;
 
             boolean temp = fileOperation.downloadFile(curRemoteVideoFile, targetPath);
-            //ICOM-4116 End modify by b.jiang 20170315
             if (!temp) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (singleDownloadDialog != null) {
-                            singleDownloadDialog.dismissDownloadDialog();
+                        if (customDownloadDialog != null) {
+                            customDownloadDialog.dismissDownloadDialog();
+                            customDownloadDialog = null;
                         }
                         if (downloadProgressTimer != null) {
                             downloadProgressTimer.cancel();
@@ -682,24 +804,25 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
                 AppInfo.isDownloading = false;
                 return;
             }
+
             if (targetPath.endsWith(".mov") || targetPath.endsWith(".MOV")) {
                 fileType = "video/quicktime";
             } else {
                 fileType = "video/mp4";
             }
+
             MediaRefresh.addMediaToDB(activity, targetPath, fileType);
-            AppLog.d(TAG, "end downloadFile temp =" + temp);
+            AppLog.d(TAG, "end downloadFile temp = " + temp);
             AppInfo.isDownloading = false;
             final String message = activity.getResources().getString(R.string.message_download_to).replace("$1$", targetPath);
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (singleDownloadDialog != null) {
-                        singleDownloadDialog.dismissDownloadDialog();
+                    if (customDownloadDialog != null) {
+                        customDownloadDialog.dismissDownloadDialog();
+                        customDownloadDialog = null;
                     }
-                    if (downloadProgressTimer != null) {
-                        downloadProgressTimer.cancel();
-                    }
+
                     MyToast.show(activity, message);
                 }
             });
@@ -735,13 +858,14 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
 
                         if (!isCurrentItemLocal()) {
                             RemoteFileHelper.getInstance().remove((RemoteMediaItemInfo) currentItemInfo, fileType);
-                            hasDeleted  = true;
-                            Intent intent = new Intent();
-                            intent.putExtra("hasDeleted", hasDeleted);
-                            intent.putExtra("fileType", fileType.ordinal());
-                            activity.setResult(1000, intent);
-                            activity.finish();
+                            hasDeleted = true;
                         }
+
+                        Intent intent = new Intent();
+                        intent.putExtra("hasDeleted", hasDeleted);
+                        intent.putExtra("fileType", fileType.ordinal());
+                        activity.setResult(1000, intent);
+                        activity.finish();
                     }
                 });
             }
@@ -749,98 +873,44 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
         }
     }
 
-    public void showDownloadEnsureDialog() {
-        AppLog.d(TAG, "showProgressDialog");
-
-        if (isCurrentItemLocal()) {
-            AppLog.e(TAG, "showDownloadEnsureDialog: currentItemInfo is not remote file");
-            return;
-        }
-
-        if (videoPbMode == VideoPbMode.MODE_VIDEO_PAUSE) {
-            stopVideoStream();
-        }
-
-        if (SystemInfo.getSDFreeSize(activity) < curRemoteVideoFile.getFileSize()) {
-            MyToast.show(activity, R.string.text_sd_card_memory_shortage);
-        } else {
-            singleDownloadDialog = new SingleDownloadDialog(activity, curRemoteVideoFile);
-            singleDownloadDialog.setBackBtnOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    handler.obtainMessage(AppMessage.MESSAGE_CANCEL_VIDEO_DOWNLOAD, 0, 0).sendToTarget();
-                }
-            });
-            singleDownloadDialog.showDownloadDialog();
-
-            executor = Executors.newSingleThreadExecutor();
-            String path = StorageUtil.getRootPath(activity)  + AppInfo.DOWNLOAD_PATH_VIDEO;
-            String fileName = curRemoteVideoFile.getFileName();
-            AppLog.d(TAG, "------------fileName =" + fileName);
-            FileOper.createDirectory(path);
-            String downloadFilePath = FileTools.chooseUniqueFilename(path + fileName);
-            executor.submit(new DownloadThread(downloadFilePath), null);
-            downloadProgressTimer = new Timer();
-            downloadProgressTimer.schedule(new DownloadProcessTask(downloadFilePath), 0, 1000);
-        }
-    }
-
     public void showDeleteEnsureDialog() {
         // show delete confirmation dialog
-        BottomSheetDialog deleteDialog = new BottomSheetDialog(activity);
-        View deleteDialogLayout = LayoutInflater.from(activity).inflate(R.layout.dialog_delete_confirm, null);
-        deleteDialog.setContentView(deleteDialogLayout);
-        deleteDialog.show();
-
-        Button deleteButton = deleteDialogLayout.findViewById(R.id.delete_button);
-        Button cancelButton = deleteDialogLayout.findViewById(R.id.cancel_button);
-
-        cancelButton.setOnClickListener(new View.OnClickListener() {
+        AppDialogManager.getInstance().showDeleteConfirmDialog(activity, new DialogButtonListener() {
             @Override
-            public void onClick(View v) {
-                if (videoPbMode == VideoPbMode.MODE_VIDEO_PAUSE) {
-                    resumeVideoPb();
-                }
-
-                deleteDialog.dismiss();
-            }
-        });
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteDialog.dismiss();
-
+            public void onDelete() {
                 if (videoPbMode == VideoPbMode.MODE_VIDEO_PAUSE) {
                     stopVideoStream();
                 }
+
                 MyProgressDialog.showProgressDialog(activity, R.string.dialog_deleting);
                 executor = Executors.newSingleThreadExecutor();
                 executor.submit(new DeleteThread(), null);
             }
-        });
+
+            @Override
+            public void onCancel() {
+                if (videoPbMode == VideoPbMode.MODE_VIDEO_PAUSE) {
+                    resumeVideoPb();
+                }
+            }
+        }, activity.getResources().getString(R.string.dialog_confirm_delete_this_file));
     }
 
-    class DownloadProcessTask extends TimerTask {
-        int downloadProgress = 0;
+    class DownloadProgressTask extends TimerTask {
         long fileSize;
         long curFileLength;
-        String curDownloadFile ;
+        String curDownloadFile;
 
-        public DownloadProcessTask(String downloadFile) {
+        public DownloadProgressTask(String downloadFile) {
             curDownloadFile = downloadFile;
         }
 
         @Override
         public void run() {
-            //ICOM-4116 Begin Medify by b.jiang 20170315
-//            String path;
-//            path = Environment.getExternalStorageDirectory().toString() + AppInfo.DOWNLOAD_PATH_VIDEO;
             File file = new File(curDownloadFile);
-            //ICOM-4116 End Medify by b.jiang 20170315
             fileSize = curRemoteVideoFile.getFileSize();
-            curFileLength = file.length();
             if (file != null) {
+                curFileLength = file.length();
                 if (curFileLength == fileSize) {
                     downloadProgress = 100;
                 } else {
@@ -849,17 +919,11 @@ public class VideoDetailPresenter extends BasePresenter implements SensorEventLi
             } else {
                 downloadProgress = 0;
             }
-            final DownloadInfo downloadInfo = new DownloadInfo(curRemoteVideoFile, fileSize, curFileLength, downloadProgress, false);
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (singleDownloadDialog != null) {
-                        singleDownloadDialog.updateDownloadStatus(downloadInfo);
-                    }
-                    AppLog.d(TAG, "update Process downloadProgress=" + downloadProgress);
-                }
+
+            activity.runOnUiThread(() -> {
+                updateDownloadStatus();
             });
-            AppLog.d(TAG, "end DownloadProcessTask");
+            AppLog.d(TAG, "update downloadProgress = " + downloadProgress);
         }
     }
 

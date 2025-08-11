@@ -24,6 +24,9 @@ import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import com.sena.senacamera.MyCamera.CameraManager;
+import com.sena.senacamera.MyCamera.MyCamera;
+import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.presenter.PreviewPresenter;
 import com.sena.senacamera.R;
@@ -36,6 +39,7 @@ import com.sena.senacamera.ui.decoration.CenterSnapHelper;
 import com.sena.senacamera.utils.ClickUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PreviewActivity extends AppCompatActivity implements View.OnClickListener,  PreviewView {
@@ -44,9 +48,9 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     private ImageButton closeButton, settingsButton, mediaButton, preferenceButton, cameraModeButton, shutterButton;
     private SurfaceView mSurfaceView;
     private PreviewPresenter presenter;
-    private LinearLayout cameraPhotoStatus, cameraVideoStatus, recordingTimeLayout, topBarLayout, cameraZoomLayout, shootModeLayout, cameraStatusLayout;
-    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, batteryPercentText;
-    private ImageView batteryStatusIcon, sdCardStatusIcon;
+    private LinearLayout cameraVideoStatus, recordingTimeLayout, topBarLayout, cameraZoomLayout, shootModeLayout, cameraStatusLayout;
+    private TextView photoLimitText, videoLimitText, recordingTimeText, cameraZoomOneButton, cameraZoomOneHalfButton, cameraZoomTwoButton, cameraZoomTwoHalfButton, cameraZoomThreeButton, batteryPercentText, osdStatusText;
+    private ImageView batteryStatusIcon, sdCardStatusIcon, osdStatusIcon;
     private List<TextView> cameraZoomButtonList;
     private RecyclerView shootModeRecyclerView;
 
@@ -73,7 +77,6 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         cameraModeButton = findViewById(R.id.camera_mode_button);
         mSurfaceView = findViewById(R.id.camera_preview);
         shutterButton = findViewById(R.id.shutter_button);
-        cameraPhotoStatus = findViewById(R.id.camera_photo_status);
         cameraVideoStatus = findViewById(R.id.camera_video_status);
         photoLimitText = findViewById(R.id.photo_limit_text);
         videoLimitText = findViewById(R.id.video_limit_text);
@@ -92,6 +95,8 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         batteryPercentText = findViewById(R.id.camera_battery_percent);
         batteryStatusIcon = findViewById(R.id.camera_battery_status);
         sdCardStatusIcon = findViewById(R.id.camera_sd_card_status);
+        osdStatusText = findViewById(R.id.camera_osd_text);
+        osdStatusIcon = findViewById(R.id.camera_osd_status);
 
         closeButton.setOnClickListener(this);
         settingsButton.setOnClickListener(this);
@@ -169,20 +174,20 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         shootModeRecyclerView.setLayoutManager(layoutManager);
-//        shootModeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//
-//                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-//                    View centerView = snapHelper.findSnapView(layoutManager);
-//                    if (centerView != null) {
-//                        int pos = layoutManager.getPosition(centerView);
-//                        selectShootMode(pos);
-//                    }
-//                }
-//            }
-//        });
+        shootModeRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && shootModeSnapHelper != null) {
+                    View centerView = shootModeSnapHelper.findSnapView(layoutManager);
+                    if (centerView != null) {
+                        int pos = layoutManager.getPosition(centerView);
+                        selectShootMode(pos);
+                    }
+                }
+            }
+        });
     }
 
     private void toggleCameraMode() {
@@ -310,20 +315,20 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void updateShootModeList() {
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "updateShootModeList: camera is disconnected");
+            finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
         if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
-            this.shootModeList = new ArrayList<>();
-            this.shootModeList.add(getResources().getString(R.string.photo_mode_single));
-            this.shootModeList.add(getResources().getString(R.string.photo_mode_burst));
-            this.shootModeList.add(getResources().getString(R.string.photo_mode_timelapse));
-            this.shootModeList.add(getResources().getString(R.string.photo_mode_self_timer));
-            this.currentShootMode = this.shootModeList.get(0);
+            this.shootModeList = Arrays.asList(baseProperties.getPhotoMode().getValueList());
+            this.currentShootMode = baseProperties.getPhotoMode().getCurrentUiStringInSetting();
         } else {
-            this.shootModeList = new ArrayList<>();
-            this.shootModeList.add(getResources().getString(R.string.video_mode_video));
-            this.shootModeList.add(getResources().getString(R.string.video_mode_slow_motion));
-            this.shootModeList.add(getResources().getString(R.string.video_mode_timelapse));
-            this.shootModeList.add(getResources().getString(R.string.video_mode_loop_recording));
-            this.currentShootMode = this.shootModeList.get(0);
+            this.shootModeList = Arrays.asList(baseProperties.getVideoMode().getValueList());
+            this.currentShootMode = baseProperties.getVideoMode().getCurrentUiStringInSetting();
         }
 
         shootModeAdapter = new ShootModeAdapter(this, this.shootModeList);
@@ -334,7 +339,58 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
             shootModeSnapHelper.attachToRecyclerView(shootModeRecyclerView);
         }
 
-        scrollToSelectedShootMode(0);
+        scrollToSelectedShootMode(this.shootModeList.indexOf(this.currentShootMode));
+    }
+
+    private void updateOsd() {
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "updateShootModeList: camera is disconnected");
+            finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
+        if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+            this.osdStatusText.setVisibility(View.VISIBLE);
+            this.osdStatusText.setText(baseProperties.getPhotoResolution().getCurrentUiStringInPreview());
+        } else {
+            String videoSize = baseProperties.getVideoResolution().getCurrentUiStringInPreview();
+            if (videoSize == null) {
+                this.osdStatusIcon.setVisibility(View.GONE);
+                this.osdStatusText.setVisibility(View.GONE);
+                return;
+            }
+
+            String[] strings = videoSize.split(" ");
+            if (strings == null || strings.length != 2) {
+                this.osdStatusIcon.setVisibility(View.GONE);
+                this.osdStatusText.setVisibility(View.GONE);
+                return;
+            }
+
+            String size = strings[0];
+            String pts = strings[1];
+
+            this.osdStatusText.setText(pts);
+            this.osdStatusText.setVisibility(View.VISIBLE);
+
+            if (size.equals("4K")) {
+                this.osdStatusIcon.setImageResource(R.drawable.status_osd_4k);
+                this.osdStatusIcon.setVisibility(View.VISIBLE);
+            } else if (size.equals("2.7K")) {
+                this.osdStatusIcon.setImageResource(R.drawable.status_osd_27k);
+                this.osdStatusIcon.setVisibility(View.VISIBLE);
+            } else if (size.equals("1080P")) {
+                this.osdStatusIcon.setImageResource(R.drawable.status_osd_1080p);
+                this.osdStatusIcon.setVisibility(View.VISIBLE);
+            } else if (size.equals("720P")) {
+                this.osdStatusIcon.setImageResource(R.drawable.status_osd_720p);
+                this.osdStatusIcon.setVisibility(View.VISIBLE);
+            } else {
+                this.osdStatusIcon.setVisibility(View.GONE);
+            }
+        }
     }
 
     public void scrollToSelectedShootMode(int position) {
@@ -359,7 +415,22 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void selectShootMode(int position) {
+        MyCamera myCamera = CameraManager.getInstance().getCurCamera();
+        if (myCamera == null || !myCamera.isConnected()) {
+            AppLog.e(TAG, "selectShootMode: camera is disconnected");
+            finish();
+            return;
+        }
+        BaseProperties baseProperties = myCamera.getBaseProperties();
+
         if (!this.shootModeList.get(position).equals(this.currentShootMode)) {
+            if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+                // photo
+                baseProperties.getPhotoMode().setValueByPosition(position);
+            } else {
+                // video
+                baseProperties.getVideoMode().setValueByPosition(position);
+            }
             this.currentShootMode = this.shootModeList.get(position);
             this.shootModeAdapter.notifyDataSetChanged();
         }
@@ -380,6 +451,8 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         presenter.initStatus();
         presenter.addEvent();
 //        AppDialog.showDialogWarn( PanoramaPreviewActivity.this, R.string.text_preview_hint_info );
+
+        updateOsd();
     }
 
     @Override
@@ -456,11 +529,11 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_photo, (Resources.Theme) null));
 
         photoLimitText.setVisibility(View.VISIBLE);
-        cameraPhotoStatus.setVisibility(View.VISIBLE);
         videoLimitText.setVisibility(View.GONE);
         cameraVideoStatus.setVisibility(View.GONE);
 
         updateShootModeList();
+        updateOsd();
     }
 
     @Override
@@ -473,11 +546,11 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         shutterButton.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.shutter_video, (Resources.Theme) null));
 
         photoLimitText.setVisibility(View.GONE);
-        cameraPhotoStatus.setVisibility(View.GONE);
         videoLimitText.setVisibility(View.VISIBLE);
         cameraVideoStatus.setVisibility(View.VISIBLE);
 
         updateShootModeList();
+        updateOsd();
     }
 
     @Override

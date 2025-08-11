@@ -203,8 +203,8 @@ public class FileOperation {
     }
 
     public boolean downloadFile(ICatchFile file, String path) {
-        AppLog.i(TAG, "begin downloadFile filename =" + file.getFileName());
-        AppLog.i(TAG, "begin downloadFile path =" + path);
+        AppLog.i(TAG, "begin downloadFile filename = " + file.getFileName());
+        AppLog.i(TAG, "begin downloadFile path = " + path);
         boolean retValue = false;
         try {
             retValue = cameraPlayback.downloadFile(file, path);

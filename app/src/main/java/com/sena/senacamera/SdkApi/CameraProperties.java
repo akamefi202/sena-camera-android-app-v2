@@ -3,7 +3,6 @@
  */
 package com.sena.senacamera.SdkApi;
 
-import com.sena.senacamera.DataConvert.BurstConvert;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.data.PropertyId.PropertyId;
@@ -482,8 +481,89 @@ public class CameraProperties {
         return value;
     }
 
+    public boolean setIso(int value) {
+        AppLog.i(TAG, "begin setIso set value = " + value);
+        boolean retVal = false;
+
+        try {
+            retVal = cameraProperty.setISO(value);
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end setIso retVal = " + retVal);
+        return retVal;
+    }
+
+    public boolean setMetering(int value) {
+        AppLog.i(TAG, "begin setMetering set value = " + value);
+        boolean retVal = false;
+
+        try {
+            retVal = cameraProperty.setMetering(value);
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end setMetering retVal = " + retVal);
+        return retVal;
+    }
+
+    public boolean setQuality(int value) {
+        AppLog.i(TAG, "begin setQuality set value = " + value);
+        boolean retVal = false;
+
+        try {
+            retVal = cameraProperty.setQuality(value);
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end setQuality retVal = " + retVal);
+        return retVal;
+    }
+
     public boolean setCaptureDelay(int value) {
-        AppLog.i(TAG, "begin setCaptureDelay set value =" + value);
+        AppLog.i(TAG, "begin setCaptureDelay set value = " + value);
         boolean retVal = false;
 
         try {
@@ -512,6 +592,7 @@ public class CameraProperties {
     }
 
     public int getCurrentCaptureDelay() {
+        // capture delay has same function with self timer
         AppLog.i(TAG, "begin getCurrentCaptureDelay");
         int retVal = 0;
 
@@ -678,7 +759,7 @@ public class CameraProperties {
     /**
      * to prase the burst number Added by zhangyanhu C01012,2014-2-10
      */
-    public int getCurrentBurstNum() {
+    public int getCurrentBurstNumber() {
         AppLog.i(TAG, "begin getCurrentBurstNum");
         int number = 0xff;
         try {
@@ -704,34 +785,7 @@ public class CameraProperties {
         return number;
     }
 
-    public int getCurrentAppBurstNum() {
-        AppLog.i(TAG, "begin getCurrentAppBurstNum");
-        int number = 0xff;
-        try {
-            number = cameraProperty.getCurrentBurstNumber();
-        } catch (IchSocketException e) {
-            AppLog.e(TAG, "IchSocketException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchCameraModeException e) {
-            AppLog.e(TAG, "IchCameraModeException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchInvalidSessionException e) {
-            AppLog.e(TAG, "IchInvalidSessionException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchDevicePropException e) {
-            AppLog.e(TAG, "IchDevicePropException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        number = BurstConvert.getInstance().getBurstConvertFromFw(number);
-        AppLog.i(TAG, "getCurrentAppBurstNum num =" + number);
-        return number;
-    }
-
-    public boolean setCurrentBurst(int burstNum) {
+    public boolean setBurstNumber(int burstNum) {
         AppLog.i(TAG, "begin setCurrentBurst set value = " + burstNum);
         if (burstNum < 0 || burstNum == 0xff) {
             return false;
@@ -879,6 +933,32 @@ public class CameraProperties {
         // JIRA ICOM-1577 End:Modify by b.jiang C01063 2015-07-17
     }
 
+    public String getSdCardInfo() {
+        AppLog.i(TAG, "start getSdCardInfo");
+        String retValue = null;
+        try {
+            retValue = cameraProperty.getCurrentStringPropertyValue(PropertyId.SD_CARD_INFO);
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end getSdCardInfo retValue = " + retValue);
+        return retValue;
+    }
+
     public int getBatteryElectric() {
         AppLog.i(TAG, "start getBatteryElectric");
         int electric = 0;
@@ -973,7 +1053,7 @@ public class CameraProperties {
     /**
      * Added by zhangyanhu C01012,2014-7-4
      */
-    public List<Integer> getSupportedDateStamps() {
+    public List<Integer> getSupportedDateCaption() {
         AppLog.i(TAG, "begin getSupportedDateStamps");
         List<Integer> list = null;
 
@@ -1073,6 +1153,11 @@ public class CameraProperties {
 
         try {
             list = cameraProperty.getSupportedMetering();
+            // akamefi202: to be fixed
+            // remove first item (2) from metering option list
+            if (list.size() == 3) {
+                list.remove(0);
+            }
         } catch (IchSocketException e) {
             AppLog.e(TAG, "IchSocketException");
             // TODO Auto-generated catch block
@@ -1166,36 +1251,6 @@ public class CameraProperties {
     }
 
     /**
-     * Added by zhangyanhu C01012,2014-7-4
-     */
-    public List<Integer> getSupportedWifiFrequencies() {
-        // TODO Auto-generated method stub
-        AppLog.i(TAG, "begin getSupportedWifiFrequencies");
-        List<Integer> list = null;
-        try {
-            list = cameraProperty.getSupportedLightFrequencies();
-        } catch (IchSocketException e) {
-            AppLog.e(TAG, "IchSocketException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchCameraModeException e) {
-            AppLog.e(TAG, "IchCameraModeException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchInvalidSessionException e) {
-            AppLog.e(TAG, "IchInvalidSessionException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IchDevicePropException e) {
-            AppLog.e(TAG, "IchDevicePropException");
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        AppLog.i(TAG, "end getSupportedWifiFrequencies list.size() =" + list.size());
-        return list;
-    }
-
-    /**
      * Added by zhangyanhu C01012,2014-8-21
      *
      * @return
@@ -1231,7 +1286,6 @@ public class CameraProperties {
     public List<Integer> getSupportedTimeLapseDurations() {
         AppLog.i(TAG, "begin getSupportedTimeLapseDurations");
         List<Integer> list = null;
-        // boolean retValue = false;
         try {
             list = cameraProperty.getSupportedTimeLapseDurations();
         } catch (IchSocketException e) {
@@ -1257,7 +1311,6 @@ public class CameraProperties {
     public List<Integer> getSupportedTimeLapseIntervals() {
         AppLog.i(TAG, "begin getSupportedTimeLapseIntervals");
         List<Integer> list = null;
-        // boolean retValue = false;
         try {
             list = cameraProperty.getSupportedTimeLapseIntervals();
         } catch (IchSocketException e) {
@@ -1273,8 +1326,8 @@ public class CameraProperties {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        for (int ii = 0; ii < list.size(); ii++) {
-            AppLog.i(TAG, "list.get(ii) =" + list.get(ii));
+        for (int i = 0; i < list.size(); i++) {
+            AppLog.i(TAG, "list.get(ii) =" + list.get(i));
         }
         AppLog.i(TAG, "end getSupportedTimeLapseIntervals list =" + list.size());
         return list;
@@ -1543,6 +1596,58 @@ public class CameraProperties {
             e.printStackTrace();
         }
         AppLog.i(TAG, "end setSlowMotion retValue =" + retValue);
+        return retValue;
+    }
+
+    public int getCurrentTimelapseInterval() {
+        AppLog.i(TAG, "start getCurrentTimelapseInterval");
+        int retValue = 0;
+        try {
+            retValue = cameraProperty.getCurrentTimeLapseInterval();
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end getCurrentTimelapseInterval retValue =" + retValue);
+        return retValue;
+    }
+
+    public int getCurrentTimelapseDuration() {
+        AppLog.i(TAG, "start getCurrentTimelapseDuration");
+        int retValue = 0;
+        try {
+            retValue = cameraProperty.getCurrentTimeLapseDuration();
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end getCurrentTimelapseInterval retValue =" + retValue);
         return retValue;
     }
 
@@ -2010,6 +2115,32 @@ public class CameraProperties {
         return retValue;
     }
 
+    public boolean factoryReset() {
+        AppLog.i(TAG, "start factoryReset");
+        boolean retValue = false;
+        try {
+            retValue = cameraProperty.setPropertyValue(PropertyId.FACTORY_RESET, 0);
+        } catch (IchSocketException e) {
+            AppLog.e(TAG, "IchSocketException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchCameraModeException e) {
+            AppLog.e(TAG, "IchCameraModeException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchInvalidSessionException e) {
+            AppLog.e(TAG, "IchInvalidSessionException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IchDevicePropException e) {
+            AppLog.e(TAG, "IchDevicePropException");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        AppLog.i(TAG, "end factoryReset");
+        return retValue;
+    }
+
     public int getVideoRecordingTime() {
         AppLog.i(TAG, "start getRecordingTime");
         int retValue = 0;
@@ -2107,7 +2238,7 @@ public class CameraProperties {
     }
 
     public List<Integer> getSupportedPropertyValues(int propertyId) {
-        AppLog.i(TAG, "begin getSupportedPropertyValues propertyId =" + propertyId);
+        AppLog.i(TAG, "begin getSupportedPropertyValues propertyId = " + propertyId);
         List<Integer> list = null;
         try {
             list = cameraProperty.getSupportedPropertyValues(propertyId);
@@ -2128,7 +2259,7 @@ public class CameraProperties {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        AppLog.i(TAG, "end getSupportedPropertyValues list.size() =" + list.size());
+        AppLog.i(TAG, "end getSupportedPropertyValues list.size() = " + list.size());
         return list;
     }
 
@@ -2238,7 +2369,7 @@ public class CameraProperties {
         return retValue;
     }
 
-    public boolean notifyCameraConnectChnage(int value) {
+    public boolean notifyCameraConnectChange(int value) {
         AppLog.i(TAG, "start notifyCameraConnectChnage value = " + value);
         boolean retValue = false;
         try {

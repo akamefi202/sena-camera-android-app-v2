@@ -31,6 +31,7 @@
             android:id="@+id/menu_switch"
             app:trackTint="@color/selector_switch_track_color"
             app:thumbTint="@color/selector_switch_thumb_color"
+            android:clickable="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
