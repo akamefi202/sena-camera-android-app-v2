@@ -1154,7 +1154,7 @@ public class CameraProperties {
         try {
             list = cameraProperty.getSupportedMetering();
             // akamefi202: to be fixed
-            // remove first item (2) from metering option list
+            // remove first item (value: 2) from metering option list
             if (list.size() == 3) {
                 list.remove(0);
             }

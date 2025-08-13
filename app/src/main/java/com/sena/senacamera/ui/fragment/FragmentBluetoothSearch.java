@@ -76,13 +76,13 @@ public class FragmentBluetoothSearch extends Fragment implements View.OnClickLis
     private final BluetoothConnectCallback bluetoothConnectCallback = new BluetoothConnectCallback() {
         @Override
         public void onConnected() {
-            if (bluetoothCommandManager.currentDevice.wifiPassword.isEmpty()) {
+//            if (bluetoothCommandManager.currentDevice.wifiPassword.isEmpty()) {
                 // show the set device fragment
                 showSetDeviceFragment(true);
-            } else {
-                // show password check dialog
-                showPasswordInputDialog(bluetoothCommandManager.currentDevice.wifiPassword);
-            }
+//            } else {
+//                // show password check dialog
+//                showPasswordInputDialog(bluetoothCommandManager.currentDevice.wifiPassword);
+//            }
         }
 
         @SuppressLint("MissingPermission")

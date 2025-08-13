@@ -25,12 +25,18 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.gson.Gson;
+import com.icatchtek.reliant.customer.type.ICatchFile;
 import com.sena.senacamera.SdkApi.CameraProperties;
 import com.sena.senacamera.bluetooth.BluetoothCommandManager;
 import com.sena.senacamera.bluetooth.BluetoothDeviceManager;
+import com.sena.senacamera.bluetooth.BluetoothInfo;
+import com.sena.senacamera.bluetooth.FirmwareUpdateStatus;
 import com.sena.senacamera.data.SystemInfo.MWifiManager;
 import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.data.entity.CameraDeviceInfo;
+import com.sena.senacamera.data.entity.DownloadInfo;
+import com.sena.senacamera.function.CameraAction.PbDownloadManager;
+import com.sena.senacamera.listener.BluetoothCommandCallback;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.log.AppLog;
@@ -43,12 +49,16 @@ import com.sena.senacamera.ui.component.MenuSelection;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.utils.ClickUtils;
+import com.sena.senacamera.utils.ConvertTools;
 import com.sena.senacamera.utils.FileDownloader;
 import com.sena.senacamera.utils.SenaXmlParser;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FragmentFirmwareUpdate extends Fragment implements View.OnClickListener {
     private static final String TAG = FragmentFirmwareUpdate.class.getSimpleName();
@@ -74,6 +84,7 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
     boolean isInstalling = false, isInstalled = false;
     int installPercent = 0;
     long firmwareInstallDuration = 200000;
+    private Timer updateProgressTimer;
 
     static {
         System.loadLibrary("native-firmware-lib");
@@ -296,6 +307,9 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
             public void processFailed() {
                 AppLog.e(TAG, "firmware download is failed");
                 appDialogManager.showAlertDialog(requireContext(), null, requireContext().getResources().getString(R.string.failed_to_access_ota_server));
+
+                isInstalling = false;
+                updateFragment();
             }
         });
 
@@ -307,6 +321,9 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         if (splitFirmware(firmwareFolderPath + TEMP_FIRMWARE_FILENAME, firmwareFolderPath) == -1) {
             Log.e(TAG, "firmware split is failed");
             appDialogManager.showUpdateFailedDialog(requireContext(), null);
+
+            isInstalling = false;
+            updateFragment();
             return;
         }
 
@@ -316,6 +333,9 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         if (curCamera == null) {
             Log.e(TAG, "camera is disconnected");
             appDialogManager.showUpdateFailedDialog(requireContext(), null);
+
+            isInstalling = false;
+            updateFragment();
             return;
         }
 
@@ -337,10 +357,16 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         if (imgFilename.isEmpty() || brnFilename.isEmpty()) {
             AppLog.e(TAG, "all files are not found");
             appDialogManager.showUpdateFailedDialog(requireContext(), null);
+
+            isInstalling = false;
+            updateFragment();
             return;
         }
 
         // start timer
+        bleCommandManager.isFirmwareUpdating = true;
+//        updateProgressTimer = new Timer();
+//        updateProgressTimer.schedule(new UpdateProgressTask(), 0, 3000);
         new CountDownTimer(firmwareInstallDuration, firmwareInstallDuration / 100) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -353,12 +379,43 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
 
             @Override
             public void onFinish() {
-                isInstalling = false;
-                isInstalled = true;
-                requireActivity().runOnUiThread(() -> {
-                    updateFragment();
-                });
+                bleCommandManager.isFirmwareUpdating = false;
+                bleCommandManager.addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
+                    @Override
+                    public void onSuccess(byte[] response) {
+                        AppLog.i(TAG, "getFirmwareVersionCmdRep succeeded");
+                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
 
+                        // get firmware version
+                        String currentVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
+                        currentVersionText.setText(currentVersion);
+                        AppLog.i(TAG, "getFirmwareVersionCmdRep firmwareVersion: " + currentVersion);
+
+                        if (latestVersionText.getText().equals(currentVersion)) {
+                            // firmware update success
+                            isInstalling = false;
+                            isInstalled = true;
+
+                            requireActivity().runOnUiThread(() -> {
+                                updateFragment();
+                            });
+                        } else {
+                            // firmware update failed
+                            isInstalling = false;
+                            isInstalled = false;
+
+                            requireActivity().runOnUiThread(() -> {
+                                updateFragment();
+                                appDialogManager.showUpdateFailedDialog(requireContext(), null);
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure() {
+                        AppLog.i(TAG, "getFirmwareVersionCmdRep failed");
+                    }
+                });
             }
         }.start();
 
@@ -382,93 +439,29 @@ public class FragmentFirmwareUpdate extends Fragment implements View.OnClickList
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("autoConnect", true);
         startActivity(intent);
-
-        /*
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        // check if bluetooth is turned on
-        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-            AppLog.i(TAG, "connectCamera bluetooth is turned off");
-            // turn on bluetooth if it is off currently
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-            return;
-        }
-
-        // get current device info (bluetooth name & address)
-        CameraDeviceInfo currentDevice = bleDeviceManager.getCurrentDevice();
-        if (currentDevice == null) {
-            // no device is registered
-            return;
-        }
-
-        // get bluetooth device object from address
-        BluetoothDevice bleDevice = bluetoothAdapter.getRemoteDevice(currentDevice.bleAddress);
-        if (bleDevice == null) {
-            AppLog.i(TAG, "connectCamera bleDevice is null");
-            return;
-        }
-
-        // bluetooth connection callback
-        BluetoothConnectCallback bluetoothConnectCallback = new BluetoothConnectCallback() {
-            @SuppressLint("NewApi")
-            @Override
-            public void onConnected() {
-                AppLog.i(TAG, "connectCamera bluetooth connection is succeeded");
-
-                // check if wifi of phone is turned on
-                if (!MWifiManager.isWifiEnabled(requireContext())) {
-                    MyToast.show(requireActivity(), R.string.wifi_turned_off);
-                    return;
-                }
-
-                // update current device with wifi ssid & password
-                currentDevice.wifiSsid = bleCommandManager.getCurrentWifiSsid();
-                currentDevice.wifiPassword = bleCommandManager.getCurrentWifiPassword();
-                currentDevice.firmwareVersion = bleCommandManager.getCurrentFirmwareVersion();
-                bleDeviceManager.updateCurrentDevice(currentDevice);
-                bleDeviceManager.writeToSharedPref(requireContext());
-
-                // connect to the camera device via wifi
-                // add wifi connect suggestion
-                requireActivity().runOnUiThread(() -> {
-                    MyProgressDialog.showProgressDialog(requireContext(), null);
-                });
-
-                MWifiManager.connect(requireContext(), bleCommandManager.getCurrentWifiSsid(), bleCommandManager.getCurrentWifiPassword(), new Callback() {
-                    @Override
-                    public void processSucceed() {
-                        requireActivity().runOnUiThread(() -> {
-                            MyProgressDialog.closeProgressDialog();
-                        });
-
-                        Intent intent = new Intent(requireActivity(), MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        intent.putExtra("autoConnect", true);
-                        startActivity(intent);
-                    }
-
-                    @Override
-                    public void processFailed() {
-                        requireActivity().runOnUiThread(() -> {
-                            MyProgressDialog.closeProgressDialog();
-                            appDialogManager.showConnectionFailedOkDialog(requireContext(), null);
-                        });
-
-                        AppLog.e(TAG, "onConnected: wifi connect is failed");
-                    }
-                });
-            }
-
-            @Override
-            public void onFailed() {
-                AppLog.i(TAG, "connectCamera bluetooth connection is failed");
-            }
-        };
-
-        // connect to the current device via bluetooth
-        // wifi of camera device will be turned on
-        bleCommandManager.connectDevice(new BluetoothDeviceInfo(bleDevice, currentDevice.serialData, ""), bluetoothConnectCallback, true, false);*/
     }
 
+    class UpdateProgressTask extends TimerTask {
+        String TAG = UpdateProgressTask.class.getSimpleName();
+
+        @Override
+        public void run() {
+            bleCommandManager.addCommand(BluetoothInfo.getFirmwareUpdateStatusCommand(), BluetoothInfo.getFirmwareUpdateStatusCmdRep, new BluetoothCommandCallback() {
+                @Override
+                public void onSuccess(byte[] response) {
+                    AppLog.i(TAG, "getFirmwareUpdateStatusCmdRep succeeded");
+                    byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+                    FirmwareUpdateStatus result = BluetoothInfo.getFirmwareUpdateStatus(payload);
+                    AppLog.i(TAG, "getFirmwareUpdateStatusCmdRep cameraOn: " + result.cameraOn + ", otaOn: " + result.otaOn + ", totalFirmwareCount: " +
+                            result.totalFirmwareCount + ", currentFirmwareIndex" + result.currentFirmwareIndex + ", percent: " + result.percent);
+                    firmwareUpdateProgressBar.setProgress((result.percent + (result.currentFirmwareIndex - 1) * 100) / result.totalFirmwareCount);
+                }
+
+                @Override
+                public void onFailure() {
+                    AppLog.i(TAG, "getFirmwareUpdateStatusCmdRep failed");
+                }
+            });
+        }
+    }
 }

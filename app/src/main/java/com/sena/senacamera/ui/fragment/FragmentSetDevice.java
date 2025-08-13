@@ -142,7 +142,7 @@ public class FragmentSetDevice extends Fragment implements View.OnClickListener 
     }
 
     private void onOk() {
-        if (!bleCommandManager.isConnected()) {
+        if (!bleCommandManager.isConnected) {
             AppLog.i(TAG, "onOk ble camera device is disconnected");
             MyToast.show(requireContext(), R.string.error_occurred);
             return;
@@ -168,23 +168,6 @@ public class FragmentSetDevice extends Fragment implements View.OnClickListener 
                     @Override
                     public void onFailure() {
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
-                    }
-                });
-                bleCommandManager.addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
-                    @Override
-                    public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "getFirmwareVersionCommand succeeded");
-                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
-
-                        // get firmware version
-                        String firmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
-                        bleCommandManager.setCurrentFirmwareVersion(firmwareVersion);
-                        AppLog.i(TAG, "getFirmwareVersionCommand firmwareVersion: " + firmwareVersion);
-                    }
-
-                    @Override
-                    public void onFailure() {
-                        AppLog.i(TAG, "getFirmwareVersionCommand failed");
                     }
                 });
                 // turn on wifi & connect to the device

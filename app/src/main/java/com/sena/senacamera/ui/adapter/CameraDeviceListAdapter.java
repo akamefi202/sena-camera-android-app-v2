@@ -53,13 +53,14 @@ public class CameraDeviceListAdapter extends ArrayAdapter<CameraDeviceInfo> {
                     return;
                 }
 
-                // show select device confirm dialog
-                appDialogManager.showSelectDeviceConfirmDialog(context, new DialogButtonListener() {
-                    @Override
-                    public void onSelect() {
-                        ((DeviceListActivity) context).selectDevice(itemIndex);
-                    }
-                });
+                // select device
+                ((DeviceListActivity) context).selectDevice(itemIndex);
+//                appDialogManager.showSelectDeviceConfirmDialog(context, new DialogButtonListener() {
+//                    @Override
+//                    public void onSelect() {
+//                        ((DeviceListActivity) context).selectDevice(itemIndex);
+//                    }
+//                });
             }
         }
     };

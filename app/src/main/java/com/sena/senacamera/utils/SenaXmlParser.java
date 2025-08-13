@@ -6,6 +6,8 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.telecom.Call;
 
 import com.google.gson.Gson;
@@ -52,6 +54,7 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
         // initialize device model map consists of product id & model name
         deviceModelMap = new HashMap<>();
         deviceModelMap.put("3568", "PRISM 2");
+        deviceModelMap.put("096a", "PHANTOM CAMERA");
 
         initData();
     }
@@ -162,6 +165,7 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
             return false;
         }
 
+        Handler handler = new Handler(Looper.getMainLooper());
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         // akamefi202: to be fixed
         // read xml data via wifi
@@ -169,10 +173,16 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 .build();
 
+        handler.postDelayed(() -> {
+            if (callback != null) {
+                callback.processFailed();
+            }
+        }, 30000);
         cm.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
-                AppLog.i(TAG, "onAvailable");
+                handler.removeCallbacksAndMessages(null);
+
                 try {
                     URL url = new URL(TimeZone.getDefault().getID().equals("Asia/Shanghai")? SENA_CAMERA_XML_URL_CHINA: SENA_CAMERA_XML_URL);
 
@@ -184,6 +194,9 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
                     int responseCode = connection.getResponseCode();
                     if (responseCode != HttpURLConnection.HTTP_OK) {
                         AppLog.e(TAG, "failed to connect: " + responseCode);
+                        if (callback != null) {
+                            callback.processFailed();
+                        }
                         return;
                     }
 
@@ -228,7 +241,7 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
 
             @Override
             public void onUnavailable() {
-                AppLog.i(TAG, "onUnavailable");
+                handler.removeCallbacksAndMessages(null);
 
                 if (callback != null) {
                     callback.processFailed();

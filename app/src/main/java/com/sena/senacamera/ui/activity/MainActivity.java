@@ -104,7 +104,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void processFailed() {
                     AppLog.e(TAG, "xml read is failed");
-                    AppDialogManager.getInstance().showAlertDialog(activity, null, activity.getResources().getString(R.string.failed_to_access_ota_server_xml));
+
+                    runOnUiThread(() -> {
+                        AppDialogManager.getInstance().showAlertDialog(activity, null, activity.getResources().getString(R.string.failed_to_access_ota_server_xml));
+                    });
                 }
             });
             senaXmlParser.readFromSharedPref();

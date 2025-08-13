@@ -77,8 +77,8 @@ public class AppLog {
         hasConfiguration = true;
 
 //        i(TAG, sdf.format(date) + "\n");
-//        i(TAG, "MobileCam version:" + AppInfo.APP_VERSION + "\n");
-//        i(TAG, "MobileCam sdk:" + AppInfo.SDK_VERSION + "\n");
+//        i(TAG, "SenaCamera version:" + AppInfo.APP_VERSION + "\n");
+//        i(TAG, "SenaCamera sdk:" + AppInfo.SDK_VERSION + "\n");
 //        i(TAG,"Build.VERSION.SDK_INT:" + Build.VERSION.SDK_INT);
 //        i(TAG,"Build.VERSION.CODENAME:" + Build.VERSION.CODENAME);
 //        i(TAG,"Build.VERSION.INCREMENTAL:" + Build.VERSION.INCREMENTAL);

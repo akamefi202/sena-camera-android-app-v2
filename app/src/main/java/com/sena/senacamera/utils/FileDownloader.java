@@ -6,6 +6,8 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.sena.senacamera.listener.Callback;
 import com.sena.senacamera.log.AppLog;
@@ -33,15 +35,23 @@ public class FileDownloader extends AsyncTask<String, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(String... urls) {
+        Handler handler = new Handler(Looper.getMainLooper());
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkRequest request = new NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .build();
 
+        handler.postDelayed(() -> {
+            if (callback != null) {
+                callback.processFailed();
+            }
+        }, 60000);
         cm.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
+                handler.removeCallbacksAndMessages(null);
+
                 try {
                     String fileUrl = urls[0]; // URL to download
                     String filePath = urls[1]; // temporary file name
@@ -54,7 +64,9 @@ public class FileDownloader extends AsyncTask<String, Void, Boolean> {
                     conn.connect();
 
                     if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                        callback.processFailed();
+                        if (callback != null) {
+                            callback.processFailed();
+                        }
                         return;
                         //return "Server returned HTTP " + conn.getResponseCode();
                     }
@@ -72,9 +84,20 @@ public class FileDownloader extends AsyncTask<String, Void, Boolean> {
                     input.close();
 
                     //return "Downloaded to: " + file.getAbsolutePath();
-                    callback.processSucceed();
+                    if (callback != null) {
+                        callback.processSucceed();
+                    }
                 } catch (Exception e) {
+                    AppLog.e(TAG, "error: " + e.getMessage());
                     e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onUnavailable() {
+                handler.removeCallbacksAndMessages(null);
+
+                if (callback != null) {
                     callback.processFailed();
                 }
             }

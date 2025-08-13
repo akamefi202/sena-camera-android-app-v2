@@ -3,6 +3,8 @@ package com.sena.senacamera.ui.fragment;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -185,7 +187,8 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
     private void onOk() {
         SystemInfo.hideInputMethod(requireActivity());
 
-        if (!bluetoothCommandManager.isConnected()) {
+        if (!bluetoothCommandManager.isConnected
+        ) {
             AppLog.i(TAG, "onOk ble camera device is disconnected");
             MyToast.show(requireContext(), R.string.error_occurred);
             return;
@@ -213,56 +216,41 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
                     }
                 });
-                bluetoothCommandManager.addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
-                    @Override
-                    public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "getFirmwareVersionCommand succeeded");
-                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
-
-                        // get firmware version
-                        String firmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
-                        bluetoothCommandManager.setCurrentFirmwareVersion(firmwareVersion);
-                        AppLog.i(TAG, "getFirmwareVersionCommand firmwareVersion: " + firmwareVersion);
-                    }
-
-                    @Override
-                    public void onFailure() {
-                        AppLog.i(TAG, "getFirmwareVersionCommand failed");
-                    }
-                });
                 // turn on wifi & register the device
-                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
-                    @SuppressLint({"MissingPermission"})
-                    @Override
-                    public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                        @SuppressLint({"MissingPermission"})
+                        @Override
+                        public void onSuccess(byte[] response) {
+                            AppLog.i(TAG, "cameraWifiOnOffCmdRep succeeded");
 
-                        // register device
-                        BluetoothDeviceManager deviceManager = BluetoothDeviceManager.getInstance();
-                        deviceManager.addDevice(new CameraDeviceInfo(bluetoothCommandManager.currentDevice.device.getName(), bluetoothCommandManager.currentDevice.device.getAddress(), currentSsid, newPassword, bluetoothCommandManager.getCurrentFirmwareVersion(), bluetoothCommandManager.currentDevice.serialData));
-                        deviceManager.currentIndex = deviceManager.getDeviceCount() - 1;
-                        deviceManager.writeToSharedPref(requireContext().getApplicationContext());
+                            // register device
+                            BluetoothDeviceManager deviceManager = BluetoothDeviceManager.getInstance();
+                            deviceManager.addDevice(new CameraDeviceInfo(bluetoothCommandManager.currentDevice.device.getName(), bluetoothCommandManager.currentDevice.device.getAddress(), currentSsid, newPassword, bluetoothCommandManager.getCurrentFirmwareVersion(), bluetoothCommandManager.currentDevice.serialData));
+                            deviceManager.currentIndex = deviceManager.getDeviceCount() - 1;
+                            deviceManager.writeToSharedPref(requireContext().getApplicationContext());
 
-                        MyProgressDialog.closeProgressDialog();
+                            MyProgressDialog.closeProgressDialog();
 
-                        SystemInfo.hideInputMethod(requireActivity());
-                        startActivity(new Intent(requireContext(), MainActivity.class));
-                        requireActivity().finish();
+                            SystemInfo.hideInputMethod(requireActivity());
+                            startActivity(new Intent(requireContext(), MainActivity.class));
+                            requireActivity().finish();
 
-                        // open wifi settings
-//                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-//                            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-//                            requireActivity().startActivity(intent);
-//                        }, 300);
-                    }
+                            // open wifi settings
+                            //                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            //                            Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                            //                            requireActivity().startActivity(intent);
+                            //                        }, 300);
+                        }
 
-                    @Override
-                    public void onFailure() {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
-                        MyProgressDialog.closeProgressDialog();
-                        MyToast.show(requireContext(), R.string.error_occurred);
-                    }
-                });
+                        @Override
+                        public void onFailure() {
+                            AppLog.i(TAG, "cameraWifiOnOffCmdRep failed");
+                            MyProgressDialog.closeProgressDialog();
+                            MyToast.show(requireContext(), R.string.error_occurred);
+                        }
+                    });
+                }, 3000);
             }
         }).start();
     }

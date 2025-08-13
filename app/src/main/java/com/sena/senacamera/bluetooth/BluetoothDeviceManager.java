@@ -159,6 +159,7 @@ public class BluetoothDeviceManager {
         CameraDeviceInfo device = deviceList.get(index);
         String ssid = MWifiManager.getSsid(context);
         AppLog.i(TAG, "isDeviceConnected index: " + index + ", ssid: " + ssid + ", deviceName: " + device.wifiSsid);
+
         return device.wifiSsid.equals(ssid);
     }
 

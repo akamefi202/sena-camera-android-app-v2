@@ -12,4 +12,20 @@ public class BluetoothDeviceInfo {
         this.serialData = serialData;
         this.wifiPassword = wifiPassword;
     }
+
+    public String getProductId() {
+        String[] array = serialData.split("-");
+        if (array.length != 2) {
+            return null;
+        }
+        return array[0];
+    }
+
+    public String getSerialNumber() {
+        String[] array = serialData.split("-");
+        if (array.length != 2) {
+            return null;
+        }
+        return array[1];
+    }
 }

@@ -30,7 +30,7 @@ public class test {
 
     public static void saveImage(Bitmap bitmap, long time) {
         videoBitmap = bitmap;
-        path = Environment.getExternalStorageDirectory().toString() + "/MobileCam/Photo/";
+        path = Environment.getExternalStorageDirectory().toString() + "/SenaCamera/photo/";
         lastTime = System.currentTimeMillis();
         if (path != null) {
             directory = new File(path);
@@ -80,7 +80,7 @@ public class test {
         // Bitmap videoBitmap = Bitmap.createBitmap(640, 360, Config.ARGB_8888);
         // }
         // videoBitmap.copyPixelsFromBuffer(buffer);
-        path = Environment.getExternalStorageDirectory().toString() + "/MobileCam/Photo/";
+        path = Environment.getExternalStorageDirectory().toString() + "/SenaCamera/photo/";
         lastTime11 = System.currentTimeMillis();
         if (path != null) {
             directory = new File(path);

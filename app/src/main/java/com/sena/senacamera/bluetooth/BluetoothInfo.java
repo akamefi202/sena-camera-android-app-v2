@@ -18,11 +18,16 @@ public class BluetoothInfo {
     public static final String getCameraWifiInfoCmd = "0991", getCameraWifiInfoCmdRep = "8991";
     public static final String setCameraWifiInfoCmd = "0992", setCameraWifiInfoCmdRep = "8992";
     public static final String cameraWifiOnOffCmd = "0990", cameraWifiOnOffCmdRep = "8990";
+    public static final String cameraOnOffCmd = "0993", cameraOnOffCmdRep = "8993";
     public static final String getFirmwareVersionCmd = "0502", getFirmwareVersionCmdRep = "8502";
+    public static final String getFirmwareUpdateStatusCmd = "0590", getFirmwareUpdateStatusCmdRep = "8590";
 
     // command header
     public static final byte packetStartByte = (byte) 0xff, packetVersionByte = 0x01, packetFlagByte = 0x00;
     public static final byte[] packetHeader = {packetStartByte, packetVersionByte, packetFlagByte};
+
+    // manufacture & product id
+    public static final String MANUFACTURE_ID = "6009", PRODUCT_ID_PRISM_2 = "3568", PRODUCT_ID_PHANTOM_CAMERA = "096a";
 
     // command bytes
     public static byte[] getCameraWifiInfoCommand() {
@@ -43,6 +48,18 @@ public class BluetoothInfo {
         command = ConvertTools.addByteToByteArray(command, (byte) 0x01);
         // add command bytes (2)
         command = ConvertTools.addByteArrayToByteArray(command, ConvertTools.getByteArrayFromHexString(BluetoothInfo.cameraWifiOnOffCmd));
+        // add payload
+        command = ConvertTools.addByteToByteArray(command, (byte) (enabled? 0x01: 0x00));
+
+        return command;
+    }
+
+    public static byte[] cameraOnOffCommand(boolean enabled) {
+        byte[] command = {BluetoothInfo.packetStartByte, BluetoothInfo.packetVersionByte, BluetoothInfo.packetFlagByte};
+        // add length byte
+        command = ConvertTools.addByteToByteArray(command, (byte) 0x01);
+        // add command bytes (2)
+        command = ConvertTools.addByteArrayToByteArray(command, ConvertTools.getByteArrayFromHexString(BluetoothInfo.cameraOnOffCmd));
         // add payload
         command = ConvertTools.addByteToByteArray(command, (byte) (enabled? 0x01: 0x00));
 
@@ -76,6 +93,18 @@ public class BluetoothInfo {
         return command;
     }
 
+    public static byte[] getFirmwareUpdateStatusCommand() {
+        byte[] command = {BluetoothInfo.packetStartByte, BluetoothInfo.packetVersionByte, BluetoothInfo.packetFlagByte};
+        // add length byte
+        command = ConvertTools.addByteToByteArray(command, (byte) 0x01);
+        // add command bytes (2)
+        command = ConvertTools.addByteArrayToByteArray(command, ConvertTools.getByteArrayFromHexString(BluetoothInfo.getFirmwareUpdateStatusCmd));
+        // add payload
+        command = ConvertTools.addByteToByteArray(command, (byte) 0x00);
+
+        return command;
+    }
+
     public static String getFirmwareVersionFromPayload(byte[] payload) {
         String version;
         int majorVersion = payload[0];
@@ -86,5 +115,16 @@ public class BluetoothInfo {
 
         version = majorVersion + "." + minorVersion + "." + subVersion;
         return version;
+    }
+
+    public static FirmwareUpdateStatus getFirmwareUpdateStatus(byte[] payload) {
+        FirmwareUpdateStatus result = new FirmwareUpdateStatus();
+        result.cameraOn = (int) payload[0] != 0;
+        result.otaOn = (int) payload[1] != 0;
+        result.totalFirmwareCount = payload[2];
+        result.currentFirmwareIndex = payload[3];
+        result.percent = payload[4];
+
+        return result;
     }
 }

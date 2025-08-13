@@ -16,18 +16,18 @@ import java.util.List;
  * Fucntion:
  */
 public class AppInfo {
-    public static final String APP_PATH = "/MobileCam/";
+    public static final String APP_PATH = "/SenaCamera/";
     public static final String APP_VERSION = "V1.3.0.3";
     public static final String SDK_VERSION = "V3.6.0.39.1";
-    public static final String SDK_LOG_DIRECTORY_PATH = APP_PATH  + "MobileCam_SDK_Log/";
-    public static final String APP_LOG_DIRECTORY_PATH = APP_PATH  + "MobileCam_APP_Log/";
+    public static final String SDK_LOG_DIRECTORY_PATH = APP_PATH  + "SenaCamera_SDK_Log/";
+    public static final String APP_LOG_DIRECTORY_PATH = APP_PATH  + "SenaCamera_APP_Log/";
     public static final String PROPERTY_CFG_FILE_NAME = "netconfig.properties";
     public static final String STREAM_OUTPUT_DIRECTORY_PATH = APP_PATH + "Resource/Raw/";
     public static final String PROPERTY_CFG_DIRECTORY_PATH = APP_PATH + "Resource/";
-    public static final String DOWNLOAD_PATH = "/DCIM/MobileCam/";
-    public static final String DOWNLOAD_PATH_PHOTO = "/DCIM/MobileCam/photo/";
-    public static final String DOWNLOAD_PATH_VIDEO = "/DCIM/MobileCam/video/";
-    public static final String AUTO_DOWNLOAD_PATH = "/DCIM/MobileCam/photo/";
+    public static final String DOWNLOAD_PATH = "/DCIM/SenaCamera/";
+    public static final String DOWNLOAD_PATH_PHOTO = "/DCIM/SenaCamera/photo/";
+    public static final String DOWNLOAD_PATH_VIDEO = "/DCIM/SenaCamera/video/";
+    public static final String AUTO_DOWNLOAD_PATH = "/DCIM/SenaCamera/photo/";
     public static final String FW_UPGRADE_FILENAME = "sphost.BRN";
     private static final String TAG = AppInfo.class.getSimpleName();
     public static final String FILE_GOOGLE_TOKEN = "file_googleToken.dat";
