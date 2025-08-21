@@ -142,6 +142,7 @@ public class FragmentSetDevice extends Fragment implements View.OnClickListener 
     }
 
     private void onOk() {
+        // unused currently
         if (!bleCommandManager.isConnected) {
             AppLog.i(TAG, "onOk ble camera device is disconnected");
             MyToast.show(requireContext(), R.string.error_occurred);
@@ -171,11 +172,11 @@ public class FragmentSetDevice extends Fragment implements View.OnClickListener 
                     }
                 });
                 // turn on wifi & connect to the device
-                bleCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                bleCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, true, new BluetoothCommandCallback() {
                     @SuppressLint("MissingPermission")
                     @Override
                     public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep on succeeded");
 
                         // check if wifi of phone is turned on
 //                        if (!MWifiManager.isWifiEnabled(requireContext().getApplicationContext())) {
@@ -222,7 +223,7 @@ public class FragmentSetDevice extends Fragment implements View.OnClickListener 
 
                     @Override
                     public void onFailure() {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep on failed");
                         MyProgressDialog.closeProgressDialog();
                         MyToast.show(requireContext(), R.string.error_occurred);
                     }

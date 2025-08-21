@@ -61,6 +61,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
         @Override
         public void afterTextChanged(Editable s) {
             boolean forwardAvailable = true;
+            String defaultPassword = "sena0000";
 
             // update password length check status
             if (s.length() >= 8 && s.length() <= 12) {
@@ -78,7 +79,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
                 passwordCharacterCheck.setImageResource(R.drawable.status_password_check_on);
             }
 
-            nextButton.setEnabled(forwardAvailable && !s.toString().isBlank());
+            nextButton.setEnabled(forwardAvailable && !s.toString().isBlank() && !s.toString().equals(defaultPassword));
         }
     };
 
@@ -187,8 +188,7 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
     private void onOk() {
         SystemInfo.hideInputMethod(requireActivity());
 
-        if (!bluetoothCommandManager.isConnected
-        ) {
+        if (!bluetoothCommandManager.isConnected) {
             AppLog.i(TAG, "onOk ble camera device is disconnected");
             MyToast.show(requireContext(), R.string.error_occurred);
             return;
@@ -198,31 +198,68 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // set ssid & password
-                bluetoothCommandManager.addCommand(BluetoothInfo.setCameraWifiInfoCommand(currentSsid, newPassword), BluetoothInfo.setCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
-                    @Override
-                    public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "setCameraWifiInfoCmdRep succeeded");
-                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
-                        String ssid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
-                        String password = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
-                        bluetoothCommandManager.setCurrentWifiSsid(ssid);
-                        bluetoothCommandManager.setCurrentWifiPassword(password);
-                        AppLog.i(TAG, "setCameraWifiInfoCmdRep ssid: " + ssid + ", password: " + password);
-                    }
+                // turn off & on camera if phantom camera
+//                if (bluetoothCommandManager.currentDevice.getProductId().equals(BluetoothInfo.PRODUCT_ID_PHANTOM_CAMERA)) {
+//                    bluetoothCommandManager.addCommand(BluetoothInfo.cameraOnOffCommand(false), BluetoothInfo.cameraOnOffCmdRep, false, new BluetoothCommandCallback() {
+//                        @Override
+//                        public void onSuccess(byte[] response) {
+//                            AppLog.i(TAG, "cameraOnOffCmdRep off succeeded");
+//                        }
+//
+//                        @Override
+//                        public void onFailure() {
+//                            AppLog.i(TAG, "cameraOnOffCmdRep off failed");
+//                            MyProgressDialog.closeProgressDialog();
+//                            MyToast.show(requireContext(), R.string.error_occurred);
+//                        }
+//                    });
+//                    bluetoothCommandManager.addCommand(BluetoothInfo.cameraOnOffCommand(true), BluetoothInfo.cameraOnOffCmdRep, true, new BluetoothCommandCallback() {
+//                        @Override
+//                        public void onSuccess(byte[] response) {
+//                            AppLog.i(TAG, "cameraOnOffCmdRep on succeeded");
+//                        }
+//
+//                        @Override
+//                        public void onFailure() {
+//                            AppLog.i(TAG, "cameraOnOffCmdRep on failed");
+//                            MyProgressDialog.closeProgressDialog();
+//                            MyToast.show(requireContext(), R.string.error_occurred);
+//                        }
+//                    });
+//                }
 
-                    @Override
-                    public void onFailure() {
-                        AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
-                    }
-                });
+                // set ssid & password
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    bluetoothCommandManager.addCommand(BluetoothInfo.setCameraWifiInfoCommand(currentSsid, newPassword), BluetoothInfo.setCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
+                        @Override
+                        public void onSuccess(byte[] response) {
+                            AppLog.i(TAG, "setCameraWifiInfoCmdRep succeeded");
+                            //                            byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+                            //                            String ssid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
+                            //                            String password = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
+                            String ssid = currentSsid;
+                            String password = newPassword;
+                            bluetoothCommandManager.setCurrentWifiSsid(ssid);
+                            bluetoothCommandManager.setCurrentWifiPassword(password);
+                            AppLog.i(TAG, "setCameraWifiInfoCmdRep ssid: " + ssid + ", password: " + password);
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
+                            MyProgressDialog.closeProgressDialog();
+                            MyToast.show(requireContext(), R.string.error_occurred);
+                        }
+                    });
+                }, 3000);
+
                 // turn on wifi & register the device
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                    bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, true, new BluetoothCommandCallback() {
                         @SuppressLint({"MissingPermission"})
                         @Override
                         public void onSuccess(byte[] response) {
-                            AppLog.i(TAG, "cameraWifiOnOffCmdRep succeeded");
+                            AppLog.i(TAG, "cameraWifiOnOffCmdRep on succeeded");
 
                             // register device
                             BluetoothDeviceManager deviceManager = BluetoothDeviceManager.getInstance();
@@ -245,12 +282,12 @@ public class FragmentNewPassword extends Fragment implements View.OnClickListene
 
                         @Override
                         public void onFailure() {
-                            AppLog.i(TAG, "cameraWifiOnOffCmdRep failed");
+                            AppLog.i(TAG, "cameraWifiOnOffCmdRep on failed");
                             MyProgressDialog.closeProgressDialog();
                             MyToast.show(requireContext(), R.string.error_occurred);
                         }
                     });
-                }, 3000);
+                }, 6000);
             }
         }).start();
     }

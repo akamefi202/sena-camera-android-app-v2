@@ -1,10 +1,14 @@
 package com.sena.senacamera.function.CameraAction;
 
+import static com.sena.senacamera.data.PropertyId.PropertyId.CAPTURE_DELAY_MODE;
+
 import android.content.Context;
 import android.media.MediaPlayer;
 
+import com.icatchtek.control.customer.type.ICatchCamBurstNumber;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.data.GlobalApp.GlobalInfo;
+import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.log.AppLog;
 import com.sena.senacamera.R;
 import com.sena.senacamera.SdkApi.CameraAction;
@@ -20,6 +24,7 @@ import java.util.TimerTask;
 public class PhotoCapture {
     private static final String TAG = PhotoCapture.class.getSimpleName();
 
+    private Context context;
     private MediaPlayer stillCaptureStartBeep;
     private MediaPlayer delayBeep;
     private MediaPlayer continuousCaptureBeep;
@@ -29,18 +34,38 @@ public class PhotoCapture {
     private static final int TYPE_NORMAL_CAPTURE = 2;
     private CameraProperties cameraProperties;
     private CameraAction cameraAction;
+    private BaseProperties baseProperties;
 
-    public PhotoCapture() {
-        Context context = GlobalInfo.getInstance().getCurrentApp();
+    public PhotoCapture(Context context) {
+        this.context = context;
         stillCaptureStartBeep = MediaPlayer.create(context, R.raw.captureshutter);
         delayBeep = MediaPlayer.create(context, R.raw.delay_beep);
         continuousCaptureBeep = MediaPlayer.create(context, R.raw.captureburst);
-        this.cameraProperties = CameraManager.getInstance().getCurCamera().getCameraProperties();
-        this.cameraAction = CameraManager.getInstance().getCurCamera().getCameraAction();
+        baseProperties = CameraManager.getInstance().getCurCamera().getBaseProperties();
+        cameraProperties = CameraManager.getInstance().getCurCamera().getCameraProperties();
+        cameraAction = CameraManager.getInstance().getCurCamera().getCameraAction();
     }
 
     public void startCapture() {
         new CaptureThread().run();
+    }
+
+    public int getBurstCount() {
+        int currentBurstNumber = cameraProperties.getCurrentBurstNumber();
+        if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_3) {
+            return 3;
+        } else if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_5) {
+            return 5;
+        } else if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_7) {
+            return 7;
+        } else if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_10) {
+            return 10;
+        } else if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_15) {
+            return 15;
+        } else if (currentBurstNumber == ICatchCamBurstNumber.ICH_CAM_BURST_NUMBER_30) {
+            return 30;
+        }
+        return 1;
     }
 
     class CaptureThread implements Runnable {
@@ -53,12 +78,14 @@ public class PhotoCapture {
 //            CameraProperties.getInstance().getCurrentCaptureDelay();
             //check property support then setting the value.
             int delayTime = 0;
-            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY)) {
+            // if current photo mode is self-timer, get delay time
+            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_CAPTURE_DELAY) && baseProperties.getPhotoMode().getCurrentUiStringInSetting().equals(context.getResources().getString(R.string.photo_mode_self_timer))) {
                 delayTime = cameraProperties.getCurrentCaptureDelay();
             }
             if (delayTime < 1000) {//ms
                 onStopPreviewListener.onStop();
-            } else if (cameraProperties.hasFunction(0xD7F0)) {//do not stopMPreview media stream and preview right now
+            } else if (cameraProperties.hasFunction(CAPTURE_DELAY_MODE)) {
+                // do not stopMPreview media stream and preview right now
                 TimerTask task = new TimerTask() {
                     @Override
                     public void run() {
@@ -73,10 +100,10 @@ public class PhotoCapture {
 
             //start capture audio
             int needCaptureCount = 1;
-            // akamefi202: to be fixed
-//            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) == true) {
-//                needCaptureCount = cameraProperties.getCurrentBurstNumber();
-//            }
+            // if current photo mode is burst, get burst capture count
+            if (cameraProperties.hasFunction(ICatchCamProperty.ICH_CAM_CAP_BURST_NUMBER) && baseProperties.getPhotoMode().getCurrentUiStringInSetting().equals(context.getResources().getString(R.string.photo_mode_burst))) {
+                needCaptureCount = getBurstCount();
+            }
             if (needCaptureCount == 1) {
                 CaptureAudioTask captureAudioTask = new CaptureAudioTask(needCaptureCount, TYPE_NORMAL_CAPTURE);
                 Timer captureAudioTimer = new Timer(true);
@@ -88,7 +115,7 @@ public class PhotoCapture {
                 captureAudioTimer.schedule(captureAudioTask, delayTime, 420);
             }
 
-            //start delay audio
+            // start delay audio
             int count = delayTime / 1000;
             int timerDelay = 0;
             if (delayTime >= 5000) {
@@ -153,7 +180,7 @@ public class PhotoCapture {
                 if (burstNumber > 0) {
                     AppLog.i(TAG, "CaptureAudioTask remainBurstNumber =" + burstNumber);
                     stillCaptureStartBeep.start();
-                    burstNumber--;
+                    burstNumber --;
                 } else {
                     cancel();
                 }
@@ -161,7 +188,7 @@ public class PhotoCapture {
                 if (burstNumber > 0) {
                     AppLog.i(TAG, "CaptureAudioTask remainBurstNumber =" + burstNumber);
                     continuousCaptureBeep.start();
-                    burstNumber--;
+                    burstNumber --;
                 } else {
                     cancel();
                 }
@@ -183,7 +210,7 @@ public class PhotoCapture {
         public void run() {
             // TODO Auto-generated method stub
             if (count-- > 0) {
-//                delayBeep.start();
+                delayBeep.start();
             } else {
                 if (timer != null) {
                     timer.cancel();

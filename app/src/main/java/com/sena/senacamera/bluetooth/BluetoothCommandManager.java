@@ -26,6 +26,8 @@ import com.sena.senacamera.data.entity.BluetoothDeviceInfo;
 import com.sena.senacamera.listener.BluetoothCommandCallback;
 import com.sena.senacamera.listener.BluetoothConnectCallback;
 import com.sena.senacamera.log.AppLog;
+import com.sena.senacamera.ui.component.MyProgressDialog;
+import com.sena.senacamera.ui.component.MyToast;
 import com.sena.senacamera.utils.ConvertTools;
 
 import java.util.Arrays;
@@ -121,15 +123,15 @@ public class BluetoothCommandManager {
 
         @Override
         public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic, @NonNull byte[] value) {
-            BluetoothCommand command = commandQueue.peek();
-            if (command == null) {
-                return;
-            }
-
             // need to be lowercase to ensure accurate comparison
             String responseCode = ConvertTools.getHexStringFromByteArray(Arrays.copyOfRange(value, 4, 6)).toLowerCase();
             int status = value[6];
             AppLog.i(TAG, "onCharacteristicChanged responseCode: " + responseCode + ", status: " + status);
+
+            BluetoothCommand command = commandQueue.peek();
+            if (command == null) {
+                return;
+            }
 
             if (command.getResponseCode().equals(responseCode)) {
                 if (status == 0) {
@@ -141,6 +143,24 @@ public class BluetoothCommandManager {
                     processNextCommand(); // process next command
                 } else if (responseCode.equals(BluetoothInfo.cameraWifiOnOffCmdRep) && status == 3) {
                     AppLog.i(TAG, "onCharacteristicChanged cameraWifiOnOffCmdRep already turned on");
+                    if (command.getCallback() != null) {
+                        command.getCallback().onSuccess(value);
+                    }
+                    commandQueue.poll(); // remove processed command
+                    isProcessing = false;
+                    processNextCommand(); // process next command
+                } else if (responseCode.equals(BluetoothInfo.setCameraWifiInfoCmdRep) && status == 1 && currentDevice.getProductId().equals(BluetoothInfo.PRODUCT_ID_PHANTOM_CAMERA)) {
+                    // akamefi202: to be fixed
+                    AppLog.i(TAG, "onCharacteristicChanged cameraWifiOnOffCmdRep succeeded (phantom camera)");
+                    if (command.getCallback() != null) {
+                        command.getCallback().onSuccess(value);
+                    }
+                    commandQueue.poll(); // remove processed command
+                    isProcessing = false;
+                    processNextCommand(); // process next command
+                } else if (responseCode.equals(BluetoothInfo.cameraOnOffCmdRep) && status == 1 && command.setEnabled && currentDevice.getProductId().equals(BluetoothInfo.PRODUCT_ID_PHANTOM_CAMERA)) {
+                    // akamefi202: to be fixed
+                    AppLog.i(TAG, "onCharacteristicChanged cameraOnOffCmdRep on succeeded (phantom camera)");
                     if (command.getCallback() != null) {
                         command.getCallback().onSuccess(value);
                     }
@@ -163,13 +183,17 @@ public class BluetoothCommandManager {
             if (!isConnected) {
                 // cancel connect timeout handler
                 connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                // if updating firmware, do not show connect failed dialog
                 if (!isFirmwareUpdating) {
+                    // if not updating firmware (normal process), show connect failed dialog
                     onConnectionFailed();
                 }
                 return;
             }
 
+            // if updating firmware, do not connect via wifi
             if (!isFirmwareUpdating) {
+                // if not updating firmware (normal process), connect via wifi
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     connectWifi();
                 }, 1000);
@@ -268,7 +292,7 @@ public class BluetoothCommandManager {
 
     public void disconnectWifi() {
         // turn off wifi of camera device
-        addCommand(BluetoothInfo.cameraWifiOnOffCommand(false), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+        addCommand(BluetoothInfo.cameraWifiOnOffCommand(false), BluetoothInfo.cameraWifiOnOffCmdRep, false, new BluetoothCommandCallback() {
             @Override
             public void onSuccess(byte[] response) {
                 AppLog.i(TAG, "cameraWifiOnOffCmdRep off succeeded");
@@ -286,64 +310,99 @@ public class BluetoothCommandManager {
         // get wifi info (ssid & password), get firmware version, and turn on wifi of camera device
         // but doesn't turn on wifi if first connect, because need to set ssid & password first
 
-        // get wifi info
-        addCommand(BluetoothInfo.getCameraWifiInfoCommand(), BluetoothInfo.getCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
-            @Override
-            public void onSuccess(byte[] response) {
-                AppLog.i(TAG, "getCameraWifiInfoCmdRep succeeded");
-                byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+        // turn off & on camera if phantom camera
+        if (currentDevice.getProductId().equals(BluetoothInfo.PRODUCT_ID_PHANTOM_CAMERA)) {
+            addCommand(BluetoothInfo.cameraOnOffCommand(false), BluetoothInfo.cameraOnOffCmdRep, false, new BluetoothCommandCallback() {
+                @Override
+                public void onSuccess(byte[] response) {
+                    AppLog.i(TAG, "cameraOnOffCmdRep off succeeded");
+                }
 
-                // get current wifi ssid and password
-                currentWifiSsid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
-                currentWifiPassword = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
-                AppLog.i(TAG, "getCameraWifiInfoCmdRep ssid: " + currentWifiSsid + ", password: " + currentWifiPassword);
-            }
-
-            @Override
-            public void onFailure() {
-                AppLog.i(TAG, "getCameraWifiInfoCmdRep failed");
-                // cancel connect timeout handler
-                connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
-                onConnectionFailed();
-            }
-        });
-        // get firmware version
-        addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
-            @Override
-            public void onSuccess(byte[] response) {
-                AppLog.i(TAG, "getFirmwareVersionCmdRep succeeded");
-                byte[] payload = Arrays.copyOfRange(response, 6, response.length);
-
-                // get firmware version
-                currentFirmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
-                AppLog.i(TAG, "getFirmwareVersionCmdRep firmwareVersion: " + currentFirmwareVersion);
-
-                if (isFirstConnect) {
-                    // this is first connecting to the device, so need to set up device information (ssid & password) before connecting via wifi
+                @Override
+                public void onFailure() {
+                    AppLog.i(TAG, "cameraOnOffCmdRep off failed");
                     // cancel connect timeout handler
                     connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                    onConnectionFailed();
+                }
+            });
+            addCommand(BluetoothInfo.cameraOnOffCommand(true), BluetoothInfo.cameraOnOffCmdRep, true, new BluetoothCommandCallback() {
+                @Override
+                public void onSuccess(byte[] response) {
+                    AppLog.i(TAG, "cameraOnOffCmdRep on succeeded");
+                }
 
-                    // complete bluetooth connecting process by turning on wifi of camera device
-                    connectDeviceDialog.dismiss();
-                    if (connectCallback != null) {
-                        connectCallback.onConnected();
+                @Override
+                public void onFailure() {
+                    AppLog.i(TAG, "cameraOnOffCmdRep on failed");
+                    // cancel connect timeout handler
+                    connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                    onConnectionFailed();
+                }
+            });
+        }
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            // get wifi info
+            addCommand(BluetoothInfo.getCameraWifiInfoCommand(), BluetoothInfo.getCameraWifiInfoCmdRep, new BluetoothCommandCallback() {
+                @Override
+                public void onSuccess(byte[] response) {
+                    AppLog.i(TAG, "getCameraWifiInfoCmdRep succeeded");
+                    byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+
+                    // get current wifi ssid and password
+                    currentWifiSsid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
+                    currentWifiPassword = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
+                    AppLog.i(TAG, "getCameraWifiInfoCmdRep ssid: " + currentWifiSsid + ", password: " + currentWifiPassword);
+                }
+
+                @Override
+                public void onFailure() {
+                    AppLog.i(TAG, "getCameraWifiInfoCmdRep failed");
+                    // cancel connect timeout handler
+                    connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                    onConnectionFailed();
+                }
+            });
+            // get firmware version
+            addCommand(BluetoothInfo.getFirmwareVersionCommand(), BluetoothInfo.getFirmwareVersionCmdRep, new BluetoothCommandCallback() {
+                @Override
+                public void onSuccess(byte[] response) {
+                    AppLog.i(TAG, "getFirmwareVersionCmdRep succeeded");
+                    byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+
+                    // get firmware version
+                    currentFirmwareVersion = BluetoothInfo.getFirmwareVersionFromPayload(payload);
+                    AppLog.i(TAG, "getFirmwareVersionCmdRep firmwareVersion: " + currentFirmwareVersion);
+
+                    if (isFirstConnect) {
+                        // this is first connecting to the device, so need to set up device information (ssid & password) before connecting via wifi
+                        // cancel connect timeout handler
+                        connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+
+                        // complete bluetooth connecting process by turning on wifi of camera device
+                        connectDeviceDialog.dismiss();
+                        if (connectCallback != null) {
+                            connectCallback.onConnected();
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onFailure() {
-                AppLog.i(TAG, "getFirmwareVersionCmdRep failed");
+                @Override
+                public void onFailure() {
+                    AppLog.i(TAG, "getFirmwareVersionCmdRep failed");
 
-                // cancel connect timeout handler
-                connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
-                onConnectionFailed();
-            }
-        });
+                    // cancel connect timeout handler
+                    connectTimeoutHandler.removeCallbacks(connectTimeoutRunnable);
+                    onConnectionFailed();
+                }
+            });
+        }, 3000);
+
         // turn on wifi
         if (!isFirstConnect) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, true, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
                         AppLog.i(TAG, "cameraWifiOnOffCmdRep on succeeded");
@@ -366,17 +425,21 @@ public class BluetoothCommandManager {
                         onConnectionFailed();
                     }
                 });
-            }, 5000);
+            }, 6000);
         }
     }
 
     // add command to queue
     public void addCommand(byte[] data, String responseCode, BluetoothCommandCallback callback) {
+        addCommand(data, responseCode, false, callback);
+    }
+
+    public void addCommand(byte[] data, String responseCode, boolean setEnabled,  BluetoothCommandCallback callback) {
         if (!isConnected) {
             return;
         }
 
-        commandQueue.offer(new BluetoothCommand(data, responseCode, callback));
+        commandQueue.offer(new BluetoothCommand(data, responseCode, setEnabled, callback));
         processNextCommand();
     }
 
@@ -397,11 +460,21 @@ public class BluetoothCommandManager {
     @SuppressLint("MissingPermission")
     private void sendCommand(BluetoothCommand command) {
         writeGattChar.setValue(command.getData());
+        AppLog.i(TAG, "sendCommand: " + ConvertTools.getHexStringFromByteArray(command.getData()));
 
+        // if send command is failed, process next command
         if (bluetoothGatt != null && !bluetoothGatt.writeCharacteristic(writeGattChar)) {
             if (command.getCallback() != null) {
                 command.getCallback().onFailure();
             }
+            isProcessing = false;
+            commandQueue.poll();
+            processNextCommand();
+            return;
+        }
+
+        // if command callback is null, process next command immediately
+        if (command.getCallback() == null) {
             isProcessing = false;
             commandQueue.poll();
             processNextCommand();

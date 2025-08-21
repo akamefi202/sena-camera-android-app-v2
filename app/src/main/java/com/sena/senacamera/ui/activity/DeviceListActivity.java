@@ -34,6 +34,7 @@ import com.sena.senacamera.ui.adapter.CameraDeviceListAdapter;
 import com.sena.senacamera.ui.appdialog.AppDialogManager;
 import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.utils.ConvertTools;
+import com.sena.senacamera.utils.SenaXmlParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,9 +202,12 @@ public class DeviceListActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(byte[] response) {
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep succeeded");
-                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
-                        String ssid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
-                        String password = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
+//                        byte[] payload = Arrays.copyOfRange(response, 6, response.length);
+//                        String ssid = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 1, 33));
+//                        String password = ConvertTools.getStringFromByteArray(Arrays.copyOfRange(payload, 33, 65));
+
+                        String ssid = currentSsid;
+                        String password = currentPassword;
                         bluetoothCommandManager.setCurrentWifiSsid(ssid);
                         bluetoothCommandManager.setCurrentWifiPassword(password);
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep ssid: " + ssid + ", password: " + password);
@@ -217,21 +221,21 @@ public class DeviceListActivity extends AppCompatActivity {
                         AppLog.i(TAG, "setCameraWifiInfoCmdRep failed");
                     }
                 });
-                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(false), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(false), BluetoothInfo.cameraWifiOnOffCmdRep, false, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep off succeeded");
                     }
 
                     @Override
                     public void onFailure() {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep off failed");
                     }
                 });
-                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, new BluetoothCommandCallback() {
+                bluetoothCommandManager.addCommand(BluetoothInfo.cameraWifiOnOffCommand(true), BluetoothInfo.cameraWifiOnOffCmdRep, true, new BluetoothCommandCallback() {
                     @Override
                     public void onSuccess(byte[] response) {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand succeeded");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep on succeeded");
 
                         MWifiManager.connect(activity, currentSsid, currentPassword, new Callback() {
                             @Override
@@ -254,7 +258,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure() {
-                        AppLog.i(TAG, "cameraWifiOnOffCommand failed");
+                        AppLog.i(TAG, "cameraWifiOnOffCmdRep on failed");
                     }
                 });
             } else {
@@ -339,6 +343,8 @@ public class DeviceListActivity extends AppCompatActivity {
             appDialogManager.showAlertDialog(this, null, getResources().getString(R.string.not_allowed_to_deselect_device));
         } else {
             bluetoothDeviceManager.currentIndex = index;
+            SenaXmlParser.getInstance().setCurrentModel(bluetoothDeviceManager.getCurrentDevice().getProductId());
+            bluetoothDeviceManager.writeToSharedPref(this);
             deviceListAdapter.notifyDataSetChanged();
         }
     }

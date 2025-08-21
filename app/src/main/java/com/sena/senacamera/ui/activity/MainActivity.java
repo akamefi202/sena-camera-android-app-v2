@@ -289,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
     public void updateUI() {
         AppLog.i(TAG, "updateUI");
 
-
         // check camera wifi connection status and update ui (preview/connect button)
         // initialize sdk if it is connected
         if (bluetoothDeviceManager.isCurrentDeviceConnected(this)) {
@@ -309,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
         // show current device name if current device exists
         // disable preview, connect button if no device is registered
         if (bluetoothDeviceManager.getCurrentDevice() != null) {
+            senaXmlParser.setCurrentModel(bluetoothDeviceManager.getCurrentDevice().getProductId());
             deviceNameText.setText(bluetoothDeviceManager.getCurrentDevice().wifiSsid);
             connectButton.setEnabled(true);
             previewButton.setEnabled(true);

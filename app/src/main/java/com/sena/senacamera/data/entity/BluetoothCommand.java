@@ -6,11 +6,13 @@ public class BluetoothCommand {
     private final byte[] data;
     private final String responseCode;
     private final BluetoothCommandCallback callback;
+    public final boolean setEnabled;
 
-    public BluetoothCommand(byte[] data, String responseCode, BluetoothCommandCallback callback) {
+    public BluetoothCommand(byte[] data, String responseCode, boolean setEnabled, BluetoothCommandCallback callback) {
         this.data = data;
         this.responseCode = responseCode;
         this.callback = callback;
+        this.setEnabled = setEnabled;
     }
 
     public byte[] getData() {

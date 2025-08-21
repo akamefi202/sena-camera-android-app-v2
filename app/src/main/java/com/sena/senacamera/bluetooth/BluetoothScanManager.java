@@ -44,7 +44,7 @@ public class BluetoothScanManager {
             if (device.getName() == null || device.getAddress() == null) {
                 return;
             }
-            AppLog.i(TAG, "Device found: " + device.getName() + ", Address: " + device.getAddress());
+//            AppLog.i(TAG, "Device found: " + device.getName() + ", Address: " + device.getAddress());
 
             ScanRecord scanRecord = result.getScanRecord();
             String uuid = "", manufactureId = "", productId = "", serialNumber = "", serialData = "";
@@ -76,7 +76,7 @@ public class BluetoothScanManager {
             // check if device is a sena camera device (prism 2)
 //            AppLog.i(TAG, "uuid: " + uuid + ", manufactureId: " + manufactureId + ", productId: " + productId + ", serialNumber: " + serialNumber);
             serialData = productId + "-" + serialNumber;
-            if (!manufactureId.equals(BluetoothInfo.MANUFACTURE_ID) || !productId.equals(BluetoothInfo.PRODUCT_ID_PRISM_2)) {
+            if (!manufactureId.equals(BluetoothInfo.MANUFACTURE_ID)) {
                 // scanned device is not sena camera device (prism 2)
                 return;
             }

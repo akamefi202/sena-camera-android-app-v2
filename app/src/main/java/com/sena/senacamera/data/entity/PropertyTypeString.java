@@ -19,7 +19,6 @@ public class PropertyTypeString {
     private List<String> valueListString;
     private List<String> valueListStringUI;
     private HashMap<String, ItemInfo> hashMap;
-    private String[] valueArrayString;
     private CameraProperties cameraProperties;
 
     public PropertyTypeString(CameraProperties cameraProperties, int propertyId, Context context) {
@@ -49,11 +48,9 @@ public class PropertyTypeString {
             }
         }
         valueListStringUI = new LinkedList<String>();
-        valueArrayString = new String[valueListString.size()];
         if (valueListString != null) {
             for (int i = 0; i < valueListString.size(); i ++) {
                 valueListStringUI.add(i, hashMap.get(valueListString.get(i)).uiStringInSettingString);
-                valueArrayString[i] = hashMap.get(valueListString.get(i)).uiStringInSettingString;
             }
         }
     }
@@ -94,7 +91,7 @@ public class PropertyTypeString {
 
     public String getCurrentUiStringInSetting(int position) {
         // TODO Auto-generated method stub
-        return valueListString.get(position);
+        return valueListStringUI.get(position);
     }
 
     public List<String> getValueList() {
@@ -115,10 +112,6 @@ public class PropertyTypeString {
     public boolean setValueByPosition(int position) {
         return cameraProperties.setStringPropertyValue(propertyId,
                 valueListString.get(position));
-    }
-
-    public String[] getValueArrayString() {
-        return valueArrayString;
     }
 
     public Boolean needDisplayByMode(int previewMode) {

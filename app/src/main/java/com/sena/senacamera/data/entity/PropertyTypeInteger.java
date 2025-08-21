@@ -89,18 +89,18 @@ public class PropertyTypeInteger {
                 break;
             case PropertyId.GENERAL_FRONT_DISPLAY:
                 valueListInt = new ArrayList<Integer>();
-                valueListInt.add(FrontDisplay.FRONT_DISPLAY_OFF);
                 valueListInt.add(FrontDisplay.FRONT_DISPLAY_ON);
+                valueListInt.add(FrontDisplay.FRONT_DISPLAY_OFF);
                 break;
             case PropertyId.GENERAL_MAIN_STATUS_LED:
                 valueListInt = new ArrayList<Integer>();
-                valueListInt.add(MainStatusLed.MAIN_STATUS_LED_OFF);
                 valueListInt.add(MainStatusLed.MAIN_STATUS_LED_ON);
+                valueListInt.add(MainStatusLed.MAIN_STATUS_LED_OFF);
                 break;
             case PropertyId.GENERAL_BATTERY_STATUS_LED:
                 valueListInt = new ArrayList<Integer>();
-                valueListInt.add(BatteryStatusLed.BATTERY_STATUS_LED_OFF);
                 valueListInt.add(BatteryStatusLed.BATTERY_STATUS_LED_ON);
+                valueListInt.add(BatteryStatusLed.BATTERY_STATUS_LED_OFF);
                 break;
             case PropertyId.VIDEO_AUTO_LOW_LIGHT:
                 valueListInt = new ArrayList<Integer>();

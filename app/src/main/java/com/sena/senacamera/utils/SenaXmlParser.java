@@ -236,6 +236,10 @@ public class SenaXmlParser extends AsyncTask<String, Void, Boolean> {
                 } catch (Exception e) {
                     AppLog.e(TAG, "error: " + e.getMessage());
                     e.printStackTrace();
+
+                    if (callback != null) {
+                        callback.processFailed();
+                    }
                 }
             }
 

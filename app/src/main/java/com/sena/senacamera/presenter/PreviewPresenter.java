@@ -440,7 +440,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             return CameraMode.PHOTO;
         } else if (curAppStateMode == PreviewMode.APP_STATE_VIDEO_CAPTURE ||
                 curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_CAPTURE ||
-                curAppStateMode == APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
+                curAppStateMode == PreviewMode.APP_STATE_TIMELAPSE_VIDEO_PREVIEW ||
                 curAppStateMode == PreviewMode.APP_STATE_VIDEO_PREVIEW ||
                 curAppStateMode == PreviewMode.APP_STATE_VIDEO_MODE) {
             return CameraMode.VIDEO;
@@ -602,6 +602,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             startRecordingLapseTimeTimer(cameraProperties.getVideoRecordingTime());
         } else if (curAppStateMode == PreviewMode.APP_STATE_NONE_MODE) {
             // akamefi202: to be fixed
+            // set photo mode as default preview mode
 //            if (cameraProperties.cameraModeSupport(ICatchCamMode.ICH_CAM_MODE_VIDEO)) {
 //                curAppStateMode = PreviewMode.APP_STATE_VIDEO_PREVIEW;
 //                curIcatchMode = ICatchCamPreviewMode.ICH_CAM_VIDEO_PREVIEW_MODE;
@@ -778,7 +779,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
     private void startPhotoCapture() {
         previewView.setCaptureBtnEnability(false);
         previewView.setCaptureBtnBackgroundResource(R.drawable.shutter_photo);
-        PhotoCapture photoCapture = new PhotoCapture();
+        PhotoCapture photoCapture = new PhotoCapture(activity);
         if (cameraProperties.hasFunction(0xD7F0)) {
             photoCapture.addOnStopPreviewListener(new PhotoCapture.OnStopPreviewListener() {
                 @Override
@@ -1282,7 +1283,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
     public void startPreview() {
         AppLog.d(TAG, "start startPreview hasInitSurface=" + hasInitSurface);
         //ICOM-4274 begin add 20170906 b.jiang
-        if (hasInitSurface == false) {
+        if (!hasInitSurface) {
             return;
         }
         if (panoramaPreviewPlayback == null) {
@@ -1349,11 +1350,7 @@ public class PreviewPresenter extends BasePresenter implements SensorEventListen
             }
         }
 
-        if (retValue == Tristate.NORMAL) {
-            curCamera.isStreamReady = true;
-        } else {
-            curCamera.isStreamReady = false;
-        }
+        curCamera.isStreamReady = retValue == Tristate.NORMAL;
 
         final Tristate finalRetValue = retValue;
         previewHandler.post(new Runnable() {

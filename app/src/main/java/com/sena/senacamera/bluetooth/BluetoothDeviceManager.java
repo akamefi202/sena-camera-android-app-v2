@@ -68,6 +68,9 @@ public class BluetoothDeviceManager {
         if (index < currentIndex) {
             currentIndex --;
         }
+        if (currentIndex >= deviceList.size() && currentIndex != 0) {
+            currentIndex --;
+        }
     }
 
     public void swapDevices(int index1, int index2) {

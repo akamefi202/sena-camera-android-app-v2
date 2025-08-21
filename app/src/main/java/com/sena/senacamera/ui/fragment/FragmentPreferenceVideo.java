@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.gson.Gson;
 import com.sena.senacamera.data.Mode.CameraMode;
+import com.sena.senacamera.data.entity.PropertyTypeString;
 import com.sena.senacamera.function.BaseProperties;
 import com.sena.senacamera.MyCamera.CameraManager;
 import com.sena.senacamera.MyCamera.MyCamera;
@@ -245,8 +246,17 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         } else if (this.currentMode.equals(requireContext().getResources().getString(R.string.video_mode_loop_recording))) {
             // loop
             this.loopRecordingMenu.setVisibility(View.VISIBLE);
+            this.eisMenu.setVisibility(View.VISIBLE);
         } else {
             // slow motion
+        }
+
+        PropertyTypeString videoResolutionProperty = baseProperties.getVideoResolution();
+        String videoResolution = baseProperties.getVideoResolution().getCurrentUiStringInSetting();
+        if (videoResolution.equals(videoResolutionProperty.getCurrentUiStringInSetting(1))
+                || videoResolution.equals(videoResolutionProperty.getCurrentUiStringInSetting(3))
+                || videoResolution.equals(videoResolutionProperty.getCurrentUiStringInSetting(6))) {
+            this.eisMenu.setVisibility(View.GONE);
         }
     }
 
@@ -354,8 +364,14 @@ public class FragmentPreferenceVideo extends Fragment implements View.OnClickLis
         // update the setting
         if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.auto_low_light))) {
             baseProperties.getVideoAutoLowLight().setValue(newValue ? 1: 0);
+            // update eis
+            eisMenu.setValue(!newValue);
+            baseProperties.getVideoEis().setValue(!newValue ? 1: 0);
         } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.eis))) {
             baseProperties.getVideoEis().setValue(newValue ? 1: 0);
+            // update auto low light
+            autoLowLightMenu.setValue(!newValue);
+            baseProperties.getVideoAutoLowLight().setValue(!newValue? 1: 0);
         }
     }
 

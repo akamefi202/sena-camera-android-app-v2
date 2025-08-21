@@ -221,9 +221,9 @@ public class PropertyHashMapDynamic {
             int value = frontDisplayList.get(i);
             String temp;
             if (value == 0) {
-                temp = PanoramaApp.getContext().getString(R.string.off);
-            } else {
                 temp = PanoramaApp.getContext().getString(R.string.on);
+            } else {
+                temp = PanoramaApp.getContext().getString(R.string.off);
             }
 
             AppLog.d(TAG, "frontDisplayList i=" + i + ", value=" + value + ", temp=" + temp);
@@ -240,9 +240,9 @@ public class PropertyHashMapDynamic {
             int value = mainStatusLedList.get(i);
             String temp;
             if (value == 0) {
-                temp = PanoramaApp.getContext().getString(R.string.off);
-            } else {
                 temp = PanoramaApp.getContext().getString(R.string.on);
+            } else {
+                temp = PanoramaApp.getContext().getString(R.string.off);
             }
 
             AppLog.d(TAG, "mainStatusLedList i=" + i + ", value=" + value + ", temp=" + temp);
@@ -259,9 +259,9 @@ public class PropertyHashMapDynamic {
             int value = batteryStatusLedList.get(i);
             String temp;
             if (value == 0) {
-                temp = PanoramaApp.getContext().getString(R.string.off);
-            } else {
                 temp = PanoramaApp.getContext().getString(R.string.on);
+            } else {
+                temp = PanoramaApp.getContext().getString(R.string.off);
             }
 
             AppLog.d(TAG, "batteryStatusLedList i=" + i + ", value=" + value + ", temp=" + temp);

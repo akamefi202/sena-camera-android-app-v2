@@ -93,12 +93,12 @@ public class SenaCameraActivity extends Activity implements View.OnClickListener
             senaXmlParser.setCallback(new Callback() {
                 @Override
                 public void processSucceed() {
-                    AppLog.e(TAG, "xml read is succeeded");
+                    AppLog.i(TAG, "xml read is succeeded");
                 }
 
                 @Override
                 public void processFailed() {
-                    AppLog.e(TAG, "xml read is failed");
+                    AppLog.i(TAG, "xml read is failed");
                 }
             });
             senaXmlParser.readFromSharedPref();

@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -35,6 +36,7 @@ import com.sena.senacamera.data.Mode.CameraMode;
 import com.sena.senacamera.data.Mode.PreviewMode;
 import com.sena.senacamera.ui.Interface.PreviewView;
 import com.sena.senacamera.ui.adapter.ShootModeAdapter;
+import com.sena.senacamera.ui.component.MyProgressDialog;
 import com.sena.senacamera.ui.decoration.CenterSnapHelper;
 import com.sena.senacamera.utils.ClickUtils;
 
@@ -183,9 +185,21 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
                     View centerView = shootModeSnapHelper.findSnapView(layoutManager);
                     if (centerView != null) {
                         int pos = layoutManager.getPosition(centerView);
-                        selectShootMode(pos);
+                        // select new shoot mode if current shoot mode is different from shoot mode at pos
+                        if (!currentShootMode.equals(shootModeList.get(pos))) {
+                            selectShootMode(pos);
+                            scrollToSelectedShootMode(pos);
+                        }
                     }
                 }
+            }
+        });
+        shootModeRecyclerView.setOnFlingListener(new RecyclerView.OnFlingListener() {
+            @Override
+            public boolean onFling(int velocityX, int velocityY) {
+                int maxFlingVelocity = 1000;
+                velocityX = Math.max(Math.min(velocityX, maxFlingVelocity), -maxFlingVelocity);
+                return false;
             }
         });
     }
@@ -424,15 +438,25 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
         BaseProperties baseProperties = myCamera.getBaseProperties();
 
         if (!this.shootModeList.get(position).equals(this.currentShootMode)) {
-            if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
-                // photo
-                baseProperties.getPhotoMode().setValueByPosition(position);
-            } else {
-                // video
-                baseProperties.getVideoMode().setValueByPosition(position);
-            }
             this.currentShootMode = this.shootModeList.get(position);
             this.shootModeAdapter.notifyDataSetChanged();
+
+            MyProgressDialog.showProgressDialog(this, R.string.action_processing);
+            new Thread(new Runnable() {
+                public void run() {
+                    presenter.stopPreview();
+                    if (presenter.getCurrentCameraMode().equals(CameraMode.PHOTO)) {
+                        // photo
+                        baseProperties.getPhotoMode().setValueByPosition(position);
+                    } else {
+                        // video
+                        baseProperties.getVideoMode().setValueByPosition(position);
+                    }
+                    presenter.startPreview();
+
+                    MyProgressDialog.closeProgressDialog();
+                }
+            }).start();
         }
     }
 

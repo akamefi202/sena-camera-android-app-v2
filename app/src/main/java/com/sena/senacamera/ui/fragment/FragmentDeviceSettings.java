@@ -343,12 +343,13 @@ public class FragmentDeviceSettings extends Fragment implements View.OnClickList
         menuSwitch.setValue(newValue);
 
         // update the setting
+        // 0 is on, 1 is off here
         if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.front_display))) {
-            baseProperties.getGeneralFrontDisplay().setValue(newValue ? 1: 0);
+            baseProperties.getGeneralFrontDisplay().setValue(newValue ? 0: 1);
         } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.main_status_led))) {
-            baseProperties.getGeneralMainStatusLed().setValue(newValue ? 1: 0);
+            baseProperties.getGeneralMainStatusLed().setValue(newValue ? 0: 1);
         } else if (menuSwitch.getTitle().equals(requireContext().getResources().getString(R.string.battery_status_led))) {
-            baseProperties.getGeneralBatteryStatusLed().setValue(newValue ? 1: 0);
+            baseProperties.getGeneralBatteryStatusLed().setValue(newValue ? 0: 1);
         }
     }
 
